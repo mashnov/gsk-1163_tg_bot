@@ -1,17 +1,12 @@
-const { Telegraf } = require('telegraf');
+const { config } = require('dotenv');
+config();
 
-// BOT_TOKEN ты уже задашь в Bothost в переменных окружения
-const bot = new Telegraf(process.env.BOT_TOKEN);
+const { createBot } = require('./bot');
 
-bot.start((ctx) => ctx.reply('Здравствуйте! 🎉 Бот работает.'));
-bot.help((ctx) => ctx.reply('Команда /start — проверить работу бота.'));
-
-bot.on('text', (ctx) => {
-    ctx.reply(`Вы написали: ${ctx.message.text}`);
-});
+const bot = createBot();
 
 bot.launch().then(() => {
-    console.log('🤖 Bot started on Bothost (long polling)');
+    console.log('🟢 Бот запущен');
 });
 
 process.once('SIGINT', () => bot.stop('SIGINT'));
