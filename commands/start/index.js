@@ -1,30 +1,33 @@
-const { Markup } = require('telegraf');
-const { messageParams } = require('../../dictionary');
+const { sendMessage} = require('../../helpers');
 
 const messageText =
     'Привет!\n' +
-    'Меня зовут <b>Домовёнок</b>, я бот нашего дома.\n\n' +
+    'Это <b>Домовёнок</b> - бот нашего дома.\n\n' +
     'Я помогу тебе:\n' +
-    '• найти нужный контакт,\n' +
-    '• передать показания счётчиков,\n' +
-    '• пожаловаться на чьё-то сообщение - я разберусь и сообщу тебе результат.\n\n' +
-    'А если ты что-то производишь или предлагаешь услуги и живёшь в нашем доме - можем обсудить небольшую рекламу для жителей.';
+    '• Авторизоваться\n' +
+    '• Найти нужный контакт\n' +
+    '• Передать показания счётчиков\n' +
+    '• Связаться с правлением или администратором\n';
 
-const messageKeyboard = Markup.inlineKeyboard([
-    [ Markup.button.callback('Полезные телефоны и ссылки', 'contacts') ],
-    [ Markup.button.callback('Передать показания счетчиков', 'meters') ],
-    [ Markup.button.callback('Пожаловаться на сообщение', 'complain') ]
-])
+const messageKeyboard = {
+    profile_start: 'Авторизация',
+    contact_start: 'Полезные телефоны',
+    meter_start: 'Показания счетчиков',
+    message_start: 'Написать сообщение',
+};
+
+const initAction = async (ctx, bot, needAnswer) => {
+    if (needAnswer) {
+        await ctx.answerCbQuery();
+    }
+    await sendMessage(ctx, {
+        text: messageText,
+        buttons: messageKeyboard
+    });
+};
 
 module.exports = (bot) => {
-    bot.start((ctx) => {
-        ctx.reply(messageText, { ...messageKeyboard, ...messageParams });
-    });
-    bot.command('start', async (ctx) => {
-        ctx.reply(messageText, { ...messageKeyboard, ...messageParams });
-    });
-    bot.action('start', async (ctx) => {
-        await ctx.answerCbQuery();
-        ctx.reply(messageText, { ...messageKeyboard, ...messageParams });
-    });
+    bot.start((ctx) => initAction(ctx, bot));
+    bot.command('start', async (ctx) => initAction(ctx, bot));
+    bot.action('start', async (ctx) => initAction(ctx, bot, true));
 };

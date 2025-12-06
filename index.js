@@ -1,13 +1,9 @@
 const { config } = require('dotenv');
-config();
-
 const { createBot } = require('./bot');
 
-const bot = createBot();
+config();
 
-bot.launch().then(() => {
-    console.log('🟢 Бот запущен');
-});
+const bot = createBot().launch();
 
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
