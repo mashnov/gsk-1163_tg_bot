@@ -3,7 +3,7 @@ const { stepList } = require('./dictionary');
 const { initStepper } = require('../../stepper');
 const { accountIds, closeOption } = require('../../dictionary');
 const { initStore, getSession} = require('../../store');
-const { getUserName, getSummaryMessage, sendMessage } = require('../../helpers');
+const { getUserName, getSummaryMessage, sendMessage, removeMessage } = require('../../helpers');
 
 const actionName = 'message';
 
@@ -25,6 +25,7 @@ const initAction = async (ctx, needAnswer) => {
         await ctx.answerCbQuery();
     }
     await stepper.startHandler(ctx);
+    await removeMessage(ctx);
 }
 
 const submitAction = async (ctx, destination) => {
@@ -44,6 +45,8 @@ const submitAction = async (ctx, destination) => {
         buttons: closeOption,
         attachment: session.attachment,
     });
+
+    await removeMessage(ctx);
 }
 
 module.exports = (bot) => {

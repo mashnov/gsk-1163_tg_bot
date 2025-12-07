@@ -92,7 +92,7 @@ const getMessageAttachment = (message) => {
 
 
 const getMessageText = (message) => {
-    return (message.text ?? message.caption ?? '').trim();
+    return (message?.text ?? message?.caption ?? '').trim();
 };
 
 const isValidMessage = (message) => {

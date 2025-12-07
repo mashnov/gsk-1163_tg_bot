@@ -1,6 +1,6 @@
 const { getSession } = require('./store');
 const { cancelOption } = require('./dictionary');
-const { removeMessage, validateMessage, getMessageText, getMessageAttachment, getSummaryMessage, sendMessage } = require('./helpers');
+const { validateMessage, getMessageText, getMessageAttachment, getSummaryMessage, sendMessage, removeMessage } = require('./helpers');
 
 function initStepper({ actionName, stepList, cancelActions = cancelOption, submitActions }) {
     const sendStepWarning = async (ctx, session) => {
@@ -30,6 +30,7 @@ function initStepper({ actionName, stepList, cancelActions = cancelOption, submi
     };
 
     const inputHandler = async (ctx, next) => {
+
         const session = getSession(ctx.from.id);
 
         if (session?.action !== actionName) {
@@ -47,6 +48,7 @@ function initStepper({ actionName, stepList, cancelActions = cancelOption, submi
         if (stepList[session.stepIndex].id === 'summary') {
             return;
         }
+
         const validationRules = stepList[session.stepIndex]?.validation;
         const isMessageStep = validationRules.dataType === 'message';
         const stepIsValid = validateMessage(ctx.message, validationRules);
@@ -62,6 +64,8 @@ function initStepper({ actionName, stepList, cancelActions = cancelOption, submi
         } else {
             await sendStepWarning(ctx, session);
         }
+
+        await removeMessage(ctx);
     };
 
     return {

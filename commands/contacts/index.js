@@ -1,5 +1,5 @@
 const { initStore} = require('../../store');
-const { sendMessage} = require('../../helpers');
+const { sendMessage, removeMessage } = require('../../helpers');
 
 const messageText =
         'Полезные телефоны и ссылки: \n\n'+
@@ -24,6 +24,7 @@ const initAction = async (ctx, bot, needAnswer) => {
         await ctx.answerCbQuery();
     }
     await sendMessage(ctx, { text: messageText });
+    await removeMessage(ctx);
 };
 
 module.exports = (bot) => {

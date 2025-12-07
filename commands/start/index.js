@@ -1,4 +1,4 @@
-const { sendMessage} = require('../../helpers');
+const { sendMessage, removeMessage } = require('../../helpers');
 
 const messageText =
     'Привет!\n' +
@@ -24,6 +24,8 @@ const initAction = async (ctx, bot, needAnswer) => {
         text: messageText,
         buttons: messageKeyboard
     });
+
+    await removeMessage(ctx);
 };
 
 module.exports = (bot) => {
