@@ -1,5 +1,5 @@
-const { initStore} = require('../../store');
-const { sendMessage, removeMessage } = require('../../helpers');
+const { initStore} = require('../store');
+const { sendMessage, removeMessage } = require('../helpers/message');
 
 const messageText =
         'Полезные телефоны и ссылки: \n\n'+

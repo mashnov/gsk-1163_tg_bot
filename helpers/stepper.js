@@ -1,6 +1,8 @@
-const { getSession } = require('./store');
-const { cancelOption } = require('./dictionary');
-const { validateMessage, getMessageText, getMessageAttachment, getSummaryMessage, sendMessage, removeMessage } = require('./helpers');
+const { getSession } = require('../store');
+const { cancelOption } = require('../const/dictionary');
+const { validateMessage } = require('./validation');
+const { getMessageText, getMessageAttachment, getSummaryMessage } = require('./getters');
+const { sendMessage, removeMessage } = require('./message');
 
 function initStepper({ actionName, stepList, cancelActions = cancelOption, submitActions }) {
     const sendStepWarning = async (ctx, session) => {

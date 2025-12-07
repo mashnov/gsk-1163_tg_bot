@@ -1,4 +1,4 @@
-const { sendMessage, removeMessage } = require('../../helpers');
+const { sendMessage, removeMessage } = require('../helpers/message');
 
 const messageText =
     'Привет!\n' +

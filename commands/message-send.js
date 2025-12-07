@@ -1,9 +1,10 @@
-const { stepList } = require('./dictionary');
+const { stepList } = require('../const/message-send');
 
-const { initStepper } = require('../../stepper');
-const { accountIds, closeOption } = require('../../dictionary');
-const { initStore, getSession} = require('../../store');
-const { getUserName, getSummaryMessage, sendMessage, removeMessage } = require('../../helpers');
+const { initStepper } = require('../helpers/stepper');
+const { accountIds, closeOption } = require('../const/dictionary');
+const { initStore, getSession} = require('../store');
+const { getUserName, getSummaryMessage } = require('../helpers/getters');
+const { sendMessage, removeMessage } = require('../helpers/message');
 
 const actionName = 'message';
 

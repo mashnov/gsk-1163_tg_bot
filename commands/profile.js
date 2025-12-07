@@ -1,5 +1,5 @@
 const { Markup } = require('telegraf');
-const { messageParams } = require('../../dictionary');
+const { messageParams } = require('../const/dictionary');
 
 module.exports = (bot) => {
     bot.command('profile', (ctx) => {
