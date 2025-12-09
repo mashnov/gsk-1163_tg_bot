@@ -8,12 +8,12 @@ const { sendMessage, removeMessage } = require('../helpers/message');
 
 const actionName = 'meter_send';
 
-const submitActions = { meter_submit: 'Отправить' };
-
 const stepper = initStepper({
     stepList,
     actionName,
-    submitActions,
+    submitActions: {
+        meter_submit: 'Отправить'
+    },
 });
 
 const initAction = async (ctx, needAnswer) => {

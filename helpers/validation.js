@@ -1,4 +1,6 @@
-const { getMessageText, getMessageAttachment, getNormalizeNumber } = require('./getters');
+const { getMessageText, getMessageAttachment, getNormalizeNumber, getNormalizeString } = require('./getters');
+
+const residents = require('../const/residents.json');
 
 const isValidMessage = (message) => {
     const text = getMessageText(message);
@@ -16,6 +18,11 @@ const isValidNumber = (text, { min = -Infinity, max = Infinity }, isInteger = fa
     const isValidValue = min < number && max > number;
     const isValidFormat = isInteger ? /^[0-9]+$/.test(mappedString) : /^[0-9]+([.,][0-9]+)?$/.test(text.trim());
     return isValidValue && isValidFormat;
+};
+
+const isValidOwner = (room, owner) => {
+    const ownerList = residents[room].map(owner => getNormalizeString(owner));
+    return ownerList.includes(getNormalizeString(owner));
 };
 
 const validateMessage = (message, stepValidation) => {
@@ -38,4 +45,5 @@ const validateMessage = (message, stepValidation) => {
 
 module.exports = {
     validateMessage,
+    isValidOwner,
 };

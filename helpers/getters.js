@@ -15,15 +15,16 @@ const getUserName = (data) => {
     const { username, first_name, last_name, id } = data;
     const profileName = `${first_name} ${last_name}`;
     const usernameHref = `https://t.me/${username}`;
+    const userIdHref = `tg://user?id=${id}`;
 
     if (username && first_name && last_name) {
-        return `<a href="${usernameHref}">${first_name} ${last_name}</a>`
+        return `<a href="${usernameHref}">${first_name} ${last_name}</a>`;
     } else if (username) {
-        return `<a href="${usernameHref}">${username}</a>`
+        return `<a href="${usernameHref}">${username}</a>`;
     } else if (first_name || last_name) {
-        return profileName;
+        return `<a href="${userIdHref}">${profileName}</a>`;
     } else if (id) {
-        return id;
+        return `<a href="${userIdHref}">${id}</a>`;
     }
 
     return 'неизвестно';
@@ -67,6 +68,10 @@ const getNormalizeNumber = (text) => {
     return text.trim().replace(',', '.');
 };
 
+const getNormalizeString = (text) => {
+    return text.trim().toLocaleLowerCase().replace(/Ё/g, 'е');
+};
+
 module.exports = {
     getButtons,
     getSummaryMessage,
@@ -74,4 +79,5 @@ module.exports = {
     getUserName,
     getMessageText,
     getNormalizeNumber,
+    getNormalizeString,
 };

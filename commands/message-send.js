@@ -8,16 +8,14 @@ const { sendMessage, removeMessage } = require('../helpers/message');
 
 const actionName = 'message';
 
-const submitActions = {
-    message_submit_chairman: 'Отправить председателю',
-    message_submit_accountant: 'Отправить бухгалтеру',
-    message_submit_admin: 'Отправить администратору',
-};
-
 const stepper = initStepper({
     stepList,
     actionName,
-    submitActions,
+    submitActions: {
+        message_submit_chairman: 'Отправить председателю',
+        message_submit_accountant: 'Отправить бухгалтеру',
+        message_submit_admin: 'Отправить администратору',
+    },
 });
 
 const initAction = async (ctx, needAnswer) => {
