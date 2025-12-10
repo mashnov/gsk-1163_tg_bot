@@ -1,20 +1,20 @@
-const { stepList } = require('../const/message-send');
+const { stepList } = require('../const/messages');
 
 const { initStepper } = require('../helpers/stepper');
 const { accountIds, closeOption } = require('../const/dictionary');
-const { initStore, getSession} = require('../store');
+const { initStore, getSession} = require('../helpers/sessions');
 const { getUserName, getSummaryMessage } = require('../helpers/getters');
 const { sendMessage, removeMessage } = require('../helpers/message');
 
-const actionName = 'message';
+const actionName = 'messages';
 
 const stepper = initStepper({
     stepList,
     actionName,
     submitActions: {
-        message_submit_chairman: 'Отправить председателю',
-        message_submit_accountant: 'Отправить бухгалтеру',
-        message_submit_admin: 'Отправить администратору',
+        messages_submit_chairman: 'Отправить председателю',
+        messages_submit_accountant: 'Отправить бухгалтеру',
+        messages_submit_admin: 'Отправить администратору',
     },
 });
 
@@ -49,10 +49,10 @@ const submitAction = async (ctx, destination) => {
 }
 
 module.exports = (bot) => {
-    bot.command('message_start', (ctx) => initAction(ctx));
-    bot.action('message_start', (ctx) => initAction(ctx, true));
-    bot.action('message_submit_chairman', (ctx) => submitAction(ctx, 'chairman'));
-    bot.action('message_submit_accountant', (ctx) => submitAction(ctx, 'accountant'));
-    bot.action('message_submit_admin', (ctx) => submitAction(ctx, 'admin'));
+    bot.command('messages_start', (ctx) => initAction(ctx));
+    bot.action('messages_start', (ctx) => initAction(ctx, true));
+    bot.action('messages_submit_chairman', (ctx) => submitAction(ctx, 'chairman'));
+    bot.action('messages_submit_accountant', (ctx) => submitAction(ctx, 'accountant'));
+    bot.action('messages_submit_admin', (ctx) => submitAction(ctx, 'admin'));
     bot.on('message', async (ctx, next) => stepper.inputHandler(ctx, next));
 };

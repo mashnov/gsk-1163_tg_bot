@@ -1,10 +1,5 @@
-const sessions = new Map();
-
-const emptySession = {
-    action: undefined,
-    messageId: undefined,
-    stepIndex: 0,
-}
+const { sessions } = require('../state/sessions');
+const { emptySession } = require('../const/sessions');
 
 const initStore = (userId, action) => {
     const session = { ...emptySession };
@@ -24,5 +19,4 @@ const clearStore = (userId) => {
 module.exports = {
     initStore,
     getSession,
-    clearStore,
 };

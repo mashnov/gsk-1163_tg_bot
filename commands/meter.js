@@ -2,7 +2,7 @@ const { stepList } = require('../const/meter');
 
 const { initStepper } = require('../helpers/stepper');
 const { accountIds, closeOption } = require('../const/dictionary');
-const { initStore, getSession} = require('../store');
+const { initStore, getSession} = require('../helpers/sessions');
 const { getUserName, getSummaryMessage } = require('../helpers/getters');
 const { sendMessage, removeMessage } = require('../helpers/message');
 

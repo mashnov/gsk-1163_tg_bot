@@ -13,7 +13,7 @@ const messageKeyboard = {
     profile_start: 'Авторизация',
     contact_start: 'Полезные телефоны',
     meter_start: 'Показания счетчиков',
-    message_start: 'Написать сообщение',
+    messages_start: 'Написать сообщение',
 };
 
 const initAction = async (ctx, bot, needAnswer) => {
@@ -28,8 +28,17 @@ const initAction = async (ctx, bot, needAnswer) => {
     await removeMessage(ctx);
 };
 
+const closeAction = async (ctx, bot, needAnswer) => {
+    if (needAnswer) {
+        await ctx.answerCbQuery();
+    }
+    await removeMessage(ctx);
+};
+
 module.exports = (bot) => {
     bot.start((ctx) => initAction(ctx, bot));
     bot.command('start', async (ctx) => initAction(ctx, bot));
     bot.action('start', async (ctx) => initAction(ctx, bot, true));
+    bot.command('close', async (ctx) => closeAction(ctx, bot));
+    bot.action('close', async (ctx) => closeAction(ctx, bot, true));
 };

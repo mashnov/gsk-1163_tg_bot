@@ -1,4 +1,4 @@
-const { getSession } = require('../store');
+const { getSession } = require('../helpers/sessions');
 const { cancelOption } = require('../const/dictionary');
 const { validateMessage } = require('./validation');
 const { getMessageText, getMessageAttachment, getSummaryMessage } = require('./getters');

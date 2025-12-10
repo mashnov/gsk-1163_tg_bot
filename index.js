@@ -5,7 +5,7 @@ const startCommand = require('./commands/start');
 const profileCommand = require('./commands/profile');
 const contactsCommand = require('./commands/contacts');
 const meterCommand = require('./commands/meter');
-const messageSend = require('./commands/message-send');
+const messagesCommand = require('./commands/messages');
 
 config();
 
@@ -16,7 +16,7 @@ const createBot = () => {
     profileCommand(bot);
     contactsCommand(bot);
     meterCommand(bot);
-    messageSend(bot);
+    messagesCommand(bot);
 
     return bot;
 }

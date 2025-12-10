@@ -1,7 +1,7 @@
 const { stepList } = require('../const/profile');
 const { initStepper } = require('../helpers/stepper');
 const { accountIds } = require('../const/dictionary');
-const { initStore, getSession} = require('../store');
+const { initStore, getSession} = require('../helpers/sessions');
 const { getUserName, getSummaryMessage } = require('../helpers/getters');
 const { sendMessage, removeMessage } = require('../helpers/message');
 const { isValidOwner } = require('../helpers/validation');

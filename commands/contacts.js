@@ -1,4 +1,4 @@
-const { initStore} = require('../store');
+const { initStore} = require('../helpers/sessions');
 const { sendMessage, removeMessage } = require('../helpers/message');
 const { cancelOption } = require('../const/dictionary');
 
