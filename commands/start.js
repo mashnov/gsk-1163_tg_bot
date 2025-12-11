@@ -1,4 +1,5 @@
 const { sendMessage, removeMessage } = require('../helpers/message');
+const { createUser } = require('../helpers/db');
 
 const messageText =
     'Привет!\n' +
@@ -26,6 +27,7 @@ const initAction = async (ctx, bot, needAnswer) => {
     });
 
     await removeMessage(ctx);
+    await createUser(ctx.from.id);
 };
 
 const closeAction = async (ctx, bot, needAnswer) => {
