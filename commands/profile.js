@@ -1,8 +1,9 @@
 const { initStore} = require('../helpers/sessions');
 const { sendMessage, removeMessage } = require('../helpers/message');
 const { cancelOption } = require('../const/dictionary');
-const { getUserStatus } = require('../helpers/db');
-const { userStatusText, userStatusList } = require('../const/db');
+const { getUserName, getFormattedDate } = require('../helpers/getters');
+const { getUserStatus, getUserRole, getUserUpdateDate } = require('../helpers/db');
+const { userStatusText, userStatusList, userRoleText } = require('../const/db');
 
 const actionName = 'profile';
 
@@ -14,6 +15,9 @@ const initAction = async (ctx, bot, needAnswer) => {
     }
 
     const userStatus = await getUserStatus(ctx.from.id);
+    const userRole = await getUserRole(ctx.from.id);
+    const userUpdateDate = await getUserUpdateDate(ctx.from.id);
+
 
     const buttons = {};
 
@@ -27,10 +31,18 @@ const initAction = async (ctx, bot, needAnswer) => {
 
     if (userStatus === userStatusList.verified) {
         buttons.verification_start = 'Проверить пользователя';
+        buttons.role_start = 'Изменить роль';
     }
 
+    const messageText =
+        `Привет, ${getUserName(ctx.from)}! \n\n` +
+        `Роль: ${userRoleText[userRole]} \n` +
+        `Ваш статус: ${userStatusText[userStatus]}\n\n` +
+        `Последнее обновление профиля: ${ getFormattedDate(userUpdateDate) }`
+    ;
+
     await sendMessage(ctx, {
-        text: `Статус: ${userStatusText[userStatus]}`,
+        text: messageText,
         buttons: {
             ...buttons,
             ...cancelOption,

@@ -1,4 +1,4 @@
-const { stepList } = require('../const/profile');
+const { stepList } = require('../const/authorization');
 const { initStepper } = require('../helpers/stepper');
 const { accountIds } = require('../const/dictionary');
 const { initStore, getSession} = require('../helpers/sessions');

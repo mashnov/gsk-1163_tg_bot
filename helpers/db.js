@@ -1,5 +1,5 @@
 const { db } = require('../state/db');
-const { emptyUser, userStatusList } = require('../const/db.js');
+const { emptyUser, userStatusList, userRoleList } = require('../const/db.js');
 
 const getUserData = async (userId) => {
     return db.get(String(userId));
@@ -16,7 +16,7 @@ const updateUserData = async (userId, patchData) => {
         ...patchData,
     };
     userData.updatedAt = new Date().toISOString();
-    return setUserData(userId, patchData);
+    return setUserData(userId, userData);
 }
 
 const createUser = async (userId) => {
@@ -30,6 +30,7 @@ const createUser = async (userId) => {
     const userData = { ...emptyUser };
     userData.userId = userId;
     userData.userStatus = userStatusList.unverified;
+    userData.userRole = userRoleList.resident;
     userData.createdAt = createdAt;
     userData.updatedAt = createdAt;
     return setUserData(userId, userData);
@@ -40,8 +41,21 @@ const getUserStatus = async (userId) => {
     return userData?.userStatus || userStatusList.unverified;
 }
 
+const getUserUpdateDate = async (userId) => {
+    const userData = await getUserData(userId);
+    console.log(userData);
+    return userData?.updatedAt;
+}
+
+const getUserRole = async (userId) => {
+    const userData = await getUserData(userId);
+    return userData?.userRole || userRoleList.resident;
+}
+
 module.exports = {
     createUser,
     updateUserData,
     getUserStatus,
+    getUserUpdateDate,
+    getUserRole,
 };
