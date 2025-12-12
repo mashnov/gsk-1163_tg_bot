@@ -6,13 +6,13 @@ const { initStore, getSession} = require('../helpers/sessions');
 const { getUserName, getSummaryMessage } = require('../helpers/getters');
 const { sendMessage, removeMessage } = require('../helpers/message');
 
-const actionName = 'meter_send';
+const actionName = 'meter';
 
 const stepper = initStepper({
     stepList,
     actionName,
     submitActions: {
-        meter_submit: 'Отправить'
+        [`${actionName}_submit`]: 'Отправить'
     },
 });
 
@@ -42,8 +42,8 @@ const submitAction = async (ctx, destination) => {
 }
 
 module.exports = (bot) => {
-    bot.command('meter_start', (ctx) => initAction(ctx));
-    bot.action('meter_start', (ctx) => initAction(ctx, true));
-    bot.action('meter_submit', (ctx) => submitAction(ctx, 'accountant'));
+    bot.command(`${actionName}_start`, (ctx) => initAction(ctx));
+    bot.action(`${actionName}_start`, (ctx) => initAction(ctx, true));
+    bot.action(`${actionName}_submit`, (ctx) => submitAction(ctx, 'accountant'));
     bot.on('text', async (ctx, next) => stepper.inputHandler(ctx, next));
 };

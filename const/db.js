@@ -1,19 +1,25 @@
 const emptyUser = {
     userId: undefined,
     userName: undefined,
-    userNickname: undefined,
     userStatus: undefined,
     createdAt: undefined,
     updatedAt: undefined,
 }
 
-const userStatus = {
+const userStatusList = {
     unverified: 'unverified',
     pending: 'pending',
     verified: 'verified',
 };
 
+const userStatusText = {
+    unverified: 'Не верефицоровн 🔴',
+    pending: 'Ожидает проверки 🟡',
+    verified: 'Проверен 🟢',
+};
+
 module.exports = {
     emptyUser,
-    userStatus,
+    userStatusList,
+    userStatusText,
 };

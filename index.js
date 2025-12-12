@@ -3,6 +3,7 @@ const { Telegraf } = require('telegraf');
 
 const startCommand = require('./commands/start');
 const profileCommand = require('./commands/profile');
+const authorizationCommand = require('./commands/authorization');
 const contactsCommand = require('./commands/contacts');
 const meterCommand = require('./commands/meter');
 const messagesCommand = require('./commands/messages');
@@ -14,6 +15,7 @@ const createBot = () => {
 
     startCommand(bot);
     profileCommand(bot);
+    authorizationCommand(bot);
     contactsCommand(bot);
     meterCommand(bot);
     messagesCommand(bot);

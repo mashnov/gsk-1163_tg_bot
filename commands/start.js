@@ -10,20 +10,18 @@ const messageText =
     '• Передать показания счётчиков\n' +
     '• Связаться с правлением или администратором\n';
 
-const messageKeyboard = {
-    profile_start: 'Авторизация',
-    contact_start: 'Полезные телефоны',
-    meter_start: 'Показания счетчиков',
-    messages_start: 'Написать сообщение',
-};
-
 const initAction = async (ctx, bot, needAnswer) => {
     if (needAnswer) {
         await ctx.answerCbQuery();
     }
     await sendMessage(ctx, {
         text: messageText,
-        buttons: messageKeyboard
+        buttons: {
+            profile_start: 'Профиль',
+            contact_start: 'Контакты',
+            meter_start: 'Показания счетчиков',
+            messages_start: 'Написать сообщение',
+        },
     });
 
     await removeMessage(ctx);

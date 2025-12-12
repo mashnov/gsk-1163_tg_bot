@@ -12,9 +12,9 @@ const stepper = initStepper({
     stepList,
     actionName,
     submitActions: {
-        messages_submit_chairman: 'Отправить председателю',
-        messages_submit_accountant: 'Отправить бухгалтеру',
-        messages_submit_admin: 'Отправить администратору',
+        [`${actionName}_submit_chairman`]: 'Отправить председателю',
+        [`${actionName}_submit_accountant`]: 'Отправить бухгалтеру',
+        [`${actionName}_submit_admin`]: 'Отправить администратору',
     },
 });
 
@@ -49,10 +49,10 @@ const submitAction = async (ctx, destination) => {
 }
 
 module.exports = (bot) => {
-    bot.command('messages_start', (ctx) => initAction(ctx));
-    bot.action('messages_start', (ctx) => initAction(ctx, true));
-    bot.action('messages_submit_chairman', (ctx) => submitAction(ctx, 'chairman'));
-    bot.action('messages_submit_accountant', (ctx) => submitAction(ctx, 'accountant'));
-    bot.action('messages_submit_admin', (ctx) => submitAction(ctx, 'admin'));
+    bot.command(`${actionName}_start`, (ctx) => initAction(ctx));
+    bot.action(`${actionName}_start`, (ctx) => initAction(ctx, true));
+    bot.action(`${actionName}_submit_chairman`, (ctx) => submitAction(ctx, 'chairman'));
+    bot.action(`${actionName}_submit_accountant`, (ctx) => submitAction(ctx, 'accountant'));
+    bot.action(`${actionName}_submit_admin`, (ctx) => submitAction(ctx, 'admin'));
     bot.on('message', async (ctx, next) => stepper.inputHandler(ctx, next));
 };

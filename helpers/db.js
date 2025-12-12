@@ -1,5 +1,5 @@
 const { db } = require('../state/db');
-const { emptyUser, userStatus } = require('../const/db.js');
+const { emptyUser, userStatusList } = require('../const/db.js');
 
 const getUserData = async (userId) => {
     return db.get(String(userId));
@@ -29,7 +29,7 @@ const createUser = async (userId) => {
     const createdAt = new Date().toISOString();
     const userData = { ...emptyUser };
     userData.userId = userId;
-    userData.userStatus = userStatus.unverified;
+    userData.userStatus = userStatusList.unverified;
     userData.createdAt = createdAt;
     userData.updatedAt = createdAt;
     return setUserData(userId, userData);
@@ -37,7 +37,7 @@ const createUser = async (userId) => {
 
 const getUserStatus = async (userId) => {
     const userData = await getUserData(userId);
-    return userData?.userStatus || userStatus.unverified;
+    return userData?.userStatus || userStatusList.unverified;
 }
 
 module.exports = {

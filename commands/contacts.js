@@ -2,6 +2,8 @@ const { initStore} = require('../helpers/sessions');
 const { sendMessage, removeMessage } = require('../helpers/message');
 const { cancelOption } = require('../const/dictionary');
 
+const actionName = 'contact';
+
 const messageText =
         'Полезные телефоны и ссылки: \n\n'+
         'ЖСК 1163 Телефон: <a href="tel:+79312107066">+7 (931) 210-70-66</a> \n' +
@@ -18,18 +20,22 @@ const messageText =
         '<a href="https://chat.whatsapp.com/LJoRyuouIflACMnCZjTR5h?clckid=97cd2216">Канал в WhatsApp</a> \n \n' +
         'Для связи с Председателем, Бухгалтером или администратором воспользуйтесь кнопкой "написать сообщение" ниже.';
 
-const contactButtons = { message_start: 'Написать сообщение', ...cancelOption };
-
 const initAction = async (ctx, bot, needAnswer) => {
-    initStore(ctx.from.id, 'contacts');
+    initStore(ctx.from.id, actionName);
     if (needAnswer) {
         await ctx.answerCbQuery();
     }
-    await sendMessage(ctx, { text: messageText, buttons: contactButtons });
+    await sendMessage(ctx, {
+        text: messageText,
+        buttons: {
+            messages_start: 'Написать сообщение',
+            ...cancelOption,
+        }
+    });
     await removeMessage(ctx);
 };
 
 module.exports = (bot) => {
-    bot.command('contact_start', async (ctx) => initAction(ctx, bot));
-    bot.action('contact_start', async (ctx) => initAction(ctx, bot, true));
+    bot.command(`${actionName}_start`, async (ctx) => initAction(ctx, bot));
+    bot.action(`${actionName}_start`, async (ctx) => initAction(ctx, bot, true));
 };
