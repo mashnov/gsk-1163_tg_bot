@@ -1,7 +1,7 @@
 const { getButtons } = require('./getters');
-const { cancelOption, messageParams } = require('../const/dictionary');
+const { homeOption, messageParams } = require('../const/dictionary');
 
-const sendMessage = async (ctx, { accountId = ctx.chat.id, text, buttons = cancelOption, attachment }) => {
+const sendMessage = async (ctx, { accountId = ctx.chat.id, text, buttons = homeOption, attachment }) => {
     const messageButtons = getButtons(buttons);
     const params = {
         caption: text,

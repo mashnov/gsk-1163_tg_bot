@@ -3,7 +3,8 @@ const messageParams = {
     disable_web_page_preview: true
 };
 
-const cancelOption = { start: 'Выйти' };
+const backOption = { start: '⬅️ Назад' };
+const homeOption = { start: '🏠 На главную' };
 const closeOption = { close: 'Закрыть' };
 
 // todo: get accounts ex 1008899653
@@ -13,9 +14,17 @@ const accountIds = {
     admin: '8410500310',
 };
 
+const accountList = {
+    chairman: 'chairman',
+    accountant: 'accountant',
+    admin: 'admin',
+};
+
 module.exports = {
     messageParams,
     accountIds,
-    cancelOption,
+    accountList,
+    backOption,
+    homeOption,
     closeOption,
 };

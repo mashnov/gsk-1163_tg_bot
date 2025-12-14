@@ -1,10 +1,10 @@
-const { stepList } = require('../const/messages');
-
 const { initStepper } = require('../helpers/stepper');
-const { accountIds, closeOption } = require('../const/dictionary');
 const { initStore, getSession} = require('../helpers/sessions');
-const { getUserName, getSummaryMessage } = require('../helpers/getters');
+const { getUserNameLink, getSummaryMessage } = require('../helpers/getters');
 const { sendMessage, removeMessage } = require('../helpers/message');
+
+const { stepList } = require('../const/messages');
+const { accountList, accountIds, closeOption } = require('../const/dictionary');
 
 const actionName = 'messages';
 
@@ -34,7 +34,7 @@ const submitAction = async (ctx, destination) => {
     await sendMessage(ctx, { text: senderHeader });
 
     const recipientHeader = '🟡 Новое сообщение\n';
-    const recipientSender = `Отправитель: ${ getUserName(ctx.from) }\n\n`;
+    const recipientSender = `Отправитель: ${ getUserNameLink(ctx.from) }\n\n`;
     const recipientText = getSummaryMessage(stepList[session.stepIndex]?.summary, session);
     const recipientMessage = `${recipientHeader}${recipientSender}${recipientText}`;
 
@@ -51,8 +51,8 @@ const submitAction = async (ctx, destination) => {
 module.exports = (bot) => {
     bot.command(`${actionName}_start`, (ctx) => initAction(ctx));
     bot.action(`${actionName}_start`, (ctx) => initAction(ctx, true));
-    bot.action(`${actionName}_submit_chairman`, (ctx) => submitAction(ctx, 'chairman'));
-    bot.action(`${actionName}_submit_accountant`, (ctx) => submitAction(ctx, 'accountant'));
-    bot.action(`${actionName}_submit_admin`, (ctx) => submitAction(ctx, 'admin'));
+    bot.action(`${actionName}_submit_chairman`, (ctx) => submitAction(ctx, accountList.chairman));
+    bot.action(`${actionName}_submit_accountant`, (ctx) => submitAction(ctx, accountList.accountant));
+    bot.action(`${actionName}_submit_admin`, (ctx) => submitAction(ctx, accountList.admin));
     bot.on('message', async (ctx, next) => stepper.inputHandler(ctx, next));
 };

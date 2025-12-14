@@ -1,0 +1,147 @@
+const { initStepper } = require('../helpers/stepper');
+const { initStore, getSession} = require('../helpers/sessions');
+const { getUserNameLink, getUserName, getFormattedDate, getSummaryMessage, getRoomOwner } = require('../helpers/getters');
+const { getUserStatus, getUserRole, getUserUpdateDate, updateUserData} = require('../helpers/db');
+const { sendMessage, removeMessage } = require('../helpers/message');
+const { isValidOwner } = require('../helpers/validation');
+
+const { userStatusText, userStatusList, userRoleText, userRoleList} = require('../const/db');
+const { backOption, accountList, accountIds} = require('../const/dictionary');
+const { stepList } = require('../const/verification');
+
+const actionName = 'verification';
+const rejectActionName = 'reject';
+
+const stepper = initStepper({
+    stepList,
+    actionName,
+    submitActions: {
+        [`${actionName}_submit`]: 'Отправить ✅'
+    },
+});
+
+const startAction = async (ctx, needAnswer) => {
+    if (needAnswer) {
+        await ctx.answerCbQuery();
+    }
+
+    const userStatus = await getUserStatus(ctx.from.id);
+    const userRole = await getUserRole(ctx.from.id);
+    const userUpdateDate = await getUserUpdateDate(ctx.from.id);
+
+    const buttons = {};
+
+    if (userStatus === userStatusList.unverified) {
+        buttons[`${actionName}_init`] = 'Начать верификацию ✨';
+    }
+
+    if (userStatus === userStatusList.pending) {
+        buttons[`${actionName}_start`] = '🔃 Обновить статус';
+    }
+
+    if (userStatus === userStatusList.verified) {
+        buttons[`${actionName}_start`] = 'Проверить пользователя';
+    }
+
+    const messageText =
+        `Привет, ${ getUserName(ctx.from) }!\n\n` +
+        `Роль: ${ userRoleText[userRole] }\n` +
+        `Ваш статус: ${ userStatusText[userStatus] }\n\n` +
+        `Последнее обновление профиля: ${ getFormattedDate(userUpdateDate) }`;
+
+    await sendMessage(ctx, {
+        text: messageText,
+        buttons: {
+            ...buttons,
+            ...backOption,
+        },
+    });
+    await removeMessage(ctx);
+};
+
+const initAction = async (ctx) => {
+    initStore(ctx.from.id, actionName);
+    await ctx.answerCbQuery();
+    await stepper.startHandler(ctx);
+    await removeMessage(ctx);
+};
+
+const submitAction = async (ctx, destination) => {
+    await ctx.answerCbQuery();
+    const accountId = ctx.from.id;
+    const session = getSession(accountId);
+    const validationIcon = `${ isValidOwner(session.room, session.owner) ? '🟢' : '🔴'}`;
+    const headerText = `${ validationIcon } Новый запрос авторизации\n\n`;
+    const userNameText = `Отправитель: ${ getUserNameLink(ctx.from) }\n`;
+    const documentOwnerText = `Собственник по документам: ${ getRoomOwner(session.room) }\n\n`;
+    const summaryText = getSummaryMessage(stepList[session.stepIndex]?.summary, session);
+    const recipientMessage = `${ headerText }${ userNameText }${ documentOwnerText }${ summaryText }`;
+    const senderMessage = '🟢 Ваш запрос отправлен';
+    await sendMessage(ctx, { text: senderMessage });
+    await sendMessage(ctx, {
+        accountId: accountIds[destination],
+        text: recipientMessage,
+        buttons: {
+            [`${actionName}:${userRoleList.chairman}:${accountId}`]: `🟡 ${ userRoleText.chairman }`,
+            [`${actionName}:${userRoleList.accountant}:${accountId}`]: `🟡 ${ userRoleText.accountant }`,
+            [`${actionName}:${userRoleList.admin}:${accountId}`]: `🟡 ${ userRoleText.admin }`,
+            [`${actionName}:${userRoleList.resident}:${accountId}`]: `🟢 ${ userRoleText.resident }`,
+            [`${actionName}:${rejectActionName}:${accountId}`]: '⛔ Отклонить',
+        },
+    });
+    await removeMessage(ctx);
+    await updateUserData(accountId, { userStatus: userStatusList.pending });
+}
+
+const validationHandler = async (ctx, status, accountId) => {
+    const isRejected = status === rejectActionName;
+    const isResident = status === userRoleList.resident;
+    const validationStatus = isRejected ? userStatusList.unverified : userStatusList.verified;
+    const isAdminRules = !isRejected && !isResident;
+
+    const validationText = {
+        [userRoleList.chairman]: '🟢 Вы назначены председателем.\nВам выданы права администратора!',
+        [userRoleList.accountant]: '🟢 Вы назначены бухгалтером.\nВам выданы права администратора!',
+        [userRoleList.admin]: '🟢 Вам выданы права администратора!',
+        [userRoleList.resident]: '🟢 Ваш запрос верификации одобрен!',
+        [rejectActionName]: '🔴 Ваш запрос верификации отклонен.',
+    };
+
+    await sendMessage(ctx, {
+        text: validationText[status],
+        accountId,
+        buttons: {
+            [`${actionName}_exit`]: 'Закрыть',
+        },
+    });
+
+    await updateUserData(accountId, { userStatus: validationStatus });
+    await updateUserData(accountId, { userIsAdmin: isAdminRules });
+
+    if (!isRejected) {
+        await updateUserData(accountId, { userRole: status });
+    }
+};
+
+const callbackHandler = async (ctx, next) => {
+    await ctx.answerCbQuery();
+    const data = ctx.callbackQuery.data;
+    const [action, status, accountId] = data.split(':');
+
+    if (action === actionName) {
+        await validationHandler(ctx, status, accountId);
+        await removeMessage(ctx);
+    }
+
+    return next();
+}
+
+module.exports = (bot) => {
+    bot.command(`${actionName}_start`, async (ctx) => startAction(ctx));
+    bot.action(`${actionName}_start`, async (ctx) => startAction(ctx, true));
+    bot.action(`${actionName}_init`, async (ctx) => initAction(ctx));
+    bot.action(`${actionName}_submit`, async (ctx) => submitAction(ctx, accountList.admin));
+    bot.action(`${actionName}_exit`, (ctx) => removeMessage(ctx, ));
+    bot.on('text', async (ctx, next) => stepper.inputHandler(ctx, next));
+    bot.on('callback_query', async (ctx, next) => callbackHandler(ctx, next));
+};

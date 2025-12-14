@@ -1,5 +1,4 @@
 const { getMessageText, getMessageAttachment, getNormalizeNumber, getNormalizeString } = require('./getters');
-
 const residents = require('../const/residents.json');
 
 const isValidMessage = (message) => {

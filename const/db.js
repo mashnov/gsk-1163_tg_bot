@@ -3,6 +3,7 @@ const emptyUser = {
     userName: undefined,
     userRole: undefined,
     userStatus: undefined,
+    userIsAdmin: false,
     createdAt: undefined,
     updatedAt: undefined,
 }
@@ -14,9 +15,10 @@ const userStatusList = {
 };
 
 const userStatusText = {
-    unverified: 'Не верефицоровн',
-    pending: 'Ожидает проверки',
     verified: 'Проверен',
+    pending: 'Ожидает проверки',
+    unverified: 'Не верефицоровн',
+    undefined: 'Не верефицоровн',
 };
 
 const userRoleList = {
@@ -31,6 +33,7 @@ const userRoleText = {
     accountant: 'Бухгалтер',
     admin: 'Администратор',
     resident: 'Житель',
+    undefined: 'Не назначен',
 };
 
 

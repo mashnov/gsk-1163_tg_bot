@@ -1,4 +1,5 @@
 const { Markup } = require('telegraf');
+const residents = require('../const/residents.json');
 
 const getButtons = (options) => {
     const buttons = Object.entries(options).map(([action, label]) => {
@@ -14,10 +15,23 @@ const getSummaryMessage = (template, values) => {
 const getUserName = (data) => {
     const { username, first_name, last_name, id } = data;
     const profileName = `${first_name} ${last_name}`;
+
+    if (first_name || last_name) {
+        return profileName;
+    } else if (username) {
+        return username;
+    } else {
+        return id;
+    }
+}
+
+const getUserNameLink = (data) => {
+    const { username, first_name, last_name, id } = data;
+    const profileName = `${first_name} ${last_name}`;
     const usernameHref = `https://t.me/${username}`;
     const userIdHref = `tg://user?id=${id}`;
 
-    if (username && first_name && last_name) {
+    if (username && (first_name || last_name)) {
         return `<a href="${usernameHref}">${first_name} ${last_name}</a>`;
     } else if (username) {
         return `<a href="${usernameHref}">${username}</a>`;
@@ -84,13 +98,20 @@ const getFormattedDate = (string) => {
     return date.toLocaleString('ru-RU', options);
 };
 
+const getRoomOwner = (room) => {
+    const ownerList = residents[room];
+    return ownerList.length ? residents[room].join(', ') : 'Собственник не указан';
+};
+
 module.exports = {
     getButtons,
     getSummaryMessage,
     getMessageAttachment,
+    getUserNameLink,
     getUserName,
     getMessageText,
     getNormalizeNumber,
     getNormalizeString,
     getFormattedDate,
+    getRoomOwner,
 };

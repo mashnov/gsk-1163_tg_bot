@@ -1,27 +1,46 @@
 const { sendMessage, removeMessage } = require('../helpers/message');
-const { createUser } = require('../helpers/db');
+const { createUser, getUserStatus, getUserIsAdmin } = require('../helpers/db');
+
+const { userStatusList } = require('../const/db');
 
 const messageText =
-    'Привет!\n' +
-    'Это <b>Домовёнок</b> - бот нашего дома.\n\n' +
+    '<b>Привет!</b>\n' +
+    'Я <b>Домовёнок</b> - бот нашего дома.\n\n' +
     'Я помогу тебе:\n' +
-    '• Авторизоваться\n' +
-    '• Найти нужный контакт\n' +
-    '• Передать показания счётчиков\n' +
-    '• Связаться с правлением или администратором\n';
+    '• пройти верификацию\n' +
+    '• найти нужный контакт\n' +
+    '• передать показания счётчиков\n' +
+    '• ознакомиться с правилами чата\n' +
+    '• связаться с правлением или администратором';
+
+const notVerifiedMessageText = '\n\n✨ <b>Пожалуйста, пройдите верификацию, чтобы получить доступ ко всем возможностям бота.</b>';
 
 const initAction = async (ctx, bot, needAnswer) => {
     if (needAnswer) {
         await ctx.answerCbQuery();
     }
+
+    const userStatus = await getUserStatus(ctx.from.id);
+    const isAdmin = await getUserIsAdmin(ctx.from.id);
+    const isVerified = userStatus === userStatusList.verified;
+
+    const buttons = {
+        contact_start: 'Контакты 📒',
+        rules_start: 'Правила чата 📃',
+    };
+
+    if (!isVerified || isAdmin) {
+        buttons.verification_start = 'Верификация ✨';
+    }
+
+    if (isVerified) {
+        buttons.meter_start = 'Показания счетчиков 📈';
+        buttons.messages_start = 'Написать сообщение 💬';
+    }
+
     await sendMessage(ctx, {
-        text: messageText,
-        buttons: {
-            profile_start: 'Профиль',
-            contact_start: 'Контакты',
-            meter_start: 'Показания счетчиков',
-            messages_start: 'Написать сообщение',
-        },
+        text: isVerified ? messageText : messageText + notVerifiedMessageText,
+        buttons,
     });
 
     await removeMessage(ctx);
