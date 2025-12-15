@@ -31,7 +31,7 @@ const startAction = async (ctx, needAnswer) => {
 
     const buttons = {};
 
-    if (userStatus === userStatusList.unverified) {
+    if (userStatus === userStatusList.unverified || !userStatus) {
         buttons[`${actionName}_init`] = 'Начать верификацию ✨';
     }
 
@@ -46,11 +46,12 @@ const startAction = async (ctx, needAnswer) => {
     const messageText =
         `Привет, ${ getUserName(ctx.from) }!\n\n` +
         `Роль: ${ userRoleText[userRole] }\n` +
-        `Ваш статус: ${ userStatusText[userStatus] }\n\n` +
-        `Последнее обновление профиля: ${ getFormattedDate(userUpdateDate) }`;
+        `Ваш статус: ${ userStatusText[userStatus] }`;
+
+    const userUpdateText = userUpdateDate ? `\n\nПоследнее обновление профиля: ${ getFormattedDate(userUpdateDate) }` : '';
 
     await sendMessage(ctx, {
-        text: messageText,
+        text: messageText + userUpdateText,
         buttons: {
             ...buttons,
             ...backOption,

@@ -5,6 +5,7 @@ const startCommand = require('./commands/start');
 const rulesCommand = require('./commands/rules');
 const contactsCommand = require('./commands/contacts');
 const verificationCommand = require('./commands/verification');
+const profilesCommand = require('./commands/profiles');
 const meterCommand = require('./commands/meter');
 const messagesCommand = require('./commands/messages');
 
@@ -17,6 +18,7 @@ const createBot = () => {
     rulesCommand(bot);
     contactsCommand(bot);
     verificationCommand(bot);
+    profilesCommand(bot);
     meterCommand(bot);
     messagesCommand(bot);
 

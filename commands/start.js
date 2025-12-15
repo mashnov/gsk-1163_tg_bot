@@ -1,5 +1,5 @@
 const { sendMessage, removeMessage } = require('../helpers/message');
-const { createUser, getUserStatus, getUserIsAdmin } = require('../helpers/db');
+const { getUserStatus, getUserIsAdmin } = require('../helpers/db');
 
 const { userStatusList } = require('../const/db');
 
@@ -25,17 +25,21 @@ const initAction = async (ctx, bot, needAnswer) => {
     const isVerified = userStatus === userStatusList.verified;
 
     const buttons = {
-        contact_start: 'Контакты 📒',
-        rules_start: 'Правила чата 📃',
+        contact_start: '🌐 Контакты',
+        rules_start: '📋 Правила чата',
     };
 
-    if (!isVerified || isAdmin) {
-        buttons.verification_start = 'Верификация ✨';
+    if (!isVerified) {
+        buttons.verification_start = '✨ Верификация';
+    }
+
+    if (isAdmin) {
+        buttons.profiles_start = '🪬 Профили';
     }
 
     if (isVerified) {
-        buttons.meter_start = 'Показания счетчиков 📈';
-        buttons.messages_start = 'Написать сообщение 💬';
+        buttons.meter_start = '🧭 Показания счетчиков';
+        buttons.messages_start = '💬 Написать сообщение';
     }
 
     await sendMessage(ctx, {
@@ -44,7 +48,6 @@ const initAction = async (ctx, bot, needAnswer) => {
     });
 
     await removeMessage(ctx);
-    await createUser(ctx.from.id);
 };
 
 const closeAction = async (ctx, bot, needAnswer) => {
