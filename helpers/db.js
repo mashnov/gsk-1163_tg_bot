@@ -37,6 +37,8 @@ const createUser = async (userId) => {
         updatedAt: createdAt,
     };
 
+    await updateUserIndex(userId, { userStatus: userStatusList.unverified });
+
     return setDbData(userId, userData);
 }
 
