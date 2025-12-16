@@ -1,4 +1,4 @@
-const { getUserStatus } = require('../helpers/db');
+const { getDbData } = require('../helpers/db');
 const { sendMessage, removeMessage } = require('../helpers/message');
 
 const { userStatusList } = require('../const/db');
@@ -27,7 +27,8 @@ const initAction = async (ctx, bot, needAnswer) => {
         await ctx.answerCbQuery();
     }
 
-    const userStatus = await getUserStatus(ctx.from.id);
+    const userData = await getDbData(ctx.from.id);
+    const userStatus = userData?.userStatus;
     const isVerified = userStatus === userStatusList.verified;
 
     const buttons = { ...backOption };

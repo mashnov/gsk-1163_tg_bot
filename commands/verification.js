@@ -1,7 +1,7 @@
 const { initStepper } = require('../helpers/stepper');
 const { initStore, getSession} = require('../helpers/sessions');
 const { getUserNameLink, getUserName, getFormattedDate, getSummaryMessage, getRoomOwner } = require('../helpers/getters');
-const { getUserStatus, getUserRole, getUserUpdateDate, updateUserData} = require('../helpers/db');
+const { getDbData, updateUserData} = require('../helpers/db');
 const { sendMessage, removeMessage } = require('../helpers/message');
 const { isValidOwner } = require('../helpers/validation');
 
@@ -25,9 +25,11 @@ const startAction = async (ctx, needAnswer) => {
         await ctx.answerCbQuery();
     }
 
-    const userStatus = await getUserStatus(ctx.from.id);
-    const userRole = await getUserRole(ctx.from.id);
-    const userUpdateDate = await getUserUpdateDate(ctx.from.id);
+    const userData = await getDbData(ctx.from.id);
+
+    const userStatus = userData?.userStatus;
+    const userRole = userData?.userRole;
+    const userUpdateDate = userData?.updatedAt;
 
     const buttons = {};
 
@@ -37,10 +39,6 @@ const startAction = async (ctx, needAnswer) => {
 
     if (userStatus === userStatusList.pending) {
         buttons[`${actionName}_start`] = '🔃 Обновить статус';
-    }
-
-    if (userStatus === userStatusList.verified) {
-        buttons[`${actionName}_start`] = 'Проверить пользователя';
     }
 
     const messageText =
@@ -91,7 +89,12 @@ const submitAction = async (ctx, destination) => {
         },
     });
     await removeMessage(ctx);
-    await updateUserData(accountId, { userStatus: userStatusList.pending });
+    await updateUserData(accountId, {
+        userName: session.name,
+        userStatus: userStatusList.pending,
+        roomNumber: session.room,
+        phoneNumber: session.phone,
+    });
 }
 
 const validationHandler = async (ctx, status, accountId) => {

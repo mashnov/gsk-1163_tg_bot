@@ -1,5 +1,5 @@
 const { getUserName } = require('../helpers/getters');
-const { getUserRole } = require('../helpers/db');
+const { getDbData, getUserListByIndex } = require('../helpers/db');
 const { sendMessage, removeMessage } = require('../helpers/message');
 
 const { userRoleList, userRoleText, userStatusList } = require('../const/db');
@@ -12,19 +12,21 @@ const startAction = async (ctx, needAnswer) => {
         await ctx.answerCbQuery();
     }
 
-    const userRole = await getUserRole(ctx.from.id);
+    const userData = await getDbData(ctx.from.id);
+    const userRole = userData?.userRole;
 
     const buttons = {
         [`${actionName}:${userRoleList.chairman}:list`]: 'Список председателей',
         [`${actionName}:${userRoleList.accountant}:list`]: 'Список бухгалтеров',
         [`${actionName}:${userRoleList.admin}:list`]: 'Список администраторов',
-        [`${actionName}:${userStatusList.verified}:list`]: '✨ Список верифицированных',
-        [`${actionName}_start`]: '🔎 Поиск профиля',
+        [`${actionName}:${userStatusList.verified}:list`]: 'Список ожидающих',
+        [`${actionName}:${userStatusList.verified}:list`]: 'Список одобренных',
+        [`${actionName}:${userStatusList.verified}:list`]: 'Список отклоненных',
     };
 
     const messageText =
         `Привет, ${ getUserName(ctx.from) }!\n\n` +
-        `Роль: ${ userRoleText[userRole] }`;
+        `Роль: ${ userRoleText[userRole] }\n\n`;
 
     await sendMessage(ctx, {
         text: messageText,
@@ -37,7 +39,8 @@ const startAction = async (ctx, needAnswer) => {
 };
 
 const getListHandler = async (ctx, listType) => {
-    console.log(listType);
+    const userlist = await getUserListByIndex(listType);
+    console.log({ listType, userlist });
 };
 
 const callbackHandler = async (ctx, next) => {

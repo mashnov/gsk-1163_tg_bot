@@ -17,7 +17,7 @@ const setDbData = async (id, data) => {
     return db.set(String(id), data);
 };
 
-const createUser = async (userId) => {
+const createUserData = async (userId) => {
     if (!userId) {
         return;
     }
@@ -47,7 +47,7 @@ const updateUserData = async (userId, patchData) => {
         return;
     }
 
-    await createUser(userId);
+    await createUserData(userId);
 
     const originalData = await getDbData(userId);
 
@@ -66,42 +66,6 @@ const updateUserData = async (userId, patchData) => {
     }
 
     return setDbData(userId, userData);
-}
-
-const getUserStatus = async (userId) => {
-    if (!userId) {
-        return;
-    }
-
-    const userData = await getDbData(userId);
-    return userData?.userStatus;
-}
-
-const getUserRole = async (userId) => {
-    if (!userId) {
-        return;
-    }
-
-    const userData = await getDbData(userId);
-    return userData?.userRole;
-}
-
-const getUserIsAdmin = async (userId) => {
-    if (!userId) {
-        return;
-    }
-
-    const userData = await getDbData(userId);
-    return userData?.userIsAdmin;
-}
-
-const getUserUpdateDate = async (userId) => {
-    if (!userId) {
-        return;
-    }
-
-    const userData = await getDbData(userId);
-    return userData?.updatedAt;
 }
 
 const createUserIndex = async (indexId) => {
@@ -138,17 +102,29 @@ const removeUserFromIndex = async (userId, indexId) => {
 
 const updateUserIndex = async (userId, { userStatus, userRole }) => {
     const indexId = userStatus || userRole;
-    const currentIndexId = userStatus ? await getUserStatus(userId) : await getUserRole(userId);
+    const userData = await getDbData(userId);
+    const currentIndexId = userStatus ? userData?.userStatus : userData?.userRole;
     await createUserIndex(currentIndexId);
     await createUserIndex(indexId);
     await removeUserFromIndex(userId, currentIndexId);
     await addUserToIndex(userId, indexId);
 };
 
+const getUserListByIndex = async (indexId) => {
+    if (!indexId) {
+        return [];
+    }
+
+    const userList = await getDbData(indexId);
+
+    for (const userId of userList) {
+        const userData = await getDbData(userId);
+        console.log(userData);
+    }
+}
+
 module.exports = {
+    getDbData,
     updateUserData,
-    getUserStatus,
-    getUserUpdateDate,
-    getUserRole,
-    getUserIsAdmin,
+    getUserListByIndex,
 };

@@ -1,5 +1,5 @@
 const { sendMessage, removeMessage } = require('../helpers/message');
-const { getUserStatus, getUserIsAdmin } = require('../helpers/db');
+const { getDbData } = require('../helpers/db');
 
 const { userStatusList } = require('../const/db');
 
@@ -20,8 +20,9 @@ const initAction = async (ctx, bot, needAnswer) => {
         await ctx.answerCbQuery();
     }
 
-    const userStatus = await getUserStatus(ctx.from.id);
-    const isAdmin = await getUserIsAdmin(ctx.from.id);
+    const userData = await getDbData(ctx.from.id);
+    const userStatus = userData?.userStatus;
+    const isAdmin = userData?.userIsAdmin;
     const isVerified = userStatus === userStatusList.verified;
 
     const buttons = {

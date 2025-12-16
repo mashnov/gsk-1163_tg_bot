@@ -3,9 +3,11 @@ const emptyUser = {
     userName: undefined,
     userRole: undefined,
     userStatus: undefined,
-    userIsAdmin: false,
     createdAt: undefined,
     updatedAt: undefined,
+    roomNumber: undefined,
+    phoneNumber: undefined,
+    userIsAdmin: false,
 }
 
 const userStatusList = {
@@ -33,7 +35,7 @@ const userRoleText = {
     accountant: 'Бухгалтер',
     admin: 'Администратор',
     resident: 'Житель',
-    undefined: 'Не назначен',
+    undefined: 'Не назначена',
 };
 
 
