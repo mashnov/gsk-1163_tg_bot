@@ -1,7 +1,7 @@
 const { sendMessage, removeMessage } = require('../helpers/message');
 const { backOption } = require('../const/dictionary');
 
-const actionName = 'rules';
+const moduleActionName = 'rules';
 
 const messageText =
     '<b>Уважаемые участники чата!</b>\n\n'+
@@ -31,6 +31,6 @@ const initAction = async (ctx, bot, needAnswer) => {
 };
 
 module.exports = (bot) => {
-    bot.command(`${actionName}_start`, async (ctx) => initAction(ctx, bot));
-    bot.action(`${actionName}_start`, async (ctx) => initAction(ctx, bot, true));
+    bot.command(`${moduleActionName}_start`, async (ctx) => initAction(ctx, bot));
+    bot.action(`${moduleActionName}_start`, async (ctx) => initAction(ctx, bot, true));
 };

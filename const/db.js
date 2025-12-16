@@ -1,5 +1,6 @@
 const emptyUser = {
-    userId: undefined,
+    accountId: undefined,
+    profileName: undefined,
     userName: undefined,
     userRole: undefined,
     userStatus: undefined,

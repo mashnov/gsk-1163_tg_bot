@@ -9,14 +9,14 @@ const { userStatusText, userStatusList, userRoleText, userRoleList} = require('.
 const { backOption, accountList, accountIds} = require('../const/dictionary');
 const { stepList } = require('../const/verification');
 
-const actionName = 'verification';
+const moduleActionName = 'verification';
 const rejectActionName = 'reject';
 
 const stepper = initStepper({
     stepList,
-    actionName,
+    actionName: moduleActionName,
     submitActions: {
-        [`${actionName}_submit`]: 'Отправить ✅'
+        [`${moduleActionName}_submit`]: 'Отправить ✅'
     },
 });
 
@@ -34,11 +34,11 @@ const startAction = async (ctx, needAnswer) => {
     const buttons = {};
 
     if (userStatus === userStatusList.unverified || !userStatus) {
-        buttons[`${actionName}_init`] = 'Начать верификацию ✨';
+        buttons[`${moduleActionName}_init`] = 'Начать верификацию ✨';
     }
 
     if (userStatus === userStatusList.pending) {
-        buttons[`${actionName}_start`] = '🔃 Обновить статус';
+        buttons[`${moduleActionName}_start`] = '🔃 Обновить статус';
     }
 
     const messageText =
@@ -59,7 +59,7 @@ const startAction = async (ctx, needAnswer) => {
 };
 
 const initAction = async (ctx) => {
-    initStore(ctx.from.id, actionName);
+    initStore(ctx.from.id, moduleActionName);
     await ctx.answerCbQuery();
     await stepper.startHandler(ctx);
     await removeMessage(ctx);
@@ -81,16 +81,17 @@ const submitAction = async (ctx, destination) => {
         accountId: accountIds[destination],
         text: recipientMessage,
         buttons: {
-            [`${actionName}:${userRoleList.chairman}:${accountId}`]: `🟡 ${ userRoleText.chairman }`,
-            [`${actionName}:${userRoleList.accountant}:${accountId}`]: `🟡 ${ userRoleText.accountant }`,
-            [`${actionName}:${userRoleList.admin}:${accountId}`]: `🟡 ${ userRoleText.admin }`,
-            [`${actionName}:${userRoleList.resident}:${accountId}`]: `🟢 ${ userRoleText.resident }`,
-            [`${actionName}:${rejectActionName}:${accountId}`]: '⛔ Отклонить',
+            [`${moduleActionName}:${userRoleList.chairman}:${accountId}`]: `🟡 ${ userRoleText.chairman }`,
+            [`${moduleActionName}:${userRoleList.accountant}:${accountId}`]: `🟡 ${ userRoleText.accountant }`,
+            [`${moduleActionName}:${userRoleList.admin}:${accountId}`]: `🟡 ${ userRoleText.admin }`,
+            [`${moduleActionName}:${userRoleList.resident}:${accountId}`]: `🟢 ${ userRoleText.resident }`,
+            [`${moduleActionName}:${rejectActionName}:${accountId}`]: '⛔ Отклонить',
         },
     });
     await removeMessage(ctx);
     await updateUserData(accountId, {
-        userName: session.name,
+        profileName: session.name,
+        userName: getUserName(ctx.from),
         userStatus: userStatusList.pending,
         roomNumber: session.room,
         phoneNumber: session.phone,
@@ -115,7 +116,7 @@ const validationHandler = async (ctx, status, accountId) => {
         text: validationText[status],
         accountId,
         buttons: {
-            [`${actionName}_exit`]: 'Закрыть',
+            [`${moduleActionName}_exit`]: 'Закрыть',
         },
     });
 
@@ -132,7 +133,7 @@ const callbackHandler = async (ctx, next) => {
     const data = ctx.callbackQuery.data;
     const [action, status, accountId] = data.split(':');
 
-    if (action === actionName) {
+    if (action === moduleActionName) {
         await validationHandler(ctx, status, accountId);
         await removeMessage(ctx);
     }
@@ -141,11 +142,11 @@ const callbackHandler = async (ctx, next) => {
 }
 
 module.exports = (bot) => {
-    bot.command(`${actionName}_start`, async (ctx) => startAction(ctx));
-    bot.action(`${actionName}_start`, async (ctx) => startAction(ctx, true));
-    bot.action(`${actionName}_init`, async (ctx) => initAction(ctx));
-    bot.action(`${actionName}_submit`, async (ctx) => submitAction(ctx, accountList.admin));
-    bot.action(`${actionName}_exit`, (ctx) => removeMessage(ctx, ));
+    bot.command(`${moduleActionName}_start`, async (ctx) => startAction(ctx));
+    bot.action(`${moduleActionName}_start`, async (ctx) => startAction(ctx, true));
+    bot.action(`${moduleActionName}_init`, async (ctx) => initAction(ctx));
+    bot.action(`${moduleActionName}_submit`, async (ctx) => submitAction(ctx, accountList.admin));
+    bot.action(`${moduleActionName}_exit`, (ctx) => removeMessage(ctx, ));
     bot.on('text', async (ctx, next) => stepper.inputHandler(ctx, next));
     bot.on('callback_query', async (ctx, next) => callbackHandler(ctx, next));
 };

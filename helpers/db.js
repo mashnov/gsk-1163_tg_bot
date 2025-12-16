@@ -17,12 +17,12 @@ const setDbData = async (id, data) => {
     return db.set(String(id), data);
 };
 
-const createUserData = async (userId) => {
-    if (!userId) {
+const createUserData = async (accountId) => {
+    if (!accountId) {
         return;
     }
 
-    const originalData = await getDbData(userId);
+    const originalData = await getDbData(accountId);
 
     if (originalData) {
         return originalData;
@@ -31,25 +31,25 @@ const createUserData = async (userId) => {
     const createdAt = new Date().toISOString();
     const userData = {
         ...emptyUser,
-        userId: userId,
+        accountId: accountId,
         userStatus: userStatusList.unverified,
         createdAt: createdAt,
         updatedAt: createdAt,
     };
 
-    await updateUserIndex(userId, { userStatus: userStatusList.unverified });
+    await updateUserIndex(accountId, { userStatus: userStatusList.unverified });
 
-    return setDbData(userId, userData);
+    return setDbData(accountId, userData);
 }
 
-const updateUserData = async (userId, patchData) => {
-    if (!userId) {
+const updateUserData = async (accountId, patchData) => {
+    if (!accountId) {
         return;
     }
 
-    await createUserData(userId);
+    await createUserData(accountId);
 
-    const originalData = await getDbData(userId);
+    const originalData = await getDbData(accountId);
 
     const userData = {
         ...originalData,
@@ -58,14 +58,14 @@ const updateUserData = async (userId, patchData) => {
     };
 
     if (patchData.userStatus) {
-        await updateUserIndex(userId, { userStatus: patchData.userStatus });
+        await updateUserIndex(accountId, { userStatus: patchData.userStatus });
     }
 
     if (patchData.userRole) {
-        await updateUserIndex(userId, { userRole: patchData.userRole });
+        await updateUserIndex(accountId, { userRole: patchData.userRole });
     }
 
-    return setDbData(userId, userData);
+    return setDbData(accountId, userData);
 }
 
 const createUserIndex = async (indexId) => {
@@ -82,32 +82,32 @@ const createUserIndex = async (indexId) => {
     return setDbData(indexId, []);
 };
 
-const addUserToIndex = async (userId, indexId) => {
+const addUserToIndex = async (accountId, indexId) => {
     if (!indexId) {
         return;
     }
     const list = await getDbData(indexId) ?? [];
-    const uniqueList = [...new Set([...list, String(userId)])];
+    const uniqueList = [...new Set([...list, String(accountId)])];
     return setDbData(indexId, uniqueList);
 };
 
-const removeUserFromIndex = async (userId, indexId) => {
+const removeUserFromIndex = async (accountId, indexId) => {
     if (!indexId) {
         return;
     }
     const list = (await getDbData(indexId)) ?? [];
-    const filteredList = list.filter(id => id !== String(userId));
+    const filteredList = list.filter(id => id !== String(accountId));
     return setDbData(indexId, filteredList);
 };
 
-const updateUserIndex = async (userId, { userStatus, userRole }) => {
+const updateUserIndex = async (accountId, { userStatus, userRole }) => {
     const indexId = userStatus || userRole;
-    const userData = await getDbData(userId);
+    const userData = await getDbData(accountId);
     const currentIndexId = userStatus ? userData?.userStatus : userData?.userRole;
     await createUserIndex(currentIndexId);
     await createUserIndex(indexId);
-    await removeUserFromIndex(userId, currentIndexId);
-    await addUserToIndex(userId, indexId);
+    await removeUserFromIndex(accountId, currentIndexId);
+    await addUserToIndex(accountId, indexId);
 };
 
 const getUserListByIndex = async (indexId) => {
@@ -117,10 +117,12 @@ const getUserListByIndex = async (indexId) => {
 
     const userList = await getDbData(indexId);
 
-    for (const userId of userList) {
-        const userData = await getDbData(userId);
-        console.log(userData);
+    if (!Array.isArray(userList)) {
+        return [];
     }
+
+    const usersData = await Promise.all(userList.map(id => getDbData(id)));
+    return usersData.filter(Boolean);
 }
 
 module.exports = {

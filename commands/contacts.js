@@ -4,7 +4,7 @@ const { sendMessage, removeMessage } = require('../helpers/message');
 const { userStatusList } = require('../const/db');
 const { backOption } = require('../const/dictionary');
 
-const actionName = 'contact';
+const moduleActionName = 'contact';
 
 const messageText =
         'Полезные телефоны и ссылки:\n\n' +
@@ -46,6 +46,6 @@ const initAction = async (ctx, bot, needAnswer) => {
 };
 
 module.exports = (bot) => {
-    bot.command(`${actionName}_start`, async (ctx) => initAction(ctx, bot));
-    bot.action(`${actionName}_start`, async (ctx) => initAction(ctx, bot, true));
+    bot.command(`${moduleActionName}_start`, async (ctx) => initAction(ctx, bot));
+    bot.action(`${moduleActionName}_start`, async (ctx) => initAction(ctx, bot, true));
 };

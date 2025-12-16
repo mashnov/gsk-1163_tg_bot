@@ -1,11 +1,15 @@
-const { getUserName } = require('../helpers/getters');
+const { getUserName, getUserNameLink, getFormattedDate } = require('../helpers/getters');
 const { getDbData, getUserListByIndex } = require('../helpers/db');
 const { sendMessage, removeMessage } = require('../helpers/message');
 
-const { userRoleList, userRoleText, userStatusList } = require('../const/db');
+const { userRoleList, userRoleText, userStatusList, userStatusText } = require('../const/db');
 const { backOption } = require('../const/dictionary');
 
-const actionName = 'profiles';
+const moduleActionName = 'profiles';
+const verificationActionName = 'verification';
+const rejectActionName = 'reject';
+const listActionName = 'list';
+const reviewActionName = 'review';
 
 const startAction = async (ctx, needAnswer) => {
     if (needAnswer) {
@@ -16,16 +20,16 @@ const startAction = async (ctx, needAnswer) => {
     const userRole = userData?.userRole;
 
     const buttons = {
-        [`${actionName}:${userRoleList.chairman}:list`]: 'Список председателей',
-        [`${actionName}:${userRoleList.accountant}:list`]: 'Список бухгалтеров',
-        [`${actionName}:${userRoleList.admin}:list`]: 'Список администраторов',
-        [`${actionName}:${userStatusList.verified}:list`]: 'Список ожидающих',
-        [`${actionName}:${userStatusList.verified}:list`]: 'Список одобренных',
-        [`${actionName}:${userStatusList.verified}:list`]: 'Список отклоненных',
+        [`${moduleActionName}:${userStatusList.pending}:${listActionName}`]: 'Список ожидающих',
+        [`${moduleActionName}:${userStatusList.verified}:${listActionName}`]: 'Список одобренных',
+        [`${moduleActionName}:${userStatusList.unverified}:${listActionName}`]: 'Список отклоненных',
+        [`${moduleActionName}:${userRoleList.chairman}:${listActionName}`]: 'Председатель',
+        [`${moduleActionName}:${userRoleList.accountant}:${listActionName}`]: 'Бухгалтер',
+        [`${moduleActionName}:${userRoleList.admin}:${listActionName}`]: 'Администратор',
     };
 
     const messageText =
-        `Привет, ${ getUserName(ctx.from) }!\n\n` +
+        `Привет, ${ getUserName(ctx.from) }!\n` +
         `Роль: ${ userRoleText[userRole] }\n\n`;
 
     await sendMessage(ctx, {
@@ -38,26 +42,72 @@ const startAction = async (ctx, needAnswer) => {
     await removeMessage(ctx);
 };
 
-const getListHandler = async (ctx, listType) => {
+const profileListHandler = async (ctx, listType) => {
     const userlist = await getUserListByIndex(listType);
-    console.log({ listType, userlist });
+    const messageText = userRoleText[listType] || userStatusText[listType];
+
+    const buttons = {};
+    for (const userData of userlist) {
+        buttons[`${moduleActionName}:${userData.accountId}:${reviewActionName}`] = userData.userName;
+    }
+    buttons[`${moduleActionName}_start`] = '⬅️ Назад' ;
+
+    await sendMessage(ctx, {
+        text: messageText,
+        buttons,
+    });
+
+    await removeMessage(ctx);
+};
+
+const profileReviewHandler = async (ctx, accountId) => {
+    const userData = await getDbData(accountId);
+    const userLinkData = { id: accountId, first_name: userData.userName };
+    const userLink = getUserNameLink(userLinkData);
+
+    const messageText =
+        `Детали профиля ${ userLink }\n\n` +
+        `Имя пользователя: ${userData.profileName}\n` +
+        `Номер телефона: ${userData.phoneNumber}\n` +
+        `Номер Квартиры: ${userData.roomNumber}\n\n` +
+        `Профиль зарегистрирован: ${ getFormattedDate(userData.createdAt) } \n` +
+        `Профиль обновлен: ${ getFormattedDate(userData.updatedAt) }`;
+
+    const messageButtons = {
+        [`${verificationActionName}:${userRoleList.chairman}:${accountId}`]: `🟡 ${userRoleText.chairman}`,
+        [`${verificationActionName}:${userRoleList.accountant}:${accountId}`]: `🟡 ${userRoleText.accountant}`,
+        [`${verificationActionName}:${userRoleList.admin}:${accountId}`]: `🟡 ${userRoleText.admin}`,
+        [`${verificationActionName}:${userRoleList.resident}:${accountId}`]: `🟢 ${userRoleText.resident}`,
+        [`${verificationActionName}:${rejectActionName}:${accountId}`]: '⛔ Отклонить',
+        [`${moduleActionName}_start`]: '⬅️ Назад',
+    };
+
+    await sendMessage(ctx, {
+        text: messageText,
+        buttons: messageButtons,
+    });
+
+    await removeMessage(ctx);
 };
 
 const callbackHandler = async (ctx, next) => {
     await ctx.answerCbQuery();
     const data = ctx.callbackQuery.data;
-    const [action, listType] = data.split(':');
+    const [action, params, actionName] = data.split(':');
 
-    if (action === actionName) {
-        await getListHandler(ctx, listType);
-        await removeMessage(ctx);
+    if (action === moduleActionName && actionName === listActionName) {
+        await profileListHandler(ctx, params);
+    }
+
+    if (action === moduleActionName && actionName === reviewActionName) {
+        await profileReviewHandler(ctx, params);
     }
 
     return next();
 }
 
 module.exports = (bot) => {
-    bot.command(`${actionName}_start`, async (ctx) => startAction(ctx));
-    bot.action(`${actionName}_start`, async (ctx) => startAction(ctx, true));
+    bot.command(`${moduleActionName}_start`, async (ctx) => startAction(ctx));
+    bot.action(`${moduleActionName}_start`, async (ctx) => startAction(ctx, true));
     bot.on('callback_query', async (ctx, next) => callbackHandler(ctx, next));
 };

@@ -1,19 +1,19 @@
 const { sessions } = require('../state/sessions');
 const { emptySession } = require('../const/sessions');
 
-const initStore = (userId, action) => {
+const initStore = (accountId, action) => {
     const session = { ...emptySession };
     session.action = action;
-    clearStore(userId);
-    sessions.set(userId, session);
+    clearStore(accountId);
+    sessions.set(accountId, session);
 };
 
-const getSession = (userId) => {
-    return sessions.get(userId);
+const getSession = (accountId) => {
+    return sessions.get(accountId);
 };
 
-const clearStore = (userId) => {
-    sessions.delete(userId);
+const clearStore = (accountId) => {
+    sessions.delete(accountId);
 };
 
 module.exports = {

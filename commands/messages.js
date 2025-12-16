@@ -6,20 +6,20 @@ const { sendMessage, removeMessage } = require('../helpers/message');
 const { stepList } = require('../const/messages');
 const { accountList, accountIds, closeOption } = require('../const/dictionary');
 
-const actionName = 'messages';
+const moduleActionName = 'messages';
 
 const stepper = initStepper({
     stepList,
-    actionName,
+    actionName: moduleActionName,
     submitActions: {
-        [`${actionName}_submit_chairman`]: 'Отправить председателю',
-        [`${actionName}_submit_accountant`]: 'Отправить бухгалтеру',
-        [`${actionName}_submit_admin`]: 'Отправить администратору',
+        [`${moduleActionName}_submit_chairman`]: 'Отправить председателю',
+        [`${moduleActionName}_submit_accountant`]: 'Отправить бухгалтеру',
+        [`${moduleActionName}_submit_admin`]: 'Отправить администратору',
     },
 });
 
 const initAction = async (ctx, needAnswer) => {
-    initStore(ctx.from.id, actionName);
+    initStore(ctx.from.id, moduleActionName);
     if (needAnswer) {
         await ctx.answerCbQuery();
     }
@@ -49,10 +49,10 @@ const submitAction = async (ctx, destination) => {
 }
 
 module.exports = (bot) => {
-    bot.command(`${actionName}_start`, (ctx) => initAction(ctx));
-    bot.action(`${actionName}_start`, (ctx) => initAction(ctx, true));
-    bot.action(`${actionName}_submit_chairman`, (ctx) => submitAction(ctx, accountList.chairman));
-    bot.action(`${actionName}_submit_accountant`, (ctx) => submitAction(ctx, accountList.accountant));
-    bot.action(`${actionName}_submit_admin`, (ctx) => submitAction(ctx, accountList.admin));
+    bot.command(`${moduleActionName}_start`, (ctx) => initAction(ctx));
+    bot.action(`${moduleActionName}_start`, (ctx) => initAction(ctx, true));
+    bot.action(`${moduleActionName}_submit_chairman`, (ctx) => submitAction(ctx, accountList.chairman));
+    bot.action(`${moduleActionName}_submit_accountant`, (ctx) => submitAction(ctx, accountList.accountant));
+    bot.action(`${moduleActionName}_submit_admin`, (ctx) => submitAction(ctx, accountList.admin));
     bot.on('message', async (ctx, next) => stepper.inputHandler(ctx, next));
 };

@@ -6,18 +6,18 @@ const { sendMessage, removeMessage } = require('../helpers/message');
 const { stepList } = require('../const/meter');
 const { accountList, accountIds, closeOption } = require('../const/dictionary');
 
-const actionName = 'meter';
+const moduleActionName = 'meter';
 
 const stepper = initStepper({
     stepList,
-    actionName,
+    actionName: moduleActionName,
     submitActions: {
-        [`${actionName}_submit`]: 'Отправить ✅'
+        [`${moduleActionName}_submit`]: 'Отправить ✅'
     },
 });
 
 const initAction = async (ctx, needAnswer) => {
-    initStore(ctx.from.id, actionName);
+    initStore(ctx.from.id, moduleActionName);
     if (needAnswer) {
         await ctx.answerCbQuery();
     }
@@ -42,8 +42,8 @@ const submitAction = async (ctx, destination) => {
 }
 
 module.exports = (bot) => {
-    bot.command(`${actionName}_start`, (ctx) => initAction(ctx));
-    bot.action(`${actionName}_start`, (ctx) => initAction(ctx, true));
-    bot.action(`${actionName}_submit`, (ctx) => submitAction(ctx, accountList.accountant));
+    bot.command(`${moduleActionName}_start`, (ctx) => initAction(ctx));
+    bot.action(`${moduleActionName}_start`, (ctx) => initAction(ctx, true));
+    bot.action(`${moduleActionName}_submit`, (ctx) => submitAction(ctx, accountList.accountant));
     bot.on('text', async (ctx, next) => stepper.inputHandler(ctx, next));
 };
