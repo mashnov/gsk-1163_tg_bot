@@ -31,10 +31,14 @@ const initAction = async (ctx, needAnswer) => {
 
 const submitAction = async (ctx) => {
     const session = getSession(ctx.from.id);
+    const userData = await getDbData(ctx.from.id);
+
     const headerText = '🟡 Новые показания\n\n';
     const userNameText = `Отправитель: ${ getUserNameLink(ctx.from) }\n\n`;
+    const profileNameText = `Имя отправителя: ${ userData?.profileName }\n`;
+    const roomNumberText = `Номер квартиры: ${ userData?.roomNumber }\n\n`;
     const summaryText = getSummaryMessage(stepList[session.stepIndex]?.summary, session);
-    const recipientMessage = `${headerText}${userNameText}${summaryText}`;
+    const recipientMessage = `${headerText}${userNameText}${profileNameText}${roomNumberText}${summaryText}`;
     const senderMessage = '🟢 Показания счетчиков успешно отправлены';
 
     await sendMessage(ctx, { text: senderMessage });
@@ -50,7 +54,6 @@ const submitAction = async (ctx) => {
     }
 
     await removeMessage(ctx);
-
 
     await ctx.answerCbQuery('Показания счетчиков успешно отправлены');
 }
