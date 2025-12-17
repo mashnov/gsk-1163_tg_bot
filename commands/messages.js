@@ -20,11 +20,13 @@ const stepper = initStepper({
 
 const initAction = async (ctx, needAnswer) => {
     initStore(ctx.from.id, moduleActionName);
+
+    await stepper.startHandler(ctx);
+    await removeMessage(ctx);
+
     if (needAnswer) {
         await ctx.answerCbQuery();
     }
-    await stepper.startHandler(ctx);
-    await removeMessage(ctx);
 }
 
 const submitAction = async (ctx, destination) => {
@@ -46,6 +48,8 @@ const submitAction = async (ctx, destination) => {
     });
 
     await removeMessage(ctx);
+
+    await ctx.answerCbQuery('Ваше сообщение отправлено');
 }
 
 module.exports = (bot) => {

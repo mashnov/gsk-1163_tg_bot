@@ -16,18 +16,14 @@ const messageText =
 const notVerifiedMessageText = '\n\n✨ <b>Пожалуйста, пройдите верификацию, чтобы получить доступ ко всем возможностям бота.</b>';
 
 const initAction = async (ctx, bot, needAnswer) => {
-    if (needAnswer) {
-        await ctx.answerCbQuery();
-    }
-
     const userData = await getDbData(ctx.from.id);
     const userStatus = userData?.userStatus;
     const isAdmin = userData?.userIsAdmin;
     const isVerified = userStatus === userStatusList.verified;
 
     const buttons = {
-        contact_start: '🌐 Контакты',
-        rules_start: '📋 Правила чата',
+        contact_start: '📖 Контакты',
+        rules_start: '📚 Правила чата',
     };
 
     if (!isVerified) {
@@ -35,11 +31,11 @@ const initAction = async (ctx, bot, needAnswer) => {
     }
 
     if (isAdmin) {
-        buttons.profiles_start = '🪬 Профили';
+        buttons.profiles_start = '🪪 Администрирование';
     }
 
     if (isVerified) {
-        buttons.meter_start = '🧭 Показания счетчиков';
+        buttons.meter_start = '〽️ Показания счетчиков';
         buttons.messages_start = '💬 Написать сообщение';
     }
 
@@ -49,13 +45,18 @@ const initAction = async (ctx, bot, needAnswer) => {
     });
 
     await removeMessage(ctx);
-};
 
-const closeAction = async (ctx, bot, needAnswer) => {
     if (needAnswer) {
         await ctx.answerCbQuery();
     }
+};
+
+const closeAction = async (ctx, bot, needAnswer) => {
     await removeMessage(ctx);
+
+    if (needAnswer) {
+        await ctx.answerCbQuery();
+    }
 };
 
 module.exports = (bot) => {

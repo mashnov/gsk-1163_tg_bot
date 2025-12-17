@@ -21,10 +21,6 @@ const stepper = initStepper({
 });
 
 const startAction = async (ctx, needAnswer) => {
-    if (needAnswer) {
-        await ctx.answerCbQuery();
-    }
-
     const userData = await getDbData(ctx.from.id);
 
     const userStatus = userData?.userStatus;
@@ -42,7 +38,8 @@ const startAction = async (ctx, needAnswer) => {
     }
 
     const messageText =
-        `Привет, ${ getUserName(ctx.from) }!\n\n` +
+        `✨ Верификация\n\n` +
+        `${ getUserName(ctx.from) }!\n\n` +
         `Роль: ${ userRoleText[userRole] }\n` +
         `Ваш статус: ${ userStatusText[userStatus] }`;
 
@@ -55,18 +52,24 @@ const startAction = async (ctx, needAnswer) => {
             ...backOption,
         },
     });
+
     await removeMessage(ctx);
+
+    if (needAnswer) {
+        await ctx.answerCbQuery();
+    }
 };
 
 const initAction = async (ctx) => {
     initStore(ctx.from.id, moduleActionName);
-    await ctx.answerCbQuery();
+
     await stepper.startHandler(ctx);
     await removeMessage(ctx);
+
+    await ctx.answerCbQuery();
 };
 
 const submitAction = async (ctx, destination) => {
-    await ctx.answerCbQuery();
     const accountId = ctx.from.id;
     const session = getSession(accountId);
     const validationIcon = `${ isValidOwner(session.room, session.owner) ? '🟢' : '🔴'}`;
@@ -96,9 +99,11 @@ const submitAction = async (ctx, destination) => {
         roomNumber: session.room,
         phoneNumber: session.phone,
     });
+
+    await ctx.answerCbQuery('Запрос успешно отправлен!');
 }
 
-const validationHandler = async (ctx, status, accountId) => {
+const validationHandler = async (ctx, status, accountId, preventer) => {
     const isRejected = status === rejectActionName;
     const isResident = status === userRoleList.resident;
     const validationStatus = isRejected ? userStatusList.unverified : userStatusList.verified;
@@ -120,22 +125,27 @@ const validationHandler = async (ctx, status, accountId) => {
         },
     });
 
+
     await updateUserData(accountId, { userStatus: validationStatus });
     await updateUserData(accountId, { userIsAdmin: isAdminRules });
 
     if (!isRejected) {
         await updateUserData(accountId, { userRole: status });
     }
+
+    if (!preventer) {
+        await removeMessage(ctx);
+    }
+
+    await ctx.answerCbQuery(isRejected ? 'Запрос отклонен' : 'Права успешно назначены');
 };
 
 const callbackHandler = async (ctx, next) => {
-    await ctx.answerCbQuery();
     const data = ctx.callbackQuery.data;
-    const [action, status, accountId] = data.split(':');
+    const [action, status, accountId, preventer] = data.split(':');
 
     if (action === moduleActionName) {
-        await validationHandler(ctx, status, accountId);
-        await removeMessage(ctx);
+        await validationHandler(ctx, status, accountId, !!preventer);
     }
 
     return next();

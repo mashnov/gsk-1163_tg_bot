@@ -7,7 +7,7 @@ const { backOption } = require('../const/dictionary');
 const moduleActionName = 'contact';
 
 const messageText =
-        'Полезные телефоны и ссылки:\n\n' +
+        '📖 Контакты\n\n' +
         'ЖСК email: <a href="mailto:gsk1163@mail.ru">gsk1163@mail.ru</a>\n' +
         'ЖСК телефон: <a href="tel:+79312107066">+7 (931) 210-70-66</a>\n\n' +
         'Водопроводчик: <a href="tel:+78129111515">911-15-15</a>\n' +
@@ -23,26 +23,22 @@ const messageText =
 const verifiedMessageText = '\n\nДля связи с Председателем, Бухгалтером или администратором воспользуйтесь кнопкой "написать сообщение" ниже.';
 
 const initAction = async (ctx, bot, needAnswer) => {
-    if (needAnswer) {
-        await ctx.answerCbQuery();
-    }
-
     const userData = await getDbData(ctx.from.id);
-    const userStatus = userData?.userStatus;
-    const isVerified = userStatus === userStatusList.verified;
-
-    const buttons = { ...backOption };
-
-    if (isVerified) {
-        buttons.buttons = 'Написать сообщение';
-    }
+    const isVerified = userData?.userStatus === userStatusList.verified;
 
     await sendMessage(ctx, {
         text: isVerified ? messageText + verifiedMessageText : messageText,
-        buttons,
+        buttons: {
+            ...(isVerified ? { messages_start: '💬 Написать сообщение' } : {}),
+            ...backOption
+        },
     });
 
     await removeMessage(ctx);
+
+    if (needAnswer) {
+        await ctx.answerCbQuery();
+    }
 };
 
 module.exports = (bot) => {
