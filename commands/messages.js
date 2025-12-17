@@ -34,14 +34,18 @@ const initAction = async (ctx, needAnswer) => {
 
 const submitAction = async (ctx, listType) => {
     const session = getSession(ctx.from.id);
+    const userData = await getDbData(ctx.from.id);
 
     const senderHeader = '🟢 Ваше сообщение отправлено.';
     await sendMessage(ctx, { text: senderHeader });
 
-    const recipientHeader = '🟡 Новое сообщение\n';
+    const recipientHeader = '🟡 Новое сообщение\n\n';
     const recipientSender = `Отправитель: ${ getUserNameLink(ctx.from) }\n\n`;
+    const recipientProfileName = `Имя отправителя: ${ userData?.profileName }\n`;
+    const recipientPhoneNumber = `Номер телефона: ${ userData?.phoneNumber }\n`;
+    const recipientRoomNumber = `Номер квартиры: ${ userData?.roomNumber }\n\n`;
     const recipientText = getSummaryMessage(stepList[session.stepIndex]?.summary, session);
-    const recipientMessage = `${recipientHeader}${recipientSender}${recipientText}`;
+    const recipientMessage = `${recipientHeader}${recipientSender}${recipientProfileName}${recipientPhoneNumber}${recipientRoomNumber}${recipientText}`;
 
     const userIdList = await getDbData(listType);
 
