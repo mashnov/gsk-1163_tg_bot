@@ -1,20 +1,23 @@
 const { initStepper } = require('../helpers/stepper');
+const { getDbData } = require('../helpers/db');
 const { initStore, getSession} = require('../helpers/sessions');
 const { getUserNameLink, getSummaryMessage } = require('../helpers/getters');
 const { sendMessage, removeMessage } = require('../helpers/message');
 
 const { stepList } = require('../const/messages');
-const { accountList, accountIds, closeOption } = require('../const/dictionary');
+const { closeOption } = require('../const/dictionary');
+const { userRoleList } = require('../const/db');
 
 const moduleActionName = 'messages';
+const submitActionName = 'submit';
 
 const stepper = initStepper({
     stepList,
     actionName: moduleActionName,
     submitActions: {
-        [`${moduleActionName}_submit_chairman`]: 'Отправить председателю',
-        [`${moduleActionName}_submit_accountant`]: 'Отправить бухгалтеру',
-        [`${moduleActionName}_submit_admin`]: 'Отправить администратору',
+        [`${moduleActionName}:${submitActionName}:${userRoleList.chairman}`]: 'Отправить председателю',
+        [`${moduleActionName}:${submitActionName}:${userRoleList.accountant}`]: 'Отправить бухгалтеру',
+        [`${moduleActionName}:${submitActionName}:${userRoleList.admin}`]: 'Отправить администратору',
     },
 });
 
@@ -29,7 +32,7 @@ const initAction = async (ctx, needAnswer) => {
     }
 }
 
-const submitAction = async (ctx, destination) => {
+const submitAction = async (ctx, listType) => {
     const session = getSession(ctx.from.id);
 
     const senderHeader = '🟢 Ваше сообщение отправлено.';
@@ -40,23 +43,36 @@ const submitAction = async (ctx, destination) => {
     const recipientText = getSummaryMessage(stepList[session.stepIndex]?.summary, session);
     const recipientMessage = `${recipientHeader}${recipientSender}${recipientText}`;
 
-    await sendMessage(ctx, {
-        accountId: accountIds[destination],
-        text: recipientMessage,
-        buttons: closeOption,
-        attachment: session.attachment,
-    });
+    const userIdList = await getDbData(listType);
+
+    for (const accountId of userIdList) {
+        await sendMessage(ctx, {
+            accountId,
+            text: recipientMessage,
+            buttons: closeOption,
+            attachment: session.attachment,
+        });
+    }
 
     await removeMessage(ctx);
 
     await ctx.answerCbQuery('Ваше сообщение отправлено');
 }
 
+const callbackHandler = async (ctx, next) => {
+    const data = ctx.callbackQuery.data;
+    const [action, actionName, listType] = data.split(':');
+
+    if (action === moduleActionName && actionName === submitActionName) {
+        await submitAction(ctx, listType);
+    }
+
+    return next();
+};
+
 module.exports = (bot) => {
     bot.command(`${moduleActionName}_start`, (ctx) => initAction(ctx));
     bot.action(`${moduleActionName}_start`, (ctx) => initAction(ctx, true));
-    bot.action(`${moduleActionName}_submit_chairman`, (ctx) => submitAction(ctx, accountList.chairman));
-    bot.action(`${moduleActionName}_submit_accountant`, (ctx) => submitAction(ctx, accountList.accountant));
-    bot.action(`${moduleActionName}_submit_admin`, (ctx) => submitAction(ctx, accountList.admin));
     bot.on('message', async (ctx, next) => stepper.inputHandler(ctx, next));
+    bot.on('callback_query', async (ctx, next) => callbackHandler(ctx, next));
 };

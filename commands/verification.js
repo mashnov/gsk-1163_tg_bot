@@ -1,12 +1,12 @@
 const { initStepper } = require('../helpers/stepper');
-const { initStore, getSession} = require('../helpers/sessions');
+const { initStore, getSession } = require('../helpers/sessions');
 const { getUserNameLink, getUserName, getFormattedDate, getSummaryMessage, getRoomOwner } = require('../helpers/getters');
-const { getDbData, updateUserData} = require('../helpers/db');
+const { getDbData, updateUserData } = require('../helpers/db');
 const { sendMessage, removeMessage } = require('../helpers/message');
 const { isValidOwner } = require('../helpers/validation');
 
 const { userStatusText, userStatusList, userRoleText, userRoleList} = require('../const/db');
-const { backOption, accountList, accountIds} = require('../const/dictionary');
+const { backOption} = require('../const/dictionary');
 const { stepList } = require('../const/verification');
 
 const moduleActionName = 'verification';
@@ -69,7 +69,7 @@ const initAction = async (ctx) => {
     await ctx.answerCbQuery();
 };
 
-const submitAction = async (ctx, destination) => {
+const submitAction = async (ctx) => {
     const accountId = ctx.from.id;
     const session = getSession(accountId);
     const validationIcon = `${ isValidOwner(session.room, session.owner) ? '🟢' : '🔴'}`;
@@ -79,19 +79,27 @@ const submitAction = async (ctx, destination) => {
     const summaryText = getSummaryMessage(stepList[session.stepIndex]?.summary, session);
     const recipientMessage = `${ headerText }${ userNameText }${ documentOwnerText }${ summaryText }`;
     const senderMessage = '🟢 Ваш запрос отправлен';
+
     await sendMessage(ctx, { text: senderMessage });
-    await sendMessage(ctx, {
-        accountId: accountIds[destination],
-        text: recipientMessage,
-        buttons: {
-            [`${moduleActionName}:${userRoleList.chairman}:${accountId}`]: `🟡 ${ userRoleText.chairman }`,
-            [`${moduleActionName}:${userRoleList.accountant}:${accountId}`]: `🟡 ${ userRoleText.accountant }`,
-            [`${moduleActionName}:${userRoleList.admin}:${accountId}`]: `🟡 ${ userRoleText.admin }`,
-            [`${moduleActionName}:${userRoleList.resident}:${accountId}`]: `🟢 ${ userRoleText.resident }`,
-            [`${moduleActionName}:${rejectActionName}:${accountId}`]: '⛔ Отклонить',
-        },
-    });
+
+    const userIdList = await getDbData(userRoleList.admin);
+
+    for (const accountId of userIdList) {
+        await sendMessage(ctx, {
+            accountId,
+            text: recipientMessage,
+            buttons: {
+                [`${moduleActionName}:${userRoleList.chairman}:${accountId}`]: `🟡 ${userRoleText.chairman}`,
+                [`${moduleActionName}:${userRoleList.accountant}:${accountId}`]: `🟡 ${userRoleText.accountant}`,
+                [`${moduleActionName}:${userRoleList.admin}:${accountId}`]: `🟡 ${userRoleText.admin}`,
+                [`${moduleActionName}:${userRoleList.resident}:${accountId}`]: `🟢 ${userRoleText.resident}`,
+                [`${moduleActionName}:${rejectActionName}:${accountId}`]: '⛔ Отклонить',
+            },
+        });
+    }
+
     await removeMessage(ctx);
+
     await updateUserData(accountId, {
         profileName: session.name,
         userName: getUserName(ctx.from),
@@ -155,7 +163,7 @@ module.exports = (bot) => {
     bot.command(`${moduleActionName}_start`, async (ctx) => startAction(ctx));
     bot.action(`${moduleActionName}_start`, async (ctx) => startAction(ctx, true));
     bot.action(`${moduleActionName}_init`, async (ctx) => initAction(ctx));
-    bot.action(`${moduleActionName}_submit`, async (ctx) => submitAction(ctx, accountList.admin));
+    bot.action(`${moduleActionName}_submit`, async (ctx) => submitAction(ctx));
     bot.action(`${moduleActionName}_exit`, (ctx) => removeMessage(ctx, ));
     bot.on('text', async (ctx, next) => stepper.inputHandler(ctx, next));
     bot.on('callback_query', async (ctx, next) => callbackHandler(ctx, next));

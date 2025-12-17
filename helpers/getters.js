@@ -23,7 +23,7 @@ const getUserName = (data) => {
     } else {
         return id;
     }
-}
+};
 
 const getUserNameLink = (data) => {
     const { username, first_name, last_name, id } = data;

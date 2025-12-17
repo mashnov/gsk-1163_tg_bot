@@ -1,10 +1,12 @@
 const { initStepper } = require('../helpers/stepper');
 const { initStore, getSession} = require('../helpers/sessions');
 const { getUserNameLink, getSummaryMessage } = require('../helpers/getters');
+const { getDbData } = require('../helpers/db');
 const { sendMessage, removeMessage } = require('../helpers/message');
 
 const { stepList } = require('../const/meter');
-const { accountList, accountIds, closeOption } = require('../const/dictionary');
+const { userRoleList } = require('../const/db');
+const { closeOption } = require('../const/dictionary');
 
 const moduleActionName = 'meter';
 
@@ -27,20 +29,28 @@ const initAction = async (ctx, needAnswer) => {
     }
 }
 
-const submitAction = async (ctx, destination) => {
+const submitAction = async (ctx) => {
     const session = getSession(ctx.from.id);
     const headerText = '🟡 Новые показания\n\n';
     const userNameText = `Отправитель: ${ getUserNameLink(ctx.from) }\n\n`;
     const summaryText = getSummaryMessage(stepList[session.stepIndex]?.summary, session);
     const recipientMessage = `${headerText}${userNameText}${summaryText}`;
     const senderMessage = '🟢 Показания счетчиков успешно отправлены';
+
     await sendMessage(ctx, { text: senderMessage });
-    await sendMessage(ctx, {
-        accountId: accountIds[destination],
-        text: recipientMessage,
-        buttons: closeOption
-    });
+
+    const userIdList = await getDbData(userRoleList.accountant);
+
+    for (const accountId of userIdList) {
+        await sendMessage(ctx, {
+            accountId,
+            text: recipientMessage,
+            buttons: closeOption
+        });
+    }
+
     await removeMessage(ctx);
+
 
     await ctx.answerCbQuery('Показания счетчиков успешно отправлены');
 }
@@ -48,6 +58,6 @@ const submitAction = async (ctx, destination) => {
 module.exports = (bot) => {
     bot.command(`${moduleActionName}_start`, (ctx) => initAction(ctx));
     bot.action(`${moduleActionName}_start`, (ctx) => initAction(ctx, true));
-    bot.action(`${moduleActionName}_submit`, (ctx) => submitAction(ctx, accountList.accountant));
+    bot.action(`${moduleActionName}_submit`, (ctx) => submitAction(ctx));
     bot.on('text', async (ctx, next) => stepper.inputHandler(ctx, next));
 };

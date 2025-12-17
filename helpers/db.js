@@ -40,7 +40,7 @@ const createUserData = async (accountId) => {
     await updateUserIndex(accountId, { userStatus: userStatusList.unverified });
 
     return setDbData(accountId, userData);
-}
+};
 
 const updateUserData = async (accountId, patchData) => {
     if (!accountId) {
@@ -66,7 +66,7 @@ const updateUserData = async (accountId, patchData) => {
     }
 
     return setDbData(accountId, userData);
-}
+};
 
 const createUserIndex = async (indexId) => {
     if (!indexId) {
@@ -123,7 +123,7 @@ const getUserListByIndex = async (indexId) => {
 
     const usersData = await Promise.all(userList.map(id => getDbData(id)));
     return usersData.filter(Boolean);
-}
+};
 
 module.exports = {
     getDbData,

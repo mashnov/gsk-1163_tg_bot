@@ -109,7 +109,7 @@ const callbackHandler = async (ctx, next) => {
     }
 
     return next();
-}
+};
 
 module.exports = (bot) => {
     bot.command(`${moduleActionName}_start`, async (ctx) => startAction(ctx));
