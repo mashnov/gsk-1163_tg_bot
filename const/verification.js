@@ -19,20 +19,20 @@ const stepList = [
         },
     },
     {
+        id: 'name',
+        text: '🟢 Введите Вашу фамилию и имя',
+        errorText: '🟡 Введите Вашу фамилию и имя',
+        validation: {
+            min: 2,
+            dataType: 'text',
+        },
+    },
+    {
         id: 'phone',
         text: '🟢 Введите Ваш номер телефона',
         errorText: '🟡 Введите Ваш номер телефона',
         validation: {
             dataType: 'phone',
-        },
-    },
-    {
-        id: 'name',
-        text: '🟢 Введите Ваше имя',
-        errorText: '🟡 Введите Ваше имя',
-        validation: {
-            min: 1,
-            dataType: 'text',
         },
     },
     {

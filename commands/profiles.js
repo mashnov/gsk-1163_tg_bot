@@ -20,7 +20,7 @@ const startAction = async (ctx, needAnswer) => {
         [`${moduleActionName}:${userRoleList.chairman}:${listActionName}`]: 'Председатель',
         [`${moduleActionName}:${userRoleList.accountant}:${listActionName}`]: 'Бухгалтер',
         [`${moduleActionName}:${userRoleList.admin}:${listActionName}`]: 'Администраторы',
-        [`${moduleActionName}:${userRoleList.resident}:${listActionName}`]: ':Жители',
+        [`${moduleActionName}:${userRoleList.resident}:${listActionName}`]: 'Жители',
     };
 
     const messageText =
