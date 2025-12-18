@@ -12,13 +12,17 @@ const { stepList } = require('../const/verification');
 const moduleActionName = 'verification';
 const rejectActionName = 'reject';
 
-const stepper = initStepper({
-    stepList,
-    actionName: moduleActionName,
-    submitActions: {
-        [`${moduleActionName}_submit`]: 'Отправить ✅'
-    },
-});
+let stepper = undefined;
+
+(async () => {
+    stepper = initStepper({
+        stepList,
+        actionName: moduleActionName,
+        submitActions: {
+            [`${moduleActionName}_submit`]: 'Отправить ✅'
+        },
+    });
+})();
 
 const startAction = async (ctx, needAnswer) => {
     const userData = await getDbData(ctx.from.id);
@@ -82,9 +86,9 @@ const submitAction = async (ctx) => {
 
     await sendMessage(ctx, { text: senderMessage });
 
-    const userIdList = await getDbData(userRoleList.admin);
+    const adminIdList = await getDbData(userRoleList.admin) || [];
 
-    for (const accountId of userIdList) {
+    for (const accountId of adminIdList) {
         await sendMessage(ctx, {
             accountId,
             text: recipientMessage,

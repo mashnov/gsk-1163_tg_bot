@@ -10,13 +10,17 @@ const { closeOption } = require('../const/dictionary');
 
 const moduleActionName = 'meter';
 
-const stepper = initStepper({
-    stepList,
-    actionName: moduleActionName,
-    submitActions: {
-        [`${moduleActionName}_submit`]: 'Отправить ✅'
-    },
-});
+let stepper = undefined;
+
+(async () => {
+    stepper = initStepper({
+        stepList,
+        actionName: moduleActionName,
+        submitActions: {
+            [`${moduleActionName}_submit`]: 'Отправить ✅'
+        },
+    });
+})();
 
 const initAction = async (ctx, needAnswer) => {
     initStore(ctx.from.id, moduleActionName);
@@ -43,9 +47,9 @@ const submitAction = async (ctx) => {
 
     await sendMessage(ctx, { text: senderMessage });
 
-    const userIdList = await getDbData(userRoleList.accountant);
+    const accountantIdList = await getDbData(userRoleList.accountant) || [];
 
-    for (const accountId of userIdList) {
+    for (const accountId of accountantIdList) {
         await sendMessage(ctx, {
             accountId,
             text: recipientMessage,

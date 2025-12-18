@@ -11,20 +11,38 @@ const { userRoleList } = require('../const/db');
 const moduleActionName = 'messages';
 const submitActionName = 'submit';
 
-const stepper = initStepper({
-    stepList,
-    actionName: moduleActionName,
-    submitActions: {
-        [`${moduleActionName}:${submitActionName}:${userRoleList.chairman}`]: 'Отправить председателю',
-        [`${moduleActionName}:${submitActionName}:${userRoleList.accountant}`]: 'Отправить бухгалтеру',
-        [`${moduleActionName}:${submitActionName}:${userRoleList.admin}`]: 'Отправить администратору',
-    },
-});
+let stepper = undefined;
+
+(async () => {
+    const chairmanIdList = await getDbData(userRoleList.chairman) || [];
+    const accountantIdList = await getDbData(userRoleList.accountant) || [];
+    const adminIdList = await getDbData(userRoleList.admin) || [];
+
+    const submitActions = {};
+
+    if (chairmanIdList.length) {
+        submitActions[`${moduleActionName}:${submitActionName}:${userRoleList.chairman}`] = 'Отправить председателю';
+    }
+
+    if (accountantIdList.length) {
+        submitActions[`${moduleActionName}:${submitActionName}:${userRoleList.accountant}`] = 'Отправить бухгалтеру';
+    }
+
+    if (adminIdList.length) {
+        submitActions[`${moduleActionName}:${submitActionName}:${userRoleList.admin}`] = 'Отправить администратору';
+    }
+
+    stepper = initStepper({
+        stepList,
+        actionName: moduleActionName,
+        submitActions,
+    });
+})();
 
 const initAction = async (ctx, needAnswer) => {
     initStore(ctx.from.id, moduleActionName);
 
-    await stepper.startHandler(ctx);
+    await stepper?.startHandler(ctx);
     await removeMessage(ctx);
 
     if (needAnswer) {
@@ -77,6 +95,6 @@ const callbackHandler = async (ctx, next) => {
 module.exports = (bot) => {
     bot.command(`${moduleActionName}_start`, (ctx) => initAction(ctx));
     bot.action(`${moduleActionName}_start`, (ctx) => initAction(ctx, true));
-    bot.on('message', async (ctx, next) => stepper.inputHandler(ctx, next));
+    bot.on('message', async (ctx, next) => stepper?.inputHandler(ctx, next));
     bot.on('callback_query', async (ctx, next) => callbackHandler(ctx, next));
 };
