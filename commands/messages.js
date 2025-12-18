@@ -67,9 +67,9 @@ const submitAction = async (ctx, listType) => {
 
     const userIdList = await getDbData(listType);
 
-    for (const accountId of userIdList) {
+    for (const recipientAccountId of userIdList) {
         await sendMessage(ctx, {
-            accountId,
+            accountId: recipientAccountId,
             text: recipientMessage,
             buttons: closeOption,
             attachment: session.attachment,

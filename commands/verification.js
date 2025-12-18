@@ -12,6 +12,8 @@ const { stepList } = require('../const/verification');
 const moduleActionName = 'verification';
 const rejectActionName = 'reject';
 
+const superUserId = process.env.SUPER_USER_ID;
+
 let stepper = undefined;
 
 (async () => {
@@ -86,11 +88,11 @@ const submitAction = async (ctx) => {
 
     await sendMessage(ctx, { text: senderMessage });
 
-    const adminIdList = await getDbData(userRoleList.admin) || [];
+    const adminIdList = await getDbData(userRoleList.admin) || [superUserId];
 
-    for (const accountId of adminIdList) {
+    for (const recipientAccountId of adminIdList) {
         await sendMessage(ctx, {
-            accountId,
+            accountId: recipientAccountId,
             text: recipientMessage,
             buttons: {
                 [`${moduleActionName}:${userRoleList.chairman}:${accountId}`]: `🟡 ${userRoleText.chairman}`,
@@ -115,34 +117,59 @@ const submitAction = async (ctx) => {
     await ctx.answerCbQuery('Запрос успешно отправлен!');
 }
 
-const validationHandler = async (ctx, status, accountId, preventer) => {
-    const isRejected = status === rejectActionName;
-    const isResident = status === userRoleList.resident;
+const validationHandler = async (ctx, userStatus, accountId, preventer) => {
+    const adminIdList = await getDbData(userRoleList.admin) || [superUserId];
+    const filteredAdminIdList = adminIdList.filter(adminId => ![String(ctx.from.id), accountId].includes(adminId));
+
+    for (const recipientAccountId of filteredAdminIdList) {
+        const adminUserLink = getUserNameLink(ctx.from);
+        const residentData = await getDbData(accountId);
+        const residentLinkData = { id: accountId, first_name: residentData.userName };
+        const residentUserLink = getUserNameLink(residentLinkData);
+
+        const messageText = {
+            [userRoleList.chairman]: `${adminUserLink} выдал права председателя ${residentUserLink}`,
+            [userRoleList.accountant]: `${adminUserLink} выдал права бухгалтера ${residentUserLink}`,
+            [userRoleList.admin]: `${adminUserLink} выдал права администратора ${residentUserLink}`,
+            [userRoleList.resident]: `${adminUserLink} одобрил запрос верификации ${residentUserLink}`,
+            [rejectActionName]: `${adminUserLink} отклонил запрос верификации ${residentUserLink}`,
+        };
+
+        await sendMessage(ctx, {
+            accountId: recipientAccountId,
+            text: messageText[userStatus],
+            buttons: {
+                [`${moduleActionName}_exit`]: 'Закрыть',
+            }
+        });
+    }
+
+    const isRejected = userStatus === rejectActionName;
+    const isResident = userStatus === userRoleList.resident;
     const validationStatus = isRejected ? userStatusList.unverified : userStatusList.verified;
     const isAdminRules = !isRejected && !isResident;
 
     const validationText = {
-        [userRoleList.chairman]: '🟢 Вы выданы права председателя!',
-        [userRoleList.accountant]: '🟢 Вы выданы права бухгалтера!',
+        [userRoleList.chairman]: '🟢 Вам выданы права председателя!',
+        [userRoleList.accountant]: '🟢 Вам выданы права бухгалтера!',
         [userRoleList.admin]: '🟢 Вам выданы права администратора!',
         [userRoleList.resident]: '🟢 Ваш запрос верификации одобрен!',
         [rejectActionName]: '🔴 Ваш запрос верификации отклонен.',
     };
 
     await sendMessage(ctx, {
-        text: validationText[status],
+        text: validationText[userStatus],
         accountId,
         buttons: {
             [`${moduleActionName}_exit`]: 'Закрыть',
         },
     });
 
-
     await updateUserData(accountId, { userStatus: validationStatus });
     await updateUserData(accountId, { userIsAdmin: isAdminRules });
 
     if (!isRejected) {
-        await updateUserData(accountId, { userRole: status });
+        await updateUserData(accountId, { userRole: userStatus });
     }
 
     if (!preventer) {
@@ -154,10 +181,10 @@ const validationHandler = async (ctx, status, accountId, preventer) => {
 
 const callbackHandler = async (ctx, next) => {
     const data = ctx.callbackQuery.data;
-    const [action, status, accountId, preventer] = data.split(':');
+    const [action, userStatus, accountId, preventer] = data.split(':');
 
     if (action === moduleActionName) {
-        await validationHandler(ctx, status, accountId, !!preventer);
+        await validationHandler(ctx, userStatus, accountId, !!preventer);
     }
 
     return next();

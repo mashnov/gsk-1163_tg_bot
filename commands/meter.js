@@ -49,9 +49,9 @@ const submitAction = async (ctx) => {
 
     const accountantIdList = await getDbData(userRoleList.accountant) || [];
 
-    for (const accountId of accountantIdList) {
+    for (const recipientAccountId of accountantIdList) {
         await sendMessage(ctx, {
-            accountId,
+            accountId: recipientAccountId,
             text: recipientMessage,
             buttons: closeOption
         });
