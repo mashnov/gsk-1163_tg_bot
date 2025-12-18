@@ -17,10 +17,10 @@ const startAction = async (ctx, needAnswer) => {
 
     const buttons = {
         [`${moduleActionName}:${userStatusList.pending}:${listActionName}`]: 'Ожидают проверки',
-        [`${moduleActionName}:${userRoleList.chairman}:${listActionName}`]: 'Председатель',
-        [`${moduleActionName}:${userRoleList.accountant}:${listActionName}`]: 'Бухгалтер',
-        [`${moduleActionName}:${userRoleList.admin}:${listActionName}`]: 'Администраторы',
         [`${moduleActionName}:${userRoleList.resident}:${listActionName}`]: 'Жители',
+        [`${moduleActionName}:${userRoleList.admin}:${listActionName}`]: 'Администраторы',
+        [`${moduleActionName}:${userRoleList.accountant}:${listActionName}`]: 'Бухгалтер',
+        [`${moduleActionName}:${userRoleList.chairman}:${listActionName}`]: 'Председатель',
     };
 
     const messageText =
@@ -43,12 +43,17 @@ const startAction = async (ctx, needAnswer) => {
 };
 
 const profileListHandler = async (ctx, listType) => {
-    const userlist = await getUserListByIndex(listType);
-    const messageText = userRoleText[listType] || userStatusText[listType];
+    const profileList = await getDbData(listType) || [];
+    const filteredProfileList = profileList.filter(userId => userId !== String(ctx.from.id));
+    const mappedProfileList = await getUserListByIndex(filteredProfileList);
+
+    const messageText =
+        `👥 Администрирование \n\n` +
+        `Список профилей в статусе: ${userRoleText[listType] || userStatusText[listType]}`;
 
     const buttons = {};
 
-    for (const userData of userlist) {
+    for (const userData of mappedProfileList) {
         buttons[`${moduleActionName}:${userData.accountId}:${reviewActionName}`] = userData.userName;
     }
 

@@ -110,18 +110,12 @@ const updateUserIndex = async (accountId, { userStatus, userRole }) => {
     await addUserToIndex(accountId, indexId);
 };
 
-const getUserListByIndex = async (indexId) => {
-    if (!indexId) {
+const getUserListByIndex = async (userIdList) => {
+    if (!Array.isArray(userIdList) || !userIdList) {
         return [];
     }
 
-    const userList = await getDbData(indexId);
-
-    if (!Array.isArray(userList)) {
-        return [];
-    }
-
-    const usersData = await Promise.all(userList.map(id => getDbData(id)));
+    const usersData = await Promise.all(userIdList.map(id => getDbData(id)));
     return usersData.filter(Boolean);
 };
 
