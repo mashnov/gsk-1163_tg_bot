@@ -1,7 +1,7 @@
 const { initStepper } = require('../helpers/stepper');
 const { initStore, getSession } = require('../helpers/sessions');
 const { getUserNameLink, getUserName, getFormattedDate, getSummaryMessage, getRoomOwner } = require('../helpers/getters');
-const { getDbData, updateUserData } = require('../helpers/db');
+const { getDbData, updateUserData, getVerificationIndexItem, setVerificationIndexItem } = require('../helpers/db');
 const { sendMessage, removeMessage } = require('../helpers/message');
 const { isValidOwner } = require('../helpers/validation');
 
@@ -89,20 +89,24 @@ const submitAction = async (ctx) => {
     await sendMessage(ctx, { text: senderMessage });
 
     const adminIdList = await getDbData(userRoleList.admin) || [superUserId];
+    const messageList = [];
 
     for (const recipientAccountId of adminIdList) {
-        await sendMessage(ctx, {
+        const messageId = await sendMessage(ctx, {
             accountId: recipientAccountId,
             text: recipientMessage,
             buttons: {
-                [`${moduleActionName}:${userRoleList.chairman}:${accountId}`]: `🟡 ${userRoleText.chairman}`,
-                [`${moduleActionName}:${userRoleList.accountant}:${accountId}`]: `🟡 ${userRoleText.accountant}`,
-                [`${moduleActionName}:${userRoleList.admin}:${accountId}`]: `🟡 ${userRoleText.admin}`,
-                [`${moduleActionName}:${userRoleList.resident}:${accountId}`]: `🟢 ${userRoleText.resident}`,
-                [`${moduleActionName}:${rejectActionName}:${accountId}`]: '⛔ Отклонить',
+                [`${moduleActionName}:${userRoleList.chairman}:${accountId}:${moduleActionName}`]: `🟡 ${userRoleText.chairman}`,
+                [`${moduleActionName}:${userRoleList.accountant}:${accountId}:${moduleActionName}`]: `🟡 ${userRoleText.accountant}`,
+                [`${moduleActionName}:${userRoleList.admin}:${accountId}:${moduleActionName}`]: `🟡 ${userRoleText.admin}`,
+                [`${moduleActionName}:${userRoleList.resident}:${accountId}:${moduleActionName}`]: `🟢 ${userRoleText.resident}`,
+                [`${moduleActionName}:${rejectActionName}:${accountId}:${moduleActionName}`]: '⛔ Отклонить',
             },
         });
+        messageList.push({ chatId: recipientAccountId, messageId });
     }
+
+    await setVerificationIndexItem(accountId, messageList);
 
     await removeMessage(ctx);
 
@@ -117,7 +121,7 @@ const submitAction = async (ctx) => {
     await ctx.answerCbQuery('Запрос успешно отправлен!');
 }
 
-const validationHandler = async (ctx, userStatus, accountId, preventer) => {
+const validationHandler = async (ctx, userStatus, accountId, originModuleName) => {
     const adminIdList = await getDbData(userRoleList.admin) || [superUserId];
     const filteredAdminIdList = adminIdList.filter(adminId => ![String(ctx.from.id), accountId].includes(adminId));
 
@@ -172,8 +176,14 @@ const validationHandler = async (ctx, userStatus, accountId, preventer) => {
         await updateUserData(accountId, { userRole: userStatus });
     }
 
-    if (!preventer) {
-        await removeMessage(ctx);
+    if (originModuleName === moduleActionName) {
+        const verificationMessages = await getVerificationIndexItem(accountId);
+
+        for (const { chatId, messageId } of verificationMessages) {
+            await removeMessage(ctx, { chatId, messageId });
+        }
+
+        await setVerificationIndexItem(accountId, []);
     }
 
     await ctx.answerCbQuery(isRejected ? 'Запрос отклонен' : 'Права успешно назначены');
@@ -181,10 +191,10 @@ const validationHandler = async (ctx, userStatus, accountId, preventer) => {
 
 const callbackHandler = async (ctx, next) => {
     const data = ctx.callbackQuery.data;
-    const [action, userStatus, accountId, preventer] = data.split(':');
+    const [action, userStatus, accountId, originModuleName] = data.split(':');
 
     if (action === moduleActionName) {
-        await validationHandler(ctx, userStatus, accountId, !!preventer);
+        await validationHandler(ctx, userStatus, accountId, originModuleName);
     }
 
     return next();

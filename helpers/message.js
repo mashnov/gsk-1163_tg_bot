@@ -24,9 +24,13 @@ const sendMessage = async (ctx, { accountId = ctx.chat.id, text, buttons = homeO
     }
 };
 
-const removeMessage = async (ctx, messageId) => {
+const removeMessage = async (ctx, { chatId, messageId } = {}) => {
     try {
-        await ctx.deleteMessage(messageId);
+        if (chatId && messageId) {
+            return await ctx.telegram.deleteMessage(chatId, messageId);
+        } else {
+            return await ctx.deleteMessage(messageId);
+        }
     } catch (error) {
         console.error(error.message);
     }

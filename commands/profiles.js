@@ -83,11 +83,11 @@ const profileReviewHandler = async (ctx, accountId) => {
         `Профиль обновлен: ${ getFormattedDate(userData.updatedAt) }`;
 
     const messageButtons = {
-        [`${verificationActionName}:${userRoleList.chairman}:${accountId}:no_remove`]: `🟡 ${userRoleText.chairman}`,
-        [`${verificationActionName}:${userRoleList.accountant}:${accountId}:no_remove`]: `🟡 ${userRoleText.accountant}`,
-        [`${verificationActionName}:${userRoleList.admin}:${accountId}:no_remove`]: `🟡 ${userRoleText.admin}`,
-        [`${verificationActionName}:${userRoleList.resident}:${accountId}:no_remove`]: `🟢 ${userRoleText.resident}`,
-        [`${verificationActionName}:${rejectActionName}:${accountId}:no_remove`]: '⛔ Отклонить',
+        [`${verificationActionName}:${userRoleList.chairman}:${accountId}:${moduleActionName}`]: `🟡 ${userRoleText.chairman}`,
+        [`${verificationActionName}:${userRoleList.accountant}:${accountId}:${moduleActionName}`]: `🟡 ${userRoleText.accountant}`,
+        [`${verificationActionName}:${userRoleList.admin}:${accountId}:${moduleActionName}`]: `🟡 ${userRoleText.admin}`,
+        [`${verificationActionName}:${userRoleList.resident}:${accountId}:${moduleActionName}`]: `🟢 ${userRoleText.resident}`,
+        [`${verificationActionName}:${rejectActionName}:${accountId}:${moduleActionName}`]: '⛔ Отклонить',
         [`${moduleActionName}_start`]: '⬅️ Назад',
     };
 

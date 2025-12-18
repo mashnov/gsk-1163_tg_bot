@@ -40,7 +40,7 @@ function initStepper({ actionName, stepList, cancelActions = homeOption, submitA
         }
 
         if (session?.messageId) {
-            await removeMessage(ctx, session.messageId);
+            await removeMessage(ctx, { messageId: session.messageId });
         }
 
         if (!stepList[session.stepIndex]) {

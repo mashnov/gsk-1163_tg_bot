@@ -17,6 +17,7 @@ const setDbData = async (id, data) => {
     return db.set(String(id), data);
 };
 
+// USER DATA
 const createUserData = async (accountId) => {
     if (!accountId) {
         return;
@@ -68,6 +69,7 @@ const updateUserData = async (accountId, patchData) => {
     return setDbData(accountId, userData);
 };
 
+// USER INDEX
 const createUserIndex = async (indexId) => {
     if (!indexId) {
         return;
@@ -119,8 +121,38 @@ const getUserListByIndex = async (userIdList) => {
     return usersData.filter(Boolean);
 };
 
+// VERIFICATION INDEX
+const createVerificationIndex = async () => {
+    const verificationIndex = await getDbData('verificationIndex');
+
+    if (verificationIndex) {
+        return verificationIndex;
+    }
+
+    return setDbData('verificationIndex', {});
+};
+
+const getVerificationIndexItem = async (accountId = []) => {
+    const verificationIndex = await getDbData('verificationIndex');
+    return verificationIndex[accountId] || [];
+};
+
+const setVerificationIndexItem = async (accountId, messageList = []) => {
+    if (!accountId) {
+        return;
+    }
+    const verificationIndex = { ...(await createVerificationIndex()) };
+
+    verificationIndex[accountId] = messageList;
+
+    return setDbData('verificationIndex', verificationIndex);
+};
+
+
 module.exports = {
     getDbData,
     updateUserData,
     getUserListByIndex,
+    getVerificationIndexItem,
+    setVerificationIndexItem,
 };
