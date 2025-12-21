@@ -1,9 +1,10 @@
 const { getButtons } = require('./getters');
 const { homeOption, messageParams } = require('../const/dictionary');
 
-const sendMessage = async (ctx, { accountId = ctx.chat.id, text, buttons = homeOption, attachment }) => {
+const sendMessage = async (ctx, { accountId = ctx.chat.id, text, buttons = homeOption, attachment, silent }) => {
     const messageButtons = getButtons(buttons);
     const params = {
+        disable_notification: silent || ctx.chat?.type !== 'private',
         caption: text,
         ...messageButtons,
         ...messageParams,
