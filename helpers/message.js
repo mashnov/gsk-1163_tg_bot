@@ -2,7 +2,7 @@ const { Input } = require('telegraf');
 const { getButtons } = require('./getters');
 const { homeOption, messageParams } = require('../const/dictionary');
 
-const sendMessage = async (ctx, { accountId = ctx.chat.id, text, buttons = homeOption, attachment, silent }) => {
+const sendMessage = async (ctx, { accountId = ctx.chat.id, text, filePath, buttons = homeOption, attachment, silent }) => {
     const messageButtons = getButtons(buttons);
     const params = {
         disable_notification: silent || ctx.chat?.type !== 'private',
@@ -10,6 +10,15 @@ const sendMessage = async (ctx, { accountId = ctx.chat.id, text, buttons = homeO
         ...messageButtons,
         ...messageParams,
     };
+
+    if (filePath) {
+        try {
+            const message = await ctx.replyWithDocument(Input.fromLocalFile(filePath), params);
+            return message.message_id;
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
 
     const methods = {
         photo: 'sendPhoto',
@@ -38,16 +47,7 @@ const removeMessage = async (ctx, { chatId, messageId } = {}) => {
     }
 };
 
-const sendFileMessage = async (ctx, { path, caption } = {}) => {
-    try {
-        return await ctx.replyWithDocument(Input.fromLocalFile(path), { caption });
-    } catch (error) {
-        console.error(error.message);
-    }
-};
-
 module.exports = {
     sendMessage,
-    sendFileMessage,
     removeMessage,
 };

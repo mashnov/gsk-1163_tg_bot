@@ -1,10 +1,8 @@
-const { sendMessage, sendFileMessage, removeMessage } = require('../helpers/message');
+const { sendMessage, removeMessage } = require('../helpers/message');
 const { homeOption } = require('../const/dictionary');
 
 const moduleActionName = 'rules';
 const startActionName = 'start';
-const fileActionName = 'file';
-const textActionName = 'text';
 const chatSectionName = 'chat';
 const silentSectionName = 'silent';
 const dogSectionName = 'dog';
@@ -16,9 +14,9 @@ const startAction = async (ctx, bot, needAnswer) => {
         'Для ознакомления с текстами правил воспользуйтесь кнопками ниже.';
 
     const buttons = {
-        [`${moduleActionName}:${textActionName}:${chatSectionName}`]: 'Правила чата',
-        [`${moduleActionName}:${textActionName}:${silentSectionName}`]: 'Закон о тишине',
-        [`${moduleActionName}:${textActionName}:${dogSectionName}`]: 'Закон о содержании собак',
+        [`${moduleActionName}:${chatSectionName}`]: 'Правила чата',
+        [`${moduleActionName}:${silentSectionName}`]: 'Закон о тишине',
+        [`${moduleActionName}:${dogSectionName}`]: 'Закон о содержании собак',
     };
 
     await sendMessage(ctx, {
@@ -39,9 +37,14 @@ const startAction = async (ctx, bot, needAnswer) => {
 
 const ruleSelectHandler = async (ctx, sectionName) => {
     let text = '';
-    let buttons = {
+    const buttons = {
         [`${moduleActionName}_${startActionName}`]: '⬅️ Назад',
         ...homeOption,
+    };
+
+    const filePaths = {
+        [silentSectionName]: './assets/273_70.pdf',
+        [dogSectionName]: './assets/588_110.pdf',
     };
 
     if (sectionName === chatSectionName) {
@@ -79,11 +82,6 @@ const ruleSelectHandler = async (ctx, sectionName) => {
             '<b>Ремонтные работы разрешены:</b>\n' +
             '<blockquote>• С 09:00 до 19:00\n' +
             '• С перерывом с 13:00 до 15:00</blockquote>';
-
-        buttons = {
-            [`${moduleActionName}:${fileActionName}:${silentSectionName}`]: '📄 Скачать файл',
-            ...buttons,
-        };
     }
 
     if (sectionName === dogSectionName) {
@@ -103,16 +101,12 @@ const ruleSelectHandler = async (ctx, sectionName) => {
             '<blockquote>• Владельцы обязаны убирать продукты жизнедеятельности своего питомца на территории общего пользования.</blockquote>\n\n' +
             '<b>Запреты на определённых объектах.</b>\n' +
             '<blockquote>Дополнительно запрещён выгул на детских и спортивных площадках, у учреждений образования и здравоохранения.</blockquote>';
-
-        buttons = {
-            [`${moduleActionName}:${fileActionName}:${dogSectionName}`]: '📄 Скачать файл',
-            ...buttons,
-        };
     }
 
     await sendMessage(ctx, {
         text,
         buttons,
+        filePath: filePaths[sectionName],
     });
 
     await removeMessage(ctx);
@@ -120,29 +114,12 @@ const ruleSelectHandler = async (ctx, sectionName) => {
     await ctx.answerCbQuery();
 };
 
-const fileSelectHandler = async (ctx, sectionName) => {
-    const paths = {
-        [silentSectionName]: './assets/273_70.pdf',
-        [dogSectionName]: './assets/588_110.pdf',
-    };
-    const captions = {
-        [silentSectionName]: 'Закон Санкт-Петербурга №273_70',
-        [dogSectionName]: 'Закон Санкт-Петербурга №588-110',
-    };
-    await sendFileMessage(ctx, { path: paths[sectionName], caption: captions[sectionName] });
-    await ctx.answerCbQuery();
-};
-
 const callbackHandler = async (ctx, next) => {
     const data = ctx.callbackQuery.data;
-    const [action, actionName, sectionName] = data.split(':');
+    const [action, sectionName] = data.split(':');
 
-    if (action === moduleActionName && actionName === textActionName) {
+    if (action === moduleActionName) {
         await ruleSelectHandler(ctx, sectionName);
-    }
-
-    if (action === moduleActionName && actionName === fileActionName) {
-        await fileSelectHandler(ctx, sectionName);
     }
 
     return next();
