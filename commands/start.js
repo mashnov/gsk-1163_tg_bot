@@ -24,8 +24,8 @@ const initAction = async (ctx, bot, needAnswer) => {
     const isPrivateChat = ctx.chat?.type === 'private';
 
     const buttons = {
-        contact_start: '📖 Контакты',
         rules_start: '📚 Правила',
+        contact_start: '📖 Контакты',
     };
 
     if (!isVerified && isPrivateChat) {

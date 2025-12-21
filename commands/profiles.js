@@ -64,7 +64,7 @@ const profileListHandler = async (ctx, listType) => {
         buttons[`${moduleActionName}:${userData.accountId}:${reviewActionName}`] = userData.userName;
     }
 
-    buttons[`${moduleActionName}_start`] = '⬅️ Назад' ;
+    buttons[`${moduleActionName}_start`] = '⬅️ Назад';
 
     await sendMessage(ctx, {
         text: messageText,
