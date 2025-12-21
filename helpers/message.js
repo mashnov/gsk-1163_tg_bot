@@ -1,3 +1,4 @@
+const { Input } = require('telegraf');
 const { getButtons } = require('./getters');
 const { homeOption, messageParams } = require('../const/dictionary');
 
@@ -37,7 +38,16 @@ const removeMessage = async (ctx, { chatId, messageId } = {}) => {
     }
 };
 
+const sendFileMessage = async (ctx, { path, caption } = {}) => {
+    try {
+        return await ctx.replyWithDocument(Input.fromLocalFile(path), { caption });
+    } catch (error) {
+        console.error(error.message);
+    }
+};
+
 module.exports = {
     sendMessage,
+    sendFileMessage,
     removeMessage,
 };

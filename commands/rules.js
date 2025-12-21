@@ -1,8 +1,10 @@
-const { sendMessage, removeMessage } = require('../helpers/message');
+const { sendMessage, sendFileMessage, removeMessage } = require('../helpers/message');
 const { homeOption } = require('../const/dictionary');
 
 const moduleActionName = 'rules';
 const startActionName = 'start';
+const fileActionName = 'file';
+const textActionName = 'text';
 const chatSectionName = 'chat';
 const silentSectionName = 'silent';
 const dogSectionName = 'dog';
@@ -14,9 +16,9 @@ const startAction = async (ctx, bot, needAnswer) => {
         'Для ознакомления с текстами правил воспользуйтесь кнопками ниже.';
 
     const buttons = {
-        [`${moduleActionName}:${chatSectionName}`]: 'Правила чата',
-        [`${moduleActionName}:${silentSectionName}`]: 'Закон о тишине',
-        [`${moduleActionName}:${dogSectionName}`]: 'Закон о содержании собак',
+        [`${moduleActionName}:${textActionName}:${chatSectionName}`]: 'Правила чата',
+        [`${moduleActionName}:${textActionName}:${silentSectionName}`]: 'Закон о тишине',
+        [`${moduleActionName}:${textActionName}:${dogSectionName}`]: 'Закон о содержании собак',
     };
 
     await sendMessage(ctx, {
@@ -35,9 +37,9 @@ const startAction = async (ctx, bot, needAnswer) => {
 };
 
 
-const sectionSelectHandler = async (ctx, sectionName) => {
+const ruleSelectHandler = async (ctx, sectionName) => {
     let text = '';
-    const buttons = {
+    let buttons = {
         [`${moduleActionName}_${startActionName}`]: '⬅️ Назад',
         ...homeOption,
     };
@@ -69,7 +71,7 @@ const sectionSelectHandler = async (ctx, sectionName) => {
 
     if (sectionName === silentSectionName) {
         text =
-            '📖 <a href="https://www.consultant.ru/cons/cgi/online.cgi?from=99521-25&req=doc&base=SPB&n=319748">Закон Санкт-Петербурга №273-70 о тишине </a>\n\n' +
+            '📖 Закон Санкт-Петербурга №273-70 о тишине\n\n' +
             '<b>В Санкт-Петербурге запрещено шуметь:</b>\n' +
             '<blockquote>• С 22:00 до 08:00 в будние дни;\n' +
             '• С 22:00 до 12:00 в выходные и праздничные дни.</blockquote>\n\n' +
@@ -77,11 +79,16 @@ const sectionSelectHandler = async (ctx, sectionName) => {
             '<b>Ремонтные работы разрешены:</b>\n' +
             '<blockquote>• С 09:00 до 19:00\n' +
             '• С перерывом с 13:00 до 15:00</blockquote>';
+
+        buttons = {
+            [`${moduleActionName}:${fileActionName}:${silentSectionName}`]: '📄 Скачать файл',
+            ...buttons,
+        };
     }
 
     if (sectionName === dogSectionName) {
         text =
-            '📖 <a href="https://www.consultant.ru/cons/cgi/online.cgi?req=doc&base=SPB&n=319694#7Ct936VL8qouefWC">Закон Санкт-Петербурга №588-110 о содержании собак </a>\n\n' +
+            '📖 Закон Санкт-Петербурга №588-110 о содержании собак\n\n' +
             '<b>Поводок.</b>\n' +
             '<blockquote>• Все собаки вне места содержания обязаны находиться на поводке</blockquote>\n\n.' +
             '<b>Намордник.</b>\n' +
@@ -96,6 +103,11 @@ const sectionSelectHandler = async (ctx, sectionName) => {
             '<blockquote>• Владельцы обязаны убирать продукты жизнедеятельности своего питомца на территории общего пользования.</blockquote>\n\n' +
             '<b>Запреты на определённых объектах.</b>\n' +
             '<blockquote>Дополнительно запрещён выгул на детских и спортивных площадках, у учреждений образования и здравоохранения.</blockquote>';
+
+        buttons = {
+            [`${moduleActionName}:${fileActionName}:${dogSectionName}`]: '📄 Скачать файл',
+            ...buttons,
+        };
     }
 
     await sendMessage(ctx, {
@@ -106,14 +118,31 @@ const sectionSelectHandler = async (ctx, sectionName) => {
     await removeMessage(ctx);
 
     await ctx.answerCbQuery();
-}
+};
+
+const fileSelectHandler = async (ctx, sectionName) => {
+    const paths = {
+        [silentSectionName]: './assets/273_70.pdf',
+        [dogSectionName]: './assets/588_110.pdf',
+    };
+    const captions = {
+        [silentSectionName]: 'Закон Санкт-Петербурга №273_70',
+        [dogSectionName]: 'Закон Санкт-Петербурга №588-110',
+    };
+    await sendFileMessage(ctx, { path: paths[sectionName], caption: captions[sectionName] });
+    await ctx.answerCbQuery();
+};
 
 const callbackHandler = async (ctx, next) => {
     const data = ctx.callbackQuery.data;
-    const [action, sectionName] = data.split(':');
+    const [action, actionName, sectionName] = data.split(':');
 
-    if (action === moduleActionName) {
-        await sectionSelectHandler(ctx, sectionName);
+    if (action === moduleActionName && actionName === textActionName) {
+        await ruleSelectHandler(ctx, sectionName);
+    }
+
+    if (action === moduleActionName && actionName === fileActionName) {
+        await fileSelectHandler(ctx, sectionName);
     }
 
     return next();
