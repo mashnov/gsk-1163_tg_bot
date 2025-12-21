@@ -4,6 +4,7 @@ const { getUserNameLink, getUserName, getFormattedDate, getSummaryMessage, getRo
 const { getDbData, updateUserData, getVerificationIndexItem, setVerificationIndexItem } = require('../helpers/db');
 const { sendMessage, removeMessage } = require('../helpers/message');
 const { isValidOwner } = require('../helpers/validation');
+const { guard } = require('../helpers/guard');
 
 const { userStatusText, userStatusList, userRoleText, userRoleList} = require('../const/db');
 const { backOption} = require('../const/dictionary');
@@ -27,6 +28,12 @@ let stepper = undefined;
 })();
 
 const startAction = async (ctx, needAnswer) => {
+    const isGuardPassed = await guard(ctx, { privateChat: true });
+
+    if (!isGuardPassed) {
+        return;
+    }
+
     const userData = await getDbData(ctx.from.id);
 
     const userStatus = userData?.userStatus;
@@ -67,6 +74,12 @@ const startAction = async (ctx, needAnswer) => {
 };
 
 const initAction = async (ctx) => {
+    const isGuardPassed = await guard(ctx, { privateChat: true });
+
+    if (!isGuardPassed) {
+        return;
+    }
+
     initStore(ctx.from.id, moduleActionName);
 
     await stepper.startHandler(ctx);

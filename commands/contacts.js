@@ -25,11 +25,12 @@ const verifiedMessageText = '\n\nДля связи с Председателем
 const initAction = async (ctx, bot, needAnswer) => {
     const userData = await getDbData(ctx.from.id);
     const isVerified = userData?.userStatus === userStatusList.verified;
+    const isPrivateChat = ctx.chat?.type === 'private';
 
     await sendMessage(ctx, {
         text: isVerified ? messageText + verifiedMessageText : messageText,
         buttons: {
-            ...(isVerified ? { messages_start: '💬 Написать сообщение' } : {}),
+            ...(isVerified && isPrivateChat ? { messages_start: '💬 Написать сообщение' } : {}),
             ...backOption
         },
     });

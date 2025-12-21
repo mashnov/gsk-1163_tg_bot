@@ -3,6 +3,7 @@ const { initStore, getSession} = require('../helpers/sessions');
 const { getUserNameLink, getSummaryMessage } = require('../helpers/getters');
 const { getDbData } = require('../helpers/db');
 const { sendMessage, removeMessage } = require('../helpers/message');
+const { guard } = require('../helpers/guard');
 
 const { stepList } = require('../const/meter');
 const { userRoleList } = require('../const/db');
@@ -23,6 +24,12 @@ let stepper = undefined;
 })();
 
 const initAction = async (ctx, needAnswer) => {
+    const isGuardPassed = await guard(ctx, { privateChat: true, verify: true });
+
+    if (!isGuardPassed) {
+        return;
+    }
+
     initStore(ctx.from.id, moduleActionName);
 
     await stepper.startHandler(ctx);

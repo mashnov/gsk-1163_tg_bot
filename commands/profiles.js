@@ -1,6 +1,7 @@
 const { getUserName, getUserNameLink, getFormattedDate } = require('../helpers/getters');
 const { getDbData, getUserListByIndex } = require('../helpers/db');
 const { sendMessage, removeMessage } = require('../helpers/message');
+const { guard } = require('../helpers/guard');
 
 const { userRoleList, userRoleText, userStatusList, userStatusText } = require('../const/db');
 const { backOption } = require('../const/dictionary');
@@ -12,6 +13,12 @@ const listActionName = 'list';
 const reviewActionName = 'review';
 
 const startAction = async (ctx, needAnswer) => {
+    const isGuardPassed = await guard(ctx, { privateChat: true, verify: true, admin: true });
+
+    if (!isGuardPassed) {
+        return;
+    }
+
     const userData = await getDbData(ctx.from.id);
     const userRole = userData?.userRole;
 

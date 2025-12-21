@@ -13,34 +13,39 @@ const messageText =
     '• ознакомиться с правилами чата\n' +
     '• связаться с правлением или администратором';
 
-const notVerifiedMessageText = '\n\n✨ <b>Пожалуйста, пройдите верификацию, чтобы получить доступ ко всем возможностям бота.</b>';
+const notVerifiedMessage = '\n\n✨ <b>Пожалуйста, пройдите верификацию, чтобы получить доступ ко всем возможностям бота.</b>';
+const notPrivateMessage = '\n\n🔒 Передача показаний счётчиков и верификация пользователей для обеспечения сохранности персональных данных осуществляются только в личном чате с ботом.';
 
 const initAction = async (ctx, bot, needAnswer) => {
     const userData = await getDbData(ctx.from.id);
     const userStatus = userData?.userStatus;
     const isAdmin = userData?.userIsAdmin;
     const isVerified = userStatus === userStatusList.verified;
+    const isPrivateChat = ctx.chat?.type === 'private';
 
     const buttons = {
         contact_start: '📖 Контакты',
-        rules_start: '📚 Правила чата',
+        rules_start: '📚 Правила',
     };
 
-    if (!isVerified) {
+    if (!isVerified && isPrivateChat) {
         buttons.verification_start = '✨ Верификация';
     }
 
-    if (isAdmin) {
+    if (isVerified && isAdmin && isPrivateChat) {
         buttons.profiles_start = '🪪 Администрирование';
     }
 
-    if (isVerified) {
+    if (isVerified && isPrivateChat) {
         buttons.meter_start = '〽️ Показания счетчиков';
         buttons.messages_start = '💬 Написать сообщение';
     }
 
+    const notVerifiedMessageText = !isVerified && isPrivateChat ? notVerifiedMessage : '';
+    const notPrivateMessageText = !isPrivateChat ? notPrivateMessage : '';
+
     await sendMessage(ctx, {
-        text: isVerified ? messageText : messageText + notVerifiedMessageText,
+        text: messageText + notVerifiedMessageText + notPrivateMessageText,
         buttons,
     });
 
