@@ -14,7 +14,6 @@ const messageText =
         'Дворник: <a href="tel:+79013130083">+7 (901) 313-00-83</a>\n\n' +
         'Лифт <a href="tel:+78129111515">911-15-15</a>\n' +
         'Домофон: <a href="tel:+78126120033">612-00-33</a>\n\n' +
-        '<a href="https://t.me/chat1163">Чат жителей</a>\n\n' +
         '<a href="https://max.ru/join/WXnefLdd0qI3xONMvNrNGB3Yg_0BSJcrCz3qmyufAWU?clckid=ce28f0e7">Канал в MAX</a>\n' +
         '<a href="https://t.me/news1163">Канал в Телеграм</a>\n' +
         '<a href="https://chat.whatsapp.com/LJoRyuouIflACMnCZjTR5h?clckid=97cd2216">Канал в WhatsApp</a>\n' +
@@ -28,7 +27,7 @@ const initAction = async (ctx, bot, needAnswer) => {
     const isPrivateChat = ctx.chat?.type === 'private';
 
     await sendMessage(ctx, {
-        text: isVerified ? messageText + verifiedMessageText : messageText,
+        text: isVerified && isPrivateChat ? messageText + verifiedMessageText : messageText,
         buttons: {
             ...(isVerified && isPrivateChat ? { messages_start: '💬 Написать сообщение' } : {}),
             ...backOption
