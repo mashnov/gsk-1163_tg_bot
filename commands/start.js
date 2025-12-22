@@ -15,11 +15,8 @@ const initAction = async (ctx, bot, needAnswer) => {
 
     const buttons = {
         [commandNames.rules]: '📚 Правила',
+        [commandNames.contact]: '📖 Контакты',
     };
-
-    if (isResident || isAdmin) {
-        buttons[commandNames.contact] = '📖 Контакты';
-    }
 
     if ((isResident || isAdmin) && isPrivateChat) {
         buttons[commandNames.meter] = '〽️ Показания счетчиков';

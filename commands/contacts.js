@@ -1,9 +1,8 @@
 const { getUserData } = require('../helpers/db');
 const { sendMessage, removeMessage } = require('../helpers/message');
-const { guard } = require('../helpers/guard');
 
 const { userStatusList } = require('../const/db');
-const { backOption, commandNames, moduleNames } = require('../const/dictionary');
+const { backOption, closeOption, commandNames, moduleNames } = require('../const/dictionary');
 
 const moduleParam = {
     name: moduleNames.contact,
@@ -11,12 +10,6 @@ const moduleParam = {
 }
 
 const initAction = async (ctx, bot, needAnswer) => {
-    const isGuardPassed = await guard(ctx, { unBlocked: true });
-
-    if (!isGuardPassed) {
-        return;
-    }
-
     const userData = await getUserData(ctx.from.id);
     const isResident = userData?.userStatus === userStatusList.resident;
     const isAdmin = [userStatusList.admin, userStatusList.accountant, userStatusList.chairman].includes(userData?.userStatus);
@@ -47,10 +40,7 @@ const initAction = async (ctx, bot, needAnswer) => {
 
     await sendMessage(ctx, {
         text: messagesIsAllowed ? messageText + verifiedMessageText : messageText,
-        buttons: {
-            ...buttons,
-            ...backOption
-        },
+        buttons: !isPrivateChat ? { ...closeOption } : { ...buttons, ...backOption },
     });
 
     await removeMessage(ctx);

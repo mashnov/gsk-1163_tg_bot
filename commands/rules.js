@@ -1,5 +1,5 @@
 const { sendMessage, removeMessage } = require('../helpers/message');
-const { homeOption, moduleNames } = require('../const/dictionary');
+const { homeOption, closeOption, moduleNames } = require('../const/dictionary');
 
 const moduleParam = {
     name: moduleNames.rules,
@@ -9,7 +9,7 @@ const moduleParam = {
     dog: 'dog',
 };
 
-const startAction = async (ctx, bot, needAnswer) => {
+const initAction = async (ctx, bot, needAnswer) => {
     const messageText =
         '📚 Правила\n\n' +
         'В этом разделе собраны основные правила.\n' +
@@ -21,11 +21,14 @@ const startAction = async (ctx, bot, needAnswer) => {
         [`${moduleParam.name}:${moduleParam.dog}`]: 'Закон о содержании собак',
     };
 
+    const isPrivateChat = ctx.chat?.type === 'private';
+
     await sendMessage(ctx, {
         text: messageText,
         buttons: {
             ...buttons,
-            ...homeOption,
+            ...(isPrivateChat ? homeOption : {}),
+            ...(!isPrivateChat ? closeOption : {}),
         },
     });
 
@@ -39,10 +42,15 @@ const startAction = async (ctx, bot, needAnswer) => {
 
 const ruleSelectHandler = async (ctx, sectionName) => {
     let text = '';
+
+    const isPrivateChat = ctx.chat?.type === 'private';
+
     const buttons = {
         [`${moduleParam.name}:${moduleParam.start}`]: '⬅️ Назад',
-        ...homeOption,
+        ...(isPrivateChat ? homeOption : {}),
+        ...(!isPrivateChat ? closeOption : {}),
     };
+
 
     const filePaths = {
         [moduleParam.silent]: './assets/273_70.pdf',
@@ -128,9 +136,9 @@ const callbackHandler = async (ctx, next) => {
 };
 
 module.exports = (bot) => {
-    bot.command(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => startAction(ctx, bot));
-    bot.action(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => startAction(ctx, bot, true));
+    bot.command(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => initAction(ctx, bot));
+    bot.action(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => initAction(ctx, bot, true));
     bot.on('callback_query', async (ctx, next) => callbackHandler(ctx, next));
-    bot.hears('Правила', async (ctx) => startAction(ctx, bot));
-    bot.hears('правила', async (ctx) => startAction(ctx, bot));
+    bot.hears('Правила', async (ctx) => initAction(ctx, bot));
+    bot.hears('правила', async (ctx) => initAction(ctx, bot));
 };
