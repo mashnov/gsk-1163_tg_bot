@@ -64,4 +64,5 @@ module.exports = (bot) => {
     bot.command(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => initAction(ctx, bot));
     bot.action(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => initAction(ctx, bot, true));
     bot.hears('Контакты', async (ctx) => initAction(ctx, bot));
+    bot.hears('контакты', async (ctx) => initAction(ctx, bot));
 };

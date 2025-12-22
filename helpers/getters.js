@@ -1,6 +1,10 @@
 const { Markup } = require('telegraf');
 const residents = require('../const/residents.json');
 
+const getKeyboard = (options) => {
+    return Markup.keyboard(options).resize().persistent()
+};
+
 const getButtons = (options) => {
     const buttons = Object.entries(options).map(([action, label]) => {
         return [Markup.button.callback(String(label || action), String(action))];
@@ -105,6 +109,7 @@ const getRoomOwner = (room) => {
 
 module.exports = {
     getButtons,
+    getKeyboard,
     getSummaryMessage,
     getMessageAttachment,
     getUserNameLink,

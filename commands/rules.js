@@ -132,4 +132,5 @@ module.exports = (bot) => {
     bot.action(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => startAction(ctx, bot, true));
     bot.on('callback_query', async (ctx, next) => callbackHandler(ctx, next));
     bot.hears('Правила', async (ctx) => startAction(ctx, bot));
+    bot.hears('правила', async (ctx) => startAction(ctx, bot));
 };
