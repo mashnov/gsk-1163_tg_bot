@@ -1,65 +1,66 @@
 const { initStepper } = require('../helpers/stepper');
 const { initStore, getSession } = require('../helpers/sessions');
 const { getUserNameLink, getUserName, getFormattedDate, getSummaryMessage, getRoomOwner } = require('../helpers/getters');
-const { getDbData, updateUserData, getVerificationIndexItem, setVerificationIndexItem } = require('../helpers/db');
+const { getUserIndex, getUserData, setUserData, getVerificationIndexItem, setVerificationIndexItem } = require('../helpers/db');
 const { sendMessage, removeMessage } = require('../helpers/message');
 const { isValidOwner } = require('../helpers/validation');
+const { getArrayFallback } = require('../helpers/array');
 const { guard } = require('../helpers/guard');
 
-const { userStatusText, userStatusList, userRoleText, userRoleList} = require('../const/db');
-const { backOption} = require('../const/dictionary');
+const { superUserId } = require('../const/env');
+const { userStatusText, userStatusList } = require('../const/db');
+const { backOption, closeOption, moduleNames} = require('../const/dictionary');
 const { stepList } = require('../const/verification');
 
-const moduleActionName = 'verification';
-const rejectActionName = 'reject';
-
-const superUserId = process.env.SUPER_USER_ID;
+const moduleParam = {
+    name: moduleNames.verification,
+    init: 'init',
+    start: 'start',
+    submit: 'submit',
+};
 
 let stepper = undefined;
 
 (async () => {
     stepper = initStepper({
         stepList,
-        actionName: moduleActionName,
+        actionName: moduleParam.name,
         submitActions: {
-            [`${moduleActionName}_submit`]: 'Отправить ✅'
+            [`${moduleParam.name}:${moduleParam.submit}`]: 'Отправить ✅'
         },
     });
 })();
 
 const startAction = async (ctx, needAnswer) => {
-    const isGuardPassed = await guard(ctx, { privateChat: true });
+    const isGuardPassed = await guard(ctx, { privateChat: true, unBlocked: true });
 
     if (!isGuardPassed) {
         return;
     }
 
-    const userData = await getDbData(ctx.from.id);
-
-    const userStatus = userData?.userStatus;
-    const userRole = userData?.userRole;
-    const userUpdateDate = userData?.updatedAt;
-
-    const buttons = {};
-
-    if (userStatus === userStatusList.unverified || !userStatus) {
-        buttons[`${moduleActionName}_init`] = 'Начать верификацию ✨';
-    }
-
-    if (userStatus === userStatusList.pending) {
-        buttons[`${moduleActionName}_start`] = '🔃 Обновить статус';
-    }
+    const userData = await getUserData(ctx.from.id);
+    const isUnverified = userData?.userStatus === userStatusList.undefined || !userData?.userStatus;
+    const isPending = userData?.userStatus === userStatusList.pending;
 
     const messageText =
         `✨ Верификация\n\n` +
-        `${ getUserName(ctx.from) }!\n\n` +
-        `Роль: ${ userRoleText[userRole] }\n` +
-        `Ваш статус: ${ userStatusText[userStatus] }`;
+        `Ваш статус: ${ userStatusText[userData?.userStatus] }`;
 
-    const userUpdateText = userUpdateDate ? `\n\nПоследнее обновление профиля: ${ getFormattedDate(userUpdateDate) }` : '';
+    const userCreatedText = `\n\nДата регистрации профиля: ${ getFormattedDate(userData?.createdAt) }`;
+    const userUpdateText = `\nПоследнее обновление профиля: ${ getFormattedDate(userData?.updatedAt) }`;
+
+    const buttons = {};
+
+    if (isUnverified) {
+        buttons[`${moduleParam.name}:${moduleParam.init}`] = 'Начать верификацию ✨';
+    }
+
+    if (isPending) {
+        buttons[`${moduleParam.name}:${moduleParam.start}`] = '🔃 Обновить статус';
+    }
 
     await sendMessage(ctx, {
-        text: messageText + userUpdateText,
+        text: messageText + userCreatedText + userUpdateText,
         buttons: {
             ...buttons,
             ...backOption,
@@ -74,13 +75,13 @@ const startAction = async (ctx, needAnswer) => {
 };
 
 const initAction = async (ctx) => {
-    const isGuardPassed = await guard(ctx, { privateChat: true });
+    const isGuardPassed = await guard(ctx, { privateChat: true, unBlocked: true });
 
     if (!isGuardPassed) {
         return;
     }
 
-    initStore(ctx.from.id, moduleActionName);
+    initStore(ctx.from.id, moduleParam.name);
 
     await stepper.startHandler(ctx);
     await removeMessage(ctx);
@@ -89,19 +90,23 @@ const initAction = async (ctx) => {
 };
 
 const submitAction = async (ctx) => {
-    const accountId = ctx.from.id;
-    const session = getSession(accountId);
-    const validationIcon = `${ isValidOwner(session.room, session.owner) ? '🟢' : '🔴'}`;
-    const headerText = `${ validationIcon } Новый запрос авторизации\n\n`;
-    const userNameText = `Отправитель: ${ getUserNameLink(ctx.from) }\n`;
-    const documentOwnerText = `Собственник по документам: ${ getRoomOwner(session.room) }\n\n`;
-    const summaryText = getSummaryMessage(stepList[session.stepIndex]?.summary, session);
-    const recipientMessage = `${ headerText }${ userNameText }${ documentOwnerText }${ summaryText }`;
     const senderMessage = '🟢 Ваш запрос отправлен';
-
     await sendMessage(ctx, { text: senderMessage });
 
-    const adminIdList = await getDbData(userRoleList.admin) || [superUserId];
+    const accountId = ctx.from.id;
+    const session = getSession(accountId);
+
+    const recipientIcon = `${ isValidOwner(session.room, session.owner) ? '🟢' : '🔴'}`;
+    const recipientHeader = `${ recipientIcon } Новый запрос авторизации\n\n`;
+    const recipientResidentText = `Отправитель: ${ getUserNameLink(ctx.from) }\n`;
+    const recipientOwnerText = `Собственник по документам: ${ getRoomOwner(session.room) }\n\n`;
+    const recipientText = getSummaryMessage(stepList[session.stepIndex]?.summary, session);
+    const recipientMessage = `${ recipientHeader }${ recipientResidentText }${ recipientOwnerText }${ recipientText }`;
+
+    const chairmanIdList = getArrayFallback(await getUserIndex(userStatusList.chairman), [superUserId]);
+    const accountantIdList = getArrayFallback(await getUserIndex(userStatusList.accountant), chairmanIdList);
+    const adminIdList = getArrayFallback(await getUserIndex(userStatusList.admin), accountantIdList);
+
     const messageList = [];
 
     for (const recipientAccountId of adminIdList) {
@@ -109,116 +114,97 @@ const submitAction = async (ctx) => {
             accountId: recipientAccountId,
             text: recipientMessage,
             buttons: {
-                [`${moduleActionName}:${userRoleList.chairman}:${accountId}:${moduleActionName}`]: `🟡 ${userRoleText.chairman}`,
-                [`${moduleActionName}:${userRoleList.accountant}:${accountId}:${moduleActionName}`]: `🟡 ${userRoleText.accountant}`,
-                [`${moduleActionName}:${userRoleList.admin}:${accountId}:${moduleActionName}`]: `🟡 ${userRoleText.admin}`,
-                [`${moduleActionName}:${userRoleList.resident}:${accountId}:${moduleActionName}`]: `🟢 ${userRoleText.resident}`,
-                [`${moduleActionName}:${rejectActionName}:${accountId}:${moduleActionName}`]: '⛔ Отклонить',
+                [`${moduleParam.name}:${userStatusList.chairman}:${accountId}`]: `🟡 ${userStatusText.chairman}`,
+                [`${moduleParam.name}:${userStatusList.accountant}:${accountId}`]: `🟡 ${userStatusText.accountant}`,
+                [`${moduleParam.name}:${userStatusList.admin}:${accountId}`]: `🟡 ${userStatusText.admin}`,
+                [`${moduleParam.name}:${userStatusList.resident}:${accountId}`]: `🟢 ${userStatusText.resident}`,
+                [`${moduleParam.name}:${userStatusList.undefined}:${accountId}`]: '🔴 Отклонить',
+                [`${moduleParam.name}:${userStatusList.blocked}:${accountId}`]: '⛔ Заблокировать',
             },
         });
         messageList.push({ chatId: recipientAccountId, messageId });
     }
 
     await setVerificationIndexItem(accountId, messageList);
-
     await removeMessage(ctx);
-
-    await updateUserData(accountId, {
-        profileName: session.name,
+    await setUserData(accountId, {
+        residentName: session.name,
         userName: getUserName(ctx.from),
         userStatus: userStatusList.pending,
         roomNumber: session.room,
         phoneNumber: session.phone,
     });
-
     await ctx.answerCbQuery('Запрос успешно отправлен!');
 }
 
-const validationHandler = async (ctx, userStatus, accountId, originModuleName) => {
-    const adminIdList = await getDbData(userRoleList.admin) || [superUserId];
-    const filteredAdminIdList = adminIdList.filter(adminId => ![String(ctx.from.id), accountId].includes(adminId));
+const validationHandler = async (ctx, userStatus, accountId) => {
+    const adminIdList = getArrayFallback(await getUserIndex(userStatusList.admin), [superUserId]);
+    const filteredAdminIdList = adminIdList.filter(adminId => ![String(ctx.from.id), accountId].includes(String(adminId)));
 
     for (const recipientAccountId of filteredAdminIdList) {
         const adminUserLink = getUserNameLink(ctx.from);
-        const residentData = await getDbData(accountId);
+        const residentData = await getUserData(accountId);
         const residentLinkData = { id: accountId, first_name: residentData.userName };
         const residentUserLink = getUserNameLink(residentLinkData);
 
         const messageText = {
-            [userRoleList.chairman]: `${adminUserLink} выдал права председателя ${residentUserLink}`,
-            [userRoleList.accountant]: `${adminUserLink} выдал права бухгалтера ${residentUserLink}`,
-            [userRoleList.admin]: `${adminUserLink} выдал права администратора ${residentUserLink}`,
-            [userRoleList.resident]: `${adminUserLink} одобрил запрос верификации ${residentUserLink}`,
-            [rejectActionName]: `${adminUserLink} отклонил запрос верификации ${residentUserLink}`,
+            [userStatusList.chairman]: `${adminUserLink} выдал права председателя ${residentUserLink}`,
+            [userStatusList.accountant]: `${adminUserLink} выдал права бухгалтера ${residentUserLink}`,
+            [userStatusList.admin]: `${adminUserLink} выдал права администратора ${residentUserLink}`,
+            [userStatusList.resident]: `${adminUserLink} одобрил запрос верификации ${residentUserLink}`,
+            [userStatusList.undefined]: `${adminUserLink} отклонил запрос верификации ${residentUserLink}`,
+            [userStatusList.blocked]: `${adminUserLink} заблокировал ${residentUserLink}`,
         };
 
         await sendMessage(ctx, {
             accountId: recipientAccountId,
             text: messageText[userStatus],
-            buttons: {
-                [`${moduleActionName}_exit`]: 'Закрыть',
-            }
+            buttons: closeOption,
         });
     }
 
-    const isRejected = userStatus === rejectActionName;
-    const isResident = userStatus === userRoleList.resident;
-    const validationStatus = isRejected ? userStatusList.unverified : userStatusList.verified;
-    const isAdminRules = !isRejected && !isResident;
-
     const validationText = {
-        [userRoleList.chairman]: '🟢 Вам выданы права председателя!',
-        [userRoleList.accountant]: '🟢 Вам выданы права бухгалтера!',
-        [userRoleList.admin]: '🟢 Вам выданы права администратора!',
-        [userRoleList.resident]: '🟢 Ваш запрос верификации одобрен!',
-        [rejectActionName]: '🔴 Ваш запрос верификации отклонен.',
+        [userStatusList.chairman]: '🟢 Вам выданы права председателя!',
+        [userStatusList.accountant]: '🟢 Вам выданы права бухгалтера!',
+        [userStatusList.admin]: '🟢 Вам выданы права администратора!',
+        [userStatusList.resident]: '🟢 Ваш запрос верификации одобрен!',
+        [userStatusList.undefined]: '🔴 Ваш запрос верификации отклонен.',
+        [userStatusList.blocked]: '⛔️ Вы были заблокированы.',
     };
 
     await sendMessage(ctx, {
-        text: validationText[userStatus],
         accountId,
-        buttons: {
-            [`${moduleActionName}_exit`]: 'Закрыть',
-        },
+        text: validationText[userStatus],
+        buttons: closeOption,
     });
 
-    await updateUserData(accountId, { userStatus: validationStatus });
-    await updateUserData(accountId, { userIsAdmin: isAdminRules });
+    await setUserData(accountId, { userStatus });
 
-    if (!isRejected) {
-        await updateUserData(accountId, { userRole: userStatus });
+    const verificationMessages = await getVerificationIndexItem(accountId);
+    for (const { chatId, messageId } of verificationMessages) {
+        await removeMessage(ctx, { chatId, messageId });
     }
+    await setVerificationIndexItem(accountId, []);
 
-    if (originModuleName === moduleActionName) {
-        const verificationMessages = await getVerificationIndexItem(accountId);
-
-        for (const { chatId, messageId } of verificationMessages) {
-            await removeMessage(ctx, { chatId, messageId });
-        }
-
-        await setVerificationIndexItem(accountId, []);
-    }
-
-    await ctx.answerCbQuery(isRejected ? 'Запрос отклонен' : 'Права успешно назначены');
+    await ctx.answerCbQuery('Запрос обработан');
 };
 
 const callbackHandler = async (ctx, next) => {
     const data = ctx.callbackQuery.data;
-    const [action, userStatus, accountId, originModuleName] = data.split(':');
+    const [action, userStatus, accountId] = data.split(':');
 
-    if (action === moduleActionName) {
-        await validationHandler(ctx, userStatus, accountId, originModuleName);
+    if (action === moduleParam.name) {
+        await validationHandler(ctx, userStatus, accountId);
     }
 
     return next();
 }
 
 module.exports = (bot) => {
-    bot.command(`${moduleActionName}_start`, async (ctx) => startAction(ctx));
-    bot.action(`${moduleActionName}_start`, async (ctx) => startAction(ctx, true));
-    bot.action(`${moduleActionName}_init`, async (ctx) => initAction(ctx));
-    bot.action(`${moduleActionName}_submit`, async (ctx) => submitAction(ctx));
-    bot.action(`${moduleActionName}_exit`, (ctx) => removeMessage(ctx, ));
+    bot.command(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => startAction(ctx));
+    bot.action(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => startAction(ctx, true));
+    bot.action(`${moduleParam.name}:${moduleParam.init}`, async (ctx) => initAction(ctx));
+    bot.action(`${moduleParam.name}:${moduleParam.submit}`, async (ctx) => submitAction(ctx));
     bot.on('text', async (ctx, next) => stepper.inputHandler(ctx, next));
     bot.on('callback_query', async (ctx, next) => callbackHandler(ctx, next));
 };

@@ -1,12 +1,12 @@
 const { sendMessage } = require('../helpers/message');
-const { getDbData } = require('../helpers/db');
+const { getUserData } = require('../helpers/db');
 const { userStatusList } = require('../const/db');
 
-const guard = async (ctx, { privateChat, verify, admin }) => {
-    const userData = await getDbData(ctx.from.id);
-    const userStatus = userData?.userStatus;
-    const isVerified = userStatus === userStatusList.verified;
-    const isAdmin = userData?.userIsAdmin;
+const guard = async (ctx, { privateChat, verify, admin, blocked, unBlocked }) => {
+    const userData = await getUserData(ctx.from.id);
+    const isUnverified = userData?.userStatus === userStatusList.undefined || !userData?.userStatus;
+    const isBlocked = userData?.userStatus === userStatusList.blocked;
+    const isAdmin = [userStatusList.admin, userStatusList.accountant, userStatusList.chairman].includes(userData?.userStatus);
     const isPrivateChat = ctx.chat?.type === 'private';
 
     if (!isPrivateChat && privateChat) {
@@ -15,8 +15,20 @@ const guard = async (ctx, { privateChat, verify, admin }) => {
         return;
     }
 
-    if (!isVerified && verify) {
+    if (isUnverified && verify) {
         const text = '🔒 Это действие доступно только верифицированным пользователям';
+        await sendMessage(ctx, { text, silent: true, buttons: {} });
+        return;
+    }
+
+    if (isBlocked && unBlocked) {
+        const text = '🔒 Это действие недоступно заблокированным пользователям';
+        await sendMessage(ctx, { text, silent: true, buttons: {} });
+        return;
+    }
+
+    if (!isBlocked && blocked) {
+        const text = '🔒 Это действие доступно только заблокированным пользователям';
         await sendMessage(ctx, { text, silent: true, buttons: {} });
         return;
     }

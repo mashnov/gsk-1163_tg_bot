@@ -1,11 +1,13 @@
 const { sendMessage, removeMessage } = require('../helpers/message');
-const { homeOption } = require('../const/dictionary');
+const { homeOption, moduleNames } = require('../const/dictionary');
 
-const moduleActionName = 'rules';
-const startActionName = 'start';
-const chatSectionName = 'chat';
-const silentSectionName = 'silent';
-const dogSectionName = 'dog';
+const moduleParam = {
+    name: moduleNames.rules,
+    start: 'start',
+    chat: 'chat',
+    silent: 'silent',
+    dog: 'dog',
+};
 
 const startAction = async (ctx, bot, needAnswer) => {
     const messageText =
@@ -14,9 +16,9 @@ const startAction = async (ctx, bot, needAnswer) => {
         'Для ознакомления с текстами правил воспользуйтесь кнопками ниже.';
 
     const buttons = {
-        [`${moduleActionName}:${chatSectionName}`]: 'Правила чата',
-        [`${moduleActionName}:${silentSectionName}`]: 'Закон о тишине',
-        [`${moduleActionName}:${dogSectionName}`]: 'Закон о содержании собак',
+        [`${moduleParam.name}:${moduleParam.chat}`]: 'Правила чата',
+        [`${moduleParam.name}:${moduleParam.silent}`]: 'Закон о тишине',
+        [`${moduleParam.name}:${moduleParam.dog}`]: 'Закон о содержании собак',
     };
 
     await sendMessage(ctx, {
@@ -38,16 +40,16 @@ const startAction = async (ctx, bot, needAnswer) => {
 const ruleSelectHandler = async (ctx, sectionName) => {
     let text = '';
     const buttons = {
-        [`${moduleActionName}_${startActionName}`]: '⬅️ Назад',
+        [`${moduleParam.name}:${moduleParam.start}`]: '⬅️ Назад',
         ...homeOption,
     };
 
     const filePaths = {
-        [silentSectionName]: './assets/273_70.pdf',
-        [dogSectionName]: './assets/588_110.pdf',
+        [moduleParam.silent]: './assets/273_70.pdf',
+        [moduleParam.dog]: './assets/588_110.pdf',
     };
 
-    if (sectionName === chatSectionName) {
+    if (sectionName === moduleParam.chat) {
         text =
             '📖 Правила чата\n\n' +
             'Данные правила установлены администрацией чата с целью поддержания комфортной, безопасной и уважительной атмосферы общения для всех участников. Участие в чате означает автоматическое согласие с настоящими правилами.\n\n' +
@@ -72,7 +74,7 @@ const ruleSelectHandler = async (ctx, sectionName) => {
             '• При возникновении спорных ситуаций обращайтесь к администрации, а не провоцируйте конфликты.</blockquote>';
     }
 
-    if (sectionName === silentSectionName) {
+    if (sectionName === moduleParam.silent) {
         text =
             '📖 Закон Санкт-Петербурга №273-70 о тишине\n\n' +
             '<b>В Санкт-Петербурге запрещено шуметь:</b>\n' +
@@ -84,7 +86,7 @@ const ruleSelectHandler = async (ctx, sectionName) => {
             '• С перерывом с 13:00 до 15:00</blockquote>';
     }
 
-    if (sectionName === dogSectionName) {
+    if (sectionName === moduleParam.dog) {
         text =
             '📖 Закон Санкт-Петербурга №588-110 о содержании собак\n\n' +
             '<b>Поводок.</b>\n' +
@@ -118,7 +120,7 @@ const callbackHandler = async (ctx, next) => {
     const data = ctx.callbackQuery.data;
     const [action, sectionName] = data.split(':');
 
-    if (action === moduleActionName) {
+    if (action === moduleParam.name) {
         await ruleSelectHandler(ctx, sectionName);
     }
 
@@ -127,7 +129,7 @@ const callbackHandler = async (ctx, next) => {
 
 
 module.exports = (bot) => {
-    bot.command(`${moduleActionName}_${startActionName}`, async (ctx) => startAction(ctx, bot));
-    bot.action(`${moduleActionName}_${startActionName}`, async (ctx) => startAction(ctx, bot, true));
+    bot.command(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => startAction(ctx, bot));
+    bot.action(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => startAction(ctx, bot, true));
     bot.on('callback_query', async (ctx, next) => callbackHandler(ctx, next));
 };

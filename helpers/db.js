@@ -1,5 +1,5 @@
 const { db } = require('../state/db');
-const { emptyUser, userStatusList } = require('../const/db.js');
+const { emptyUser } = require('../const/db.js');
 
 const getDbData = async (id) => {
     if (!id) {
@@ -33,24 +33,24 @@ const createUserData = async (accountId) => {
     const userData = {
         ...emptyUser,
         accountId: accountId,
-        userStatus: userStatusList.unverified,
         createdAt: createdAt,
         updatedAt: createdAt,
     };
 
-    await updateUserIndex(accountId, { userStatus: userStatusList.unverified });
-
-    return setDbData(accountId, userData);
+    await setDbData(accountId, userData);
+    return await getUserData(accountId);
 };
 
-const updateUserData = async (accountId, patchData) => {
+const getUserData = async (accountId) => {
+    return await createUserData(accountId);
+};
+
+const setUserData = async (accountId, patchData) => {
     if (!accountId) {
         return;
     }
 
-    await createUserData(accountId);
-
-    const originalData = await getDbData(accountId);
+    const originalData = { ...await getUserData(accountId) };
 
     const userData = {
         ...originalData,
@@ -59,11 +59,7 @@ const updateUserData = async (accountId, patchData) => {
     };
 
     if (patchData.userStatus) {
-        await updateUserIndex(accountId, { userStatus: patchData.userStatus });
-    }
-
-    if (patchData.userRole) {
-        await updateUserIndex(accountId, { userRole: patchData.userRole });
+        await setUserIndex(accountId, { userStatus: patchData.userStatus });
     }
 
     return setDbData(accountId, userData);
@@ -81,7 +77,12 @@ const createUserIndex = async (indexId) => {
         return userList;
     }
 
-    return setDbData(indexId, []);
+    await setDbData(indexId, []);
+    return await getUserIndex(indexId);
+};
+
+const getUserIndex = async (indexId) => {
+    return await createUserIndex(indexId);
 };
 
 const addUserToIndex = async (accountId, indexId) => {
@@ -102,14 +103,12 @@ const removeUserFromIndex = async (accountId, indexId) => {
     return setDbData(indexId, filteredList);
 };
 
-const updateUserIndex = async (accountId, { userStatus, userRole }) => {
-    const indexId = userStatus || userRole;
+const setUserIndex = async (accountId, { userStatus }) => {
     const userData = await getDbData(accountId);
-    const currentIndexId = userStatus ? userData?.userStatus : userData?.userRole;
-    await createUserIndex(currentIndexId);
-    await createUserIndex(indexId);
-    await removeUserFromIndex(accountId, currentIndexId);
-    await addUserToIndex(accountId, indexId);
+    await createUserIndex(userData?.userStatus);
+    await createUserIndex(userStatus);
+    await removeUserFromIndex(accountId, userData?.userStatus);
+    await addUserToIndex(accountId, userStatus);
 };
 
 const getUserListByIndex = async (userIdList) => {
@@ -141,7 +140,7 @@ const setVerificationIndexItem = async (accountId, messageList = []) => {
     if (!accountId) {
         return;
     }
-    const verificationIndex = { ...(await createVerificationIndex()) };
+    const verificationIndex = { ...await createVerificationIndex() };
 
     verificationIndex[accountId] = messageList;
 
@@ -150,8 +149,9 @@ const setVerificationIndexItem = async (accountId, messageList = []) => {
 
 
 module.exports = {
-    getDbData,
-    updateUserData,
+    getUserData,
+    setUserData,
+    getUserIndex,
     getUserListByIndex,
     getVerificationIndexItem,
     setVerificationIndexItem,

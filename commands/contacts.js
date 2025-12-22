@@ -1,12 +1,30 @@
-const { getDbData } = require('../helpers/db');
+const { getUserData } = require('../helpers/db');
 const { sendMessage, removeMessage } = require('../helpers/message');
+const { guard } = require('../helpers/guard');
 
 const { userStatusList } = require('../const/db');
-const { backOption } = require('../const/dictionary');
+const { backOption, commandNames, moduleNames } = require('../const/dictionary');
 
-const moduleActionName = 'contact';
+const moduleParam = {
+    name: moduleNames.contact,
+    start: 'start',
+}
 
-const messageText =
+const initAction = async (ctx, bot, needAnswer) => {
+    const isGuardPassed = await guard(ctx, { unBlocked: true });
+
+    if (!isGuardPassed) {
+        return;
+    }
+
+    const userData = await getUserData(ctx.from.id);
+    const isResident = userData?.userStatus === userStatusList.resident;
+    const isAdmin = [userStatusList.admin, userStatusList.accountant, userStatusList.chairman].includes(userData?.userStatus);
+    const isPrivateChat = ctx.chat?.type === 'private';
+
+    const messagesIsAllowed = (isResident || isAdmin) && isPrivateChat;
+
+    const messageText =
         '📖 Контакты\n\n' +
         'ЖСК email: <a href="mailto:gsk1163@mail.ru">gsk1163@mail.ru</a>\n' +
         'ЖСК телефон: <a href="tel:+79312107066">+7 (931) 210-70-66</a>\n\n' +
@@ -19,17 +37,18 @@ const messageText =
         '<a href="https://chat.whatsapp.com/LJoRyuouIflACMnCZjTR5h?clckid=97cd2216">Канал в WhatsApp</a>\n' +
         '<a href="https://vk.com/gsk1163">Группа в Вконтакте</a>';
 
-const verifiedMessageText = '\n\nДля связи с Председателем, Бухгалтером или администратором воспользуйтесь кнопкой "написать сообщение" ниже.';
+    const verifiedMessageText = '\n\nДля связи с Председателем, Бухгалтером или администратором воспользуйтесь кнопкой "написать сообщение" ниже.';
 
-const initAction = async (ctx, bot, needAnswer) => {
-    const userData = await getDbData(ctx.from.id);
-    const isVerified = userData?.userStatus === userStatusList.verified;
-    const isPrivateChat = ctx.chat?.type === 'private';
+    const buttons = {};
+
+    if (messagesIsAllowed) {
+        buttons[commandNames.messages] = '💬 Написать сообщение';
+    }
 
     await sendMessage(ctx, {
-        text: isVerified && isPrivateChat ? messageText + verifiedMessageText : messageText,
+        text: messagesIsAllowed ? messageText + verifiedMessageText : messageText,
         buttons: {
-            ...(isVerified && isPrivateChat ? { messages_start: '💬 Написать сообщение' } : {}),
+            ...buttons,
             ...backOption
         },
     });
@@ -42,6 +61,6 @@ const initAction = async (ctx, bot, needAnswer) => {
 };
 
 module.exports = (bot) => {
-    bot.command(`${moduleActionName}_start`, async (ctx) => initAction(ctx, bot));
-    bot.action(`${moduleActionName}_start`, async (ctx) => initAction(ctx, bot, true));
+    bot.command(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => initAction(ctx, bot));
+    bot.action(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => initAction(ctx, bot, true));
 };

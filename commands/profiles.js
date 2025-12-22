@@ -1,16 +1,18 @@
 const { getUserName, getUserNameLink, getFormattedDate } = require('../helpers/getters');
-const { getDbData, getUserListByIndex } = require('../helpers/db');
+const { getUserData, getUserIndex, getUserListByIndex } = require('../helpers/db');
 const { sendMessage, removeMessage } = require('../helpers/message');
 const { guard } = require('../helpers/guard');
 
-const { userRoleList, userRoleText, userStatusList, userStatusText } = require('../const/db');
-const { backOption } = require('../const/dictionary');
+const { userStatusList, userStatusText } = require('../const/db');
+const { backOption, moduleNames } = require('../const/dictionary');
 
-const moduleActionName = 'profiles';
-const verificationActionName = 'verification';
-const rejectActionName = 'reject';
-const listActionName = 'list';
-const reviewActionName = 'review';
+const moduleParam = {
+    name: moduleNames.profiles,
+    verification: moduleNames.verification,
+    list: 'list',
+    review: 'review',
+    start: 'start',
+};
 
 const startAction = async (ctx, needAnswer) => {
     const isGuardPassed = await guard(ctx, { privateChat: true, verify: true, admin: true });
@@ -19,21 +21,22 @@ const startAction = async (ctx, needAnswer) => {
         return;
     }
 
-    const userData = await getDbData(ctx.from.id);
-    const userRole = userData?.userRole;
+    const userData = await getUserData(ctx.from.id);
+    const userStatus = userData?.userStatus;
 
     const buttons = {
-        [`${moduleActionName}:${userStatusList.pending}:${listActionName}`]: 'Ожидают проверки',
-        [`${moduleActionName}:${userRoleList.resident}:${listActionName}`]: 'Жители',
-        [`${moduleActionName}:${userRoleList.admin}:${listActionName}`]: 'Администраторы',
-        [`${moduleActionName}:${userRoleList.accountant}:${listActionName}`]: 'Бухгалтер',
-        [`${moduleActionName}:${userRoleList.chairman}:${listActionName}`]: 'Председатель',
+        [`${moduleParam.name}:${userStatusList.blocked}:${moduleParam.list}`]: 'Заблокированные',
+        [`${moduleParam.name}:${userStatusList.pending}:${moduleParam.list}`]: 'Ожидают проверки',
+        [`${moduleParam.name}:${userStatusList.resident}:${moduleParam.list}`]: 'Жители',
+        [`${moduleParam.name}:${userStatusList.admin}:${moduleParam.list}`]: 'Администраторы',
+        [`${moduleParam.name}:${userStatusList.accountant}:${moduleParam.list}`]: 'Бухгалтер',
+        [`${moduleParam.name}:${userStatusList.chairman}:${moduleParam.list}`]: 'Председатель',
     };
 
     const messageText =
         `👥 Администрирование \n\n` +
         `Имя профиля: ${ getUserName(ctx.from) }\n` +
-        `Роль: ${ userRoleText[userRole] }`;
+        `Статус: ${ userStatusText[userStatus] }`;
 
     await sendMessage(ctx, {
         text: messageText,
@@ -50,21 +53,21 @@ const startAction = async (ctx, needAnswer) => {
 };
 
 const profileListHandler = async (ctx, listType) => {
-    const profileList = await getDbData(listType) || [];
+    const profileList = await getUserIndex(listType);
     const filteredProfileList = profileList.filter(userId => userId !== String(ctx.from.id));
     const mappedProfileList = await getUserListByIndex(filteredProfileList);
 
     const messageText =
         `👥 Администрирование \n\n` +
-        `Список профилей в статусе: ${userRoleText[listType] || userStatusText[listType]}`;
+        `Список профилей в статусе: ${ userStatusText[listType] }`;
 
     const buttons = {};
 
     for (const userData of mappedProfileList) {
-        buttons[`${moduleActionName}:${userData.accountId}:${reviewActionName}`] = userData.userName;
+        buttons[`${moduleParam.name}:${userData.accountId}:${moduleParam.review}`] = userData.userName;
     }
 
-    buttons[`${moduleActionName}_start`] = '⬅️ Назад';
+    buttons[`${moduleParam.name}:${moduleParam.start}`] = '⬅️ Назад';
 
     await sendMessage(ctx, {
         text: messageText,
@@ -77,25 +80,26 @@ const profileListHandler = async (ctx, listType) => {
 };
 
 const profileReviewHandler = async (ctx, accountId) => {
-    const userData = await getDbData(accountId);
+    const userData = await getUserData(accountId);
     const userLinkData = { id: accountId, first_name: userData.userName };
     const userLink = getUserNameLink(userLinkData);
 
     const messageText =
         `Детали профиля ${ userLink }\n\n` +
-        `Имя пользователя: ${userData.profileName}\n` +
+        `Имя жителя: ${userData.residentName}\n` +
         `Номер телефона: ${userData.phoneNumber}\n` +
         `Номер Квартиры: ${userData.roomNumber}\n\n` +
         `Профиль зарегистрирован: ${ getFormattedDate(userData.createdAt) } \n` +
         `Профиль обновлен: ${ getFormattedDate(userData.updatedAt) }`;
 
     const messageButtons = {
-        [`${verificationActionName}:${userRoleList.chairman}:${accountId}:${moduleActionName}`]: `🟡 ${userRoleText.chairman}`,
-        [`${verificationActionName}:${userRoleList.accountant}:${accountId}:${moduleActionName}`]: `🟡 ${userRoleText.accountant}`,
-        [`${verificationActionName}:${userRoleList.admin}:${accountId}:${moduleActionName}`]: `🟡 ${userRoleText.admin}`,
-        [`${verificationActionName}:${userRoleList.resident}:${accountId}:${moduleActionName}`]: `🟢 ${userRoleText.resident}`,
-        [`${verificationActionName}:${rejectActionName}:${accountId}:${moduleActionName}`]: '⛔ Отклонить',
-        [`${moduleActionName}_start`]: '⬅️ Назад',
+        [`${moduleParam.verification}:${userStatusList.chairman}:${accountId}`]: `🟡 ${userStatusText.chairman}`,
+        [`${moduleParam.verification}:${userStatusList.accountant}:${accountId}`]: `🟡 ${userStatusText.accountant}`,
+        [`${moduleParam.verification}:${userStatusList.admin}:${accountId}`]: `🟡 ${userStatusText.admin}`,
+        [`${moduleParam.verification}:${userStatusList.resident}:${accountId}`]: `🟢 ${userStatusText.resident}`,
+        [`${moduleParam.verification}:${userStatusList.undefined}:${accountId}`]: '🔴 Отклонить',
+        [`${moduleParam.verification}:${userStatusList.blocked}:${accountId}`]: '⛔ Заблокировать',
+        [`${moduleParam.name}:${moduleParam.start}`]: '⬅️ Назад',
     };
 
     await sendMessage(ctx, {
@@ -112,11 +116,11 @@ const callbackHandler = async (ctx, next) => {
     const data = ctx.callbackQuery.data;
     const [action, params, actionName] = data.split(':');
 
-    if (action === moduleActionName && actionName === listActionName) {
+    if (action === moduleParam.name && actionName === moduleParam.list) {
         await profileListHandler(ctx, params);
     }
 
-    if (action === moduleActionName && actionName === reviewActionName) {
+    if (action === moduleParam.name && actionName === moduleParam.review) {
         await profileReviewHandler(ctx, params);
     }
 
@@ -124,7 +128,7 @@ const callbackHandler = async (ctx, next) => {
 };
 
 module.exports = (bot) => {
-    bot.command(`${moduleActionName}_start`, async (ctx) => startAction(ctx));
-    bot.action(`${moduleActionName}_start`, async (ctx) => startAction(ctx, true));
+    bot.command(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => startAction(ctx));
+    bot.action(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => startAction(ctx, true));
     bot.on('callback_query', async (ctx, next) => callbackHandler(ctx, next));
 };

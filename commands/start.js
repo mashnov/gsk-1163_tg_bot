@@ -1,47 +1,56 @@
 const { sendMessage, removeMessage } = require('../helpers/message');
-const { getDbData } = require('../helpers/db');
+const { getUserData } = require('../helpers/db');
 
+const { commandNames } = require('../const/dictionary');
 const { userStatusList } = require('../const/db');
 
-const messageText =
-    '<b>Привет!</b>\n' +
-    'Я <b>Домовёнок</b> - бот нашего дома.\n\n' +
-    'Я помогу тебе:\n' +
-    '• пройти верификацию\n' +
-    '• найти нужный контакт\n' +
-    '• передать показания счётчиков\n' +
-    '• ознакомиться с правилами чата\n' +
-    '• связаться с правлением или администратором';
-
-const notVerifiedMessage = '\n\n✨ <b>Пожалуйста, пройдите верификацию, чтобы получить доступ ко всем возможностям бота.</b>';
-const notPrivateMessage = '\n\n🔒 Передача показаний счётчиков и верификация пользователей для обеспечения сохранности персональных данных осуществляются только в личном <a href="https://t.me/@help1163_bot">чате с ботом</a>.';
-
 const initAction = async (ctx, bot, needAnswer) => {
-    const userData = await getDbData(ctx.from.id);
-    const userStatus = userData?.userStatus;
-    const isAdmin = userData?.userIsAdmin;
-    const isVerified = userStatus === userStatusList.verified;
+    const userData = await getUserData(ctx.from.id);
+    const isUnverified = userData?.userStatus === userStatusList.undefined || !userData?.userStatus;
+    const isBlocked = userData?.userStatus === userStatusList.blocked;
+    const isPending = userData?.userStatus === userStatusList.pending;
+    const isResident = userData?.userStatus === userStatusList.resident;
+    const isAdmin = [userStatusList.admin, userStatusList.accountant, userStatusList.chairman].includes(userData?.userStatus);
     const isPrivateChat = ctx.chat?.type === 'private';
 
     const buttons = {
-        rules_start: '📚 Правила',
-        contact_start: '📖 Контакты',
+        [commandNames.rules]: '📚 Правила',
     };
 
-    if (!isVerified && isPrivateChat) {
-        buttons.verification_start = '✨ Верификация';
+    if (isResident || isAdmin) {
+        buttons[commandNames.contact] = '📖 Контакты';
     }
 
-    if (isVerified && isAdmin && isPrivateChat) {
-        buttons.profiles_start = '🪪 Администрирование';
+    if ((isResident || isAdmin) && isPrivateChat) {
+        buttons[commandNames.meter] = '〽️ Показания счетчиков';
     }
 
-    if (isVerified && isPrivateChat) {
-        buttons.meter_start = '〽️ Показания счетчиков';
-        buttons.messages_start = '💬 Написать сообщение';
+    if (isAdmin && isPrivateChat) {
+        buttons[commandNames.profiles] = '🪪 Администрирование';
     }
 
-    const notVerifiedMessageText = !isVerified && isPrivateChat ? notVerifiedMessage : '';
+    if ((isUnverified || isPending) && isPrivateChat) {
+        buttons[commandNames.verification] = '✨ Верификация';
+    }
+
+    if (isBlocked && isPrivateChat) {
+        buttons[commandNames.unblock] = '🫥 Разблокировка';
+    }
+
+    const messageText =
+        '<b>Привет!</b>\n' +
+        'Я <b>Домовёнок</b> - бот нашего дома.\n\n' +
+        'Я помогу тебе:\n' +
+        '• пройти верификацию\n' +
+        '• найти нужный контакт\n' +
+        '• передать показания счётчиков\n' +
+        '• ознакомиться с правилами чата\n' +
+        '• связаться с правлением или администратором';
+
+    const notVerifiedMessage = '\n\n✨ <b>Пожалуйста, пройдите верификацию, чтобы получить доступ ко всем возможностям бота.</b>';
+    const notPrivateMessage = '\n\n🔒 Передача показаний счётчиков и верификация пользователей для обеспечения сохранности персональных данных осуществляются <b>только в личном <a href="https://t.me/@help1163_bot">чате с ботом</a></b>.';
+
+    const notVerifiedMessageText = isUnverified && isPrivateChat ? notVerifiedMessage : '';
     const notPrivateMessageText = !isPrivateChat ? notPrivateMessage : '';
 
     await sendMessage(ctx, {

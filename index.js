@@ -1,4 +1,3 @@
-const { config } = require('dotenv');
 const { Telegraf } = require('telegraf');
 
 const startCommand = require('./commands/start');
@@ -8,11 +7,12 @@ const verificationCommand = require('./commands/verification');
 const profilesCommand = require('./commands/profiles');
 const meterCommand = require('./commands/meter');
 const messagesCommand = require('./commands/messages');
+const unblockCommand = require('./commands/unblock');
 
-config();
+const { botToken } = require('./const/env');
 
 const createBot = () => {
-    const bot = new Telegraf(process.env.BOT_TOKEN);
+    const bot = new Telegraf(botToken);
 
     startCommand(bot);
     rulesCommand(bot);
@@ -21,6 +21,7 @@ const createBot = () => {
     profilesCommand(bot);
     meterCommand(bot);
     messagesCommand(bot);
+    unblockCommand(bot);
 
     return bot;
 }

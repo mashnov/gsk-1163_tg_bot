@@ -1,49 +1,36 @@
 const emptyUser = {
     accountId: undefined,
-    profileName: undefined,
+    residentName: undefined,
     userName: undefined,
-    userRole: undefined,
+    roomNumber: undefined,
+    phoneNumber: undefined,
     userStatus: undefined,
     createdAt: undefined,
     updatedAt: undefined,
-    roomNumber: undefined,
-    phoneNumber: undefined,
-    userIsAdmin: false,
 }
 
 const userStatusList = {
-    unverified: 'unverified',
-    pending: 'pending',
-    verified: 'verified',
-};
-
-const userStatusText = {
-    verified: 'Проверен',
-    pending: 'Ожидает проверки',
-    unverified: 'Не верефицоровн',
-    undefined: 'Не верефицоровн',
-};
-
-const userRoleList = {
     chairman: 'chairman',
     accountant: 'accountant',
     admin: 'admin',
     resident: 'resident',
+    pending: 'pending',
+    blocked: 'blocked',
+    undefined: 'undefined'
 };
 
-const userRoleText = {
+const userStatusText = {
     chairman: 'Председатель',
     accountant: 'Бухгалтер',
     admin: 'Администратор',
     resident: 'Житель',
-    undefined: 'Не назначена',
+    pending: 'Ожидает проверки',
+    blocked: 'Заблокирован',
+    undefined: 'Не верифицирован',
 };
-
 
 module.exports = {
     emptyUser,
     userStatusList,
     userStatusText,
-    userRoleList,
-    userRoleText,
 };

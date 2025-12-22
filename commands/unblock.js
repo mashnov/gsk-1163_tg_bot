@@ -1,0 +1,100 @@
+const { initStepper } = require('../helpers/stepper');
+const { initStore, getSession } = require('../helpers/sessions');
+const { getUserNameLink, getSummaryMessage } = require('../helpers/getters');
+const { getUserIndex, getUserData, setVerificationIndexItem } = require('../helpers/db');
+const { sendMessage, removeMessage } = require('../helpers/message');
+const { getArrayFallback } = require('../helpers/array');
+const { guard } = require('../helpers/guard');
+
+const { stepList } = require('../const/unblock');
+const { userStatusText, userStatusList } = require('../const/db');
+const { closeOption, moduleNames} = require('../const/dictionary');
+const { superUserId } = require('../const/env');
+
+const moduleParam = {
+    name: moduleNames.unblock,
+    verification: moduleNames.verification,
+    start: 'start',
+    submit: 'submit',
+}
+
+let stepper = undefined;
+
+(async () => {
+    stepper = initStepper({
+        stepList,
+        actionName: moduleParam.name,
+        submitActions: {
+            [`${moduleParam.name}:${moduleParam.submit}`]: 'Отправить ✅'
+        },
+    });
+})();
+
+const initAction = async (ctx, bot, needAnswer) => {
+    const isGuardPassed = await guard(ctx, { blocked: true });
+
+    if (!isGuardPassed) {
+        return;
+    }
+
+    initStore(ctx.from.id, moduleParam.name);
+
+    await stepper.startHandler(ctx);
+    await removeMessage(ctx);
+
+    if (needAnswer) {
+        await ctx.answerCbQuery();
+    }
+};
+
+const submitAction = async (ctx) => {
+    const senderText = '🟢 Ваш запрос отправлен.';
+    await sendMessage(ctx, { text: senderText });
+
+    const accountId = ctx.from.id;
+    const session = getSession(accountId);
+    const userData = await getUserData(accountId);
+
+    const recipientHeader = '🔴 Новый запрос разблокировки\n\n';
+    const recipientSender = `Отправитель: ${ getUserNameLink(ctx.from) }\n\n`;
+    const recipientRoomNumber = `Номер квартиры в БД: ${ userData?.roomNumber }\n`;
+    const recipientProfileName = `Имя отправителя в БД: ${ userData?.residentName }\n`;
+    const recipientPhoneNumber = `Номер телефона в БД: ${ userData?.phoneNumber }\n\n`;
+    const recipientText = getSummaryMessage(stepList[session.stepIndex]?.summary, session);
+    const recipientMessage = `${recipientHeader}${recipientSender}${recipientProfileName}${recipientPhoneNumber}${recipientRoomNumber}${recipientText}`;
+
+    const chairmanIdList = getArrayFallback(await getUserIndex(userStatusList.chairman), [superUserId]);
+    const accountantIdList = getArrayFallback(await getUserIndex(userStatusList.accountant), chairmanIdList);
+    const adminIdList = getArrayFallback(await getUserIndex(userStatusList.admin), accountantIdList);
+
+    const messageButtons = {
+        [`${moduleParam.verification}:${userStatusList.chairman}:${accountId}`]: `🟡 ${userStatusText.chairman}`,
+        [`${moduleParam.verification}:${userStatusList.accountant}:${accountId}`]: `🟡 ${userStatusText.accountant}`,
+        [`${moduleParam.verification}:${userStatusList.admin}:${accountId}`]: `🟡 ${userStatusText.admin}`,
+        [`${moduleParam.verification}:${userStatusList.resident}:${accountId}`]: `🟢 ${userStatusText.resident}`,
+        [`${moduleParam.name}:${userStatusList.blocked}:${accountId}`]: '🔴 Отклонить',
+        ...closeOption,
+    };
+
+    const messageList = [];
+
+    for (const recipientAccountId of adminIdList) {
+        const messageId = await sendMessage(ctx, {
+            accountId: recipientAccountId,
+            text: recipientMessage,
+            buttons: messageButtons,
+        });
+        messageList.push({ chatId: recipientAccountId, messageId });
+    }
+
+    await setVerificationIndexItem(accountId, messageList);
+    await removeMessage(ctx);
+    await ctx.answerCbQuery('Ваш запрос отправлен');
+};
+
+module.exports = (bot) => {
+    bot.command(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => initAction(ctx, bot));
+    bot.action(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => initAction(ctx, bot, true));
+    bot.action(`${moduleParam.name}:${moduleParam.submit}`, async (ctx) => submitAction(ctx));
+    bot.on('text', async (ctx, next) => stepper.inputHandler(ctx, next));
+};
