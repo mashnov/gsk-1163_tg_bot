@@ -5,6 +5,7 @@ const { getUserIndex, getUserData, setUserData, getVerificationIndexItem, setVer
 const { sendMessage, removeMessage } = require('../helpers/message');
 const { isValidOwner } = require('../helpers/validation');
 const { getArrayFallback } = require('../helpers/array');
+const { banUserById, unbanUserById } = require('../helpers/profiles');
 const { guard } = require('../helpers/guard');
 
 const { superUserId, homeChatId } = require('../const/env');
@@ -187,9 +188,19 @@ const validationHandler = async (ctx, userStatus, accountId) => {
     await setVerificationIndexItem(accountId, []);
 
     if (userStatus === userStatusList.blocked) {
+        await banUserById(ctx, { chatId: homeChatId, userId: accountId });
         await sendMessage(ctx, {
             accountId: homeChatId,
             text: `⛔️ Пользователь ${residentUserLink} заблокирован`,
+            buttons: {},
+        });
+    }
+
+    if (residentData?.userStatus === userStatusList.blocked && userStatus !== userStatusList.blocked) {
+        await unbanUserById(ctx, { chatId: homeChatId, userId: accountId });
+        await sendMessage(ctx, {
+            accountId: homeChatId,
+            text: `🟢 Пользователь ${residentUserLink} разблокирован`,
             buttons: {},
         });
     }
