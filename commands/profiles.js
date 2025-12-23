@@ -4,7 +4,7 @@ const { sendMessage, removeMessage } = require('../helpers/message');
 const { guard } = require('../helpers/guard');
 
 const { userStatusList, userStatusText } = require('../const/db');
-const { backOption, moduleNames } = require('../const/dictionary');
+const { homeOption, moduleNames } = require('../const/dictionary');
 
 const moduleParam = {
     name: moduleNames.profiles,
@@ -29,13 +29,13 @@ const startAction = async (ctx, needAnswer) => {
     const userStatus = userData?.userStatus;
 
     const buttons = {
-        [`${moduleParam.name}:${userStatusList.blocked}:${moduleParam.list}`]: 'Заблокированные',
-        [`${moduleParam.name}:${userStatusList.restricted}:${moduleParam.list}`]: 'Ограниченные',
-        [`${moduleParam.name}:${userStatusList.pending}:${moduleParam.list}`]: 'Ожидают проверки',
-        [`${moduleParam.name}:${userStatusList.resident}:${moduleParam.list}`]: 'Жители',
-        [`${moduleParam.name}:${userStatusList.admin}:${moduleParam.list}`]: 'Администраторы',
-        [`${moduleParam.name}:${userStatusList.accountant}:${moduleParam.list}`]: 'Бухгалтер',
-        [`${moduleParam.name}:${userStatusList.chairman}:${moduleParam.list}`]: 'Председатель',
+        [`${moduleParam.name}:${userStatusList.chairman}:${moduleParam.list}`]: `🟡 ${ userStatusText.chairman }`,
+        [`${moduleParam.name}:${userStatusList.accountant}:${moduleParam.list}`]: `🟡 ${ userStatusText.accountant }`,
+        [`${moduleParam.name}:${userStatusList.admin}:${moduleParam.list}`]: `🟡 ${ userStatusText.admin }`,
+        [`${moduleParam.name}:${userStatusList.resident}:${moduleParam.list}`]: `🟢 ${ userStatusText.resident }`,
+        [`${moduleParam.name}:${userStatusList.pending}:${moduleParam.list}`]: '⚪️️ Ожидают проверки',
+        [`${moduleParam.name}:${userStatusList.restricted}:${moduleParam.list}`]: '🟠 Ограниченные',
+        [`${moduleParam.name}:${userStatusList.blocked}:${moduleParam.list}`]: '⛔ Заблокированные',
     };
 
     const messageText =
@@ -47,7 +47,7 @@ const startAction = async (ctx, needAnswer) => {
         text: messageText,
         buttons: {
             ...buttons,
-            ...backOption,
+            ...homeOption,
         },
     });
     await removeMessage(ctx);
