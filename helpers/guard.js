@@ -7,7 +7,7 @@ const { userStatusList } = require('../const/db');
 const guard = async (ctx, { privateChat, verify, admin, blocked, unBlocked }) => {
     const userData = await getUserData(ctx.from.id);
     const isUnverified = userData?.userStatus === userStatusList.undefined || !userData?.userStatus;
-    const isBlocked = userData?.userStatus === userStatusList.blocked;
+    const isBlocked = [userStatusList.blocked, userStatusList.restricted].includes(userData?.userStatus);
     const isAdmin = [userStatusList.admin, userStatusList.accountant, userStatusList.chairman].includes(userData?.userStatus);
     const isPrivateChat = ctx.chat?.type === 'private';
 

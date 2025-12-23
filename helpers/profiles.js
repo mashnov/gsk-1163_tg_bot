@@ -10,12 +10,46 @@ const makeAdmin = async (ctx, { chatId, userId } = {}) => {
     }
 };
 
-const makeUser = async (ctx, { chatId, userId } = {}) => {
+const demoteUser = async (ctx, { chatId, userId } = {}) => {
     try {
         await ctx.telegram.promoteChatMember(chatId, userId, {
             can_delete_messages: false,
             can_restrict_members: false,
             can_pin_messages: false,
+        });
+    } catch (error) {
+        console.error(error.message);
+    }
+};
+
+const restrictUser = async (ctx, { chatId, userId } = {}) => {
+    try {
+        await ctx.telegram.restrictChatMember(chatId, userId, {
+            permissions: {
+                can_send_messages: false,
+                can_send_photos: false,
+                can_send_videos: false,
+                can_send_documents: false,
+                can_add_web_page_previews: false,
+                can_send_polls: false,
+            },
+        });
+    } catch (error) {
+        console.error(error.message);
+    }
+};
+
+const unRestrictUser = async (ctx, { chatId, userId } = {}) => {
+    try {
+        await ctx.telegram.restrictChatMember(chatId, userId, {
+            permissions: {
+                can_send_messages: true,
+                can_send_photos: true,
+                can_send_videos: true,
+                can_send_documents: true,
+                can_add_web_page_previews: true,
+                can_send_polls: true,
+            }
         });
     } catch (error) {
         console.error(error.message);
@@ -40,7 +74,9 @@ const unbanUserById = async (ctx, { chatId, userId } = {}) => {
 
 module.exports = {
     makeAdmin,
-    makeUser,
+    demoteUser,
+    restrictUser,
+    unRestrictUser,
     banUserById,
     unbanUserById,
 };

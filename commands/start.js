@@ -10,7 +10,7 @@ const initAction = async (ctx, bot, needAnswer) => {
     const userData = await getUserData(ctx.from.id);
     const isUnverified = userData?.userStatus === userStatusList.undefined || !userData?.userStatus;
     const isPending = userData?.userStatus === userStatusList.pending;
-    const isBlocked = userData?.userStatus === userStatusList.blocked;
+    const isBlocked = [userStatusList.blocked, userStatusList.restricted].includes(userData?.userStatus);
     const isResident = userData?.userStatus === userStatusList.resident;
     const isAdmin = [userStatusList.admin, userStatusList.accountant, userStatusList.chairman].includes(userData?.userStatus);
     const isPrivateChat = ctx.chat?.type === 'private';

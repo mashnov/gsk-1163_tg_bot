@@ -5,7 +5,7 @@ const { getUserIndex, getUserData, setUserData, getVerificationIndexItem, setVer
 const { sendMessage, removeMessage } = require('../helpers/message');
 const { isValidOwner } = require('../helpers/validation');
 const { getArrayFallback } = require('../helpers/array');
-const { banUserById, unbanUserById, makeAdmin, makeUser } = require('../helpers/profiles');
+const { banUserById, unbanUserById, makeAdmin, demoteUser, restrictUser, unRestrictUser } = require('../helpers/profiles');
 const { guard } = require('../helpers/guard');
 
 const { superUserId, homeChatId } = require('../const/env');
@@ -120,6 +120,7 @@ const submitAction = async (ctx) => {
                 [`${moduleParam.name}:${userStatusList.admin}:${accountId}`]: `🟡 ${userStatusText.admin}`,
                 [`${moduleParam.name}:${userStatusList.resident}:${accountId}`]: `🟢 ${userStatusText.resident}`,
                 [`${moduleParam.name}:${userStatusList.undefined}:${accountId}`]: '🔴 Отклонить',
+                [`${moduleParam.name}:${userStatusList.restricted}:${accountId}`]: '🟠 Ограничить',
                 [`${moduleParam.name}:${userStatusList.blocked}:${accountId}`]: '⛔ Заблокировать',
             },
         });
@@ -154,6 +155,7 @@ const validationHandler = async (ctx, userStatus, accountId) => {
             [userStatusList.admin]: `${adminUserLink} выдал права администратора ${residentUserLink}`,
             [userStatusList.resident]: `${adminUserLink} одобрил запрос верификации ${residentUserLink}`,
             [userStatusList.undefined]: `${adminUserLink} отклонил запрос верификации ${residentUserLink}`,
+            [userStatusList.restricted]: `${adminUserLink} ограничил ${residentUserLink}`,
             [userStatusList.blocked]: `${adminUserLink} заблокировал ${residentUserLink}`,
         };
 
@@ -170,6 +172,7 @@ const validationHandler = async (ctx, userStatus, accountId) => {
         [userStatusList.admin]: '🟢 Вам выданы права администратора!',
         [userStatusList.resident]: '🟢 Ваш запрос верификации одобрен!',
         [userStatusList.undefined]: '🔴 Ваш запрос верификации отклонен.',
+        [userStatusList.restricted]: '🟠 Вы были ограничены.',
         [userStatusList.blocked]: '⛔️ Вы были заблокированы.',
     };
 
@@ -182,8 +185,10 @@ const validationHandler = async (ctx, userStatus, accountId) => {
     const residentCurrentStatus = residentData?.userStatus;
     const residentIsAdmin = [userStatusList.chairman, userStatusList.accountant, userStatusList.admin].includes(residentCurrentStatus);
     const residentIsBlocked = residentCurrentStatus === userStatusList.blocked;
+    const residentIsRestricted = residentCurrentStatus === userStatusList.restricted;
     const residentToAdmin = [userStatusList.chairman, userStatusList.accountant, userStatusList.admin].includes(userStatus);
     const residentToBlocked = userStatus === userStatusList.blocked;
+    const residentToRestricted = userStatus === userStatusList.restricted;
 
     if (residentToBlocked) {
         await banUserById(ctx, { chatId: homeChatId, userId: accountId });
@@ -198,7 +203,25 @@ const validationHandler = async (ctx, userStatus, accountId) => {
         await unbanUserById(ctx, { chatId: homeChatId, userId: accountId });
         await sendMessage(ctx, {
             accountId: homeChatId,
-            text: `🟢 Пользователь ${residentUserLink} разблокирован`,
+            text: `🟢 Пользователю ${residentUserLink} разблокирован`,
+            buttons: {},
+        });
+    }
+
+    if (residentToRestricted) {
+        await restrictUser(ctx, { chatId: homeChatId, userId: accountId });
+        await sendMessage(ctx, {
+            accountId: homeChatId,
+            text: `🟠 Пользователь ${residentUserLink} ограничен`,
+            buttons: {},
+        });
+    }
+
+    if (residentIsRestricted && !residentToRestricted) {
+        await unRestrictUser(ctx, { chatId: homeChatId, userId: accountId });
+        await sendMessage(ctx, {
+            accountId: homeChatId,
+            text: `🟢 С пользователя ${residentUserLink} сняты все ограничения`,
             buttons: {},
         });
     }
@@ -208,7 +231,7 @@ const validationHandler = async (ctx, userStatus, accountId) => {
     }
 
     if (residentIsAdmin && !residentToAdmin) {
-        await makeUser(ctx, { chatId: homeChatId, userId: accountId });
+        await demoteUser(ctx, { chatId: homeChatId, userId: accountId });
     }
 
     await setUserData(accountId, { userStatus });

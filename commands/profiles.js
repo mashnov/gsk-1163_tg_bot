@@ -26,6 +26,7 @@ const startAction = async (ctx, needAnswer) => {
 
     const buttons = {
         [`${moduleParam.name}:${userStatusList.blocked}:${moduleParam.list}`]: 'Заблокированные',
+        [`${moduleParam.name}:${userStatusList.restricted}:${moduleParam.list}`]: 'Ограниченные',
         [`${moduleParam.name}:${userStatusList.pending}:${moduleParam.list}`]: 'Ожидают проверки',
         [`${moduleParam.name}:${userStatusList.resident}:${moduleParam.list}`]: 'Жители',
         [`${moduleParam.name}:${userStatusList.admin}:${moduleParam.list}`]: 'Администраторы',
@@ -98,6 +99,7 @@ const profileReviewHandler = async (ctx, accountId) => {
         [`${moduleParam.verification}:${userStatusList.admin}:${accountId}`]: `🟡 ${userStatusText.admin}`,
         [`${moduleParam.verification}:${userStatusList.resident}:${accountId}`]: `🟢 ${userStatusText.resident}`,
         [`${moduleParam.verification}:${userStatusList.undefined}:${accountId}`]: '🔴 Отклонить',
+        [`${moduleParam.verification}:${userStatusList.restricted}:${accountId}`]: '🟠 Ограничить',
         [`${moduleParam.verification}:${userStatusList.blocked}:${accountId}`]: '⛔ Заблокировать',
         [`${moduleParam.name}:${moduleParam.start}`]: '⬅️ Назад',
     };

@@ -68,11 +68,12 @@ const submitAction = async (ctx) => {
     const adminIdList = getArrayFallback(await getUserIndex(userStatusList.admin), accountantIdList);
 
     const messageButtons = {
-        [`${moduleParam.verification}:${userStatusList.chairman}:${accountId}`]: `🟡 ${userStatusText.chairman}`,
-        [`${moduleParam.verification}:${userStatusList.accountant}:${accountId}`]: `🟡 ${userStatusText.accountant}`,
-        [`${moduleParam.verification}:${userStatusList.admin}:${accountId}`]: `🟡 ${userStatusText.admin}`,
-        [`${moduleParam.verification}:${userStatusList.resident}:${accountId}`]: `🟢 ${userStatusText.resident}`,
-        [`${moduleParam.name}:${userStatusList.blocked}:${accountId}`]: '🔴 Отклонить',
+        [`${moduleParam.name}:${userStatusList.chairman}:${accountId}`]: `🟡 ${userStatusText.chairman}`,
+        [`${moduleParam.name}:${userStatusList.accountant}:${accountId}`]: `🟡 ${userStatusText.accountant}`,
+        [`${moduleParam.name}:${userStatusList.admin}:${accountId}`]: `🟡 ${userStatusText.admin}`,
+        [`${moduleParam.name}:${userStatusList.resident}:${accountId}`]: `🟢 ${userStatusText.resident}`,
+        [`${moduleParam.name}:${userStatusList.restricted}:${accountId}`]: '🟠 Ограничить',
+        [`${moduleParam.name}:${userStatusList.blocked}:${accountId}`]: '⛔ Заблокировать',
         ...closeOption,
     };
 

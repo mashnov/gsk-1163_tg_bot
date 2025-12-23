@@ -15,6 +15,7 @@ const userStatusList = {
     admin: 'admin',
     resident: 'resident',
     pending: 'pending',
+    restricted: 'restricted',
     blocked: 'blocked',
     undefined: 'undefined'
 };
@@ -25,6 +26,7 @@ const userStatusText = {
     admin: 'Администратор',
     resident: 'Житель',
     pending: 'Ожидает проверки',
+    restricted: 'Ограничен',
     blocked: 'Заблокирован',
     undefined: 'Не верифицирован',
 };
