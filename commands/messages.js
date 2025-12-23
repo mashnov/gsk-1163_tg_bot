@@ -48,6 +48,10 @@ let stepper = undefined;
 const initAction = async (ctx, needAnswer) => {
     const isGuardPassed = await guard(ctx, { privateChat: true, verify: true });
 
+    if (needAnswer && !isGuardPassed) {
+        await ctx.answerCbQuery();
+    }
+
     if (!isGuardPassed) {
         return;
     }

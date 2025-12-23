@@ -17,6 +17,10 @@ const moduleParam = {
 const startAction = async (ctx, needAnswer) => {
     const isGuardPassed = await guard(ctx, { privateChat: true, verify: true, admin: true });
 
+    if (needAnswer && !isGuardPassed) {
+        await ctx.answerCbQuery();
+    }
+
     if (!isGuardPassed) {
         return;
     }

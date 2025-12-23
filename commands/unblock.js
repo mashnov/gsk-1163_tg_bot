@@ -33,6 +33,10 @@ let stepper = undefined;
 const initAction = async (ctx, bot, needAnswer) => {
     const isGuardPassed = await guard(ctx, { blocked: true });
 
+    if (needAnswer && !isGuardPassed) {
+        await ctx.answerCbQuery();
+    }
+
     if (!isGuardPassed) {
         return;
     }
