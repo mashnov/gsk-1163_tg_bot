@@ -30,4 +30,6 @@ module.exports = (bot) => {
     bot.start((ctx, next) => createNavigation(ctx, { next }));
     bot.hears('домовенок', async (ctx) => createNavigation(ctx, { remove: true }));
     bot.hears('Домовенок', async (ctx) => createNavigation(ctx, { remove: true }));
+    bot.hears('бот', async (ctx) => createNavigation(ctx, { remove: true }));
+    bot.hears('Бот', async (ctx) => createNavigation(ctx, { remove: true }));
 };
