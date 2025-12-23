@@ -12,6 +12,7 @@ const moduleNames = {
     verification: 'verification',
     unblock: 'unblock',
     backup: 'backup',
+    weather: 'weather',
 };
 
 const commandNames = {
@@ -23,6 +24,7 @@ const commandNames = {
     profiles: 'profiles:start',
     unblock: 'unblock:start',
     backup: 'backup:start',
+    weather: 'weather:start',
 };
 
 const backOption = { start: '⬅️ Назад' };

@@ -1,6 +1,5 @@
 const { Telegraf } = require('telegraf');
 
-const createNavigation = require('./helpers/navigation');
 const startCommand = require('./commands/start');
 const rulesCommand = require('./commands/rules');
 const contactsCommand = require('./commands/contacts');
@@ -11,12 +10,14 @@ const meterCommand = require('./commands/meter');
 const messagesCommand = require('./commands/messages');
 const unblockCommand = require('./commands/unblock');
 
+const navigationService = require('./commands/navigation');
+const weatherService = require('./commands/weather');
+
 const { botToken } = require('./const/env');
 
 const createBot = () => {
     const bot = new Telegraf(botToken);
 
-    createNavigation(bot);
     startCommand(bot);
     rulesCommand(bot);
     contactsCommand(bot);
@@ -26,6 +27,9 @@ const createBot = () => {
     meterCommand(bot);
     messagesCommand(bot);
     unblockCommand(bot);
+
+    navigationService(bot);
+    weatherService(bot);
 
     return bot;
 }

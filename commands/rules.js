@@ -139,6 +139,6 @@ module.exports = (bot) => {
     bot.command(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => initAction(ctx, bot));
     bot.action(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => initAction(ctx, bot, true));
     bot.on('callback_query', async (ctx, next) => callbackHandler(ctx, next));
-    bot.hears('Правила', async (ctx) => initAction(ctx, bot));
     bot.hears('правила', async (ctx) => initAction(ctx, bot));
+    bot.hears('Правила', async (ctx) => initAction(ctx, bot));
 };

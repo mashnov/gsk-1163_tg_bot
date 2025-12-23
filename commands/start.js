@@ -18,6 +18,7 @@ const initAction = async (ctx, bot, needAnswer) => {
     const buttons = {
         [commandNames.rules]: '📚 Правила',
         [commandNames.contact]: '📖 Контакты',
+        [commandNames.weather]: '🌤️ Погода',
     };
 
     if (isPrivateChat && (isUnverified || isPending)) {
