@@ -8,8 +8,8 @@ const { homeChatId, homeTimeZone, homeLatitude, homeLongitude } = require('../co
 const moduleParam = {
     name: moduleNames.weather,
     start: 'start',
-    startH: '0',
-    startM: '25',
+    startH: '8',
+    startM: '00',
     serviceUrl: `https://api.open-meteo.com/v1/forecast?latitude=${homeLatitude}&longitude=${homeLongitude}&daily=temperature_2m_min,temperature_2m_max,precipitation_probability_max&timezone=${encodeURIComponent(homeTimeZone)}`,
 }
 
