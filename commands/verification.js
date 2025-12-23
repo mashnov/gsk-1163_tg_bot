@@ -7,7 +7,7 @@ const { isValidOwner } = require('../helpers/validation');
 const { getArrayFallback } = require('../helpers/array');
 const { guard } = require('../helpers/guard');
 
-const { superUserId } = require('../const/env');
+const { superUserId, homeChatId } = require('../const/env');
 const { userStatusText, userStatusList } = require('../const/db');
 const { backOption, closeOption, moduleNames} = require('../const/dictionary');
 const { stepList } = require('../const/verification');
@@ -141,12 +141,12 @@ const validationHandler = async (ctx, userStatus, accountId) => {
     const adminIdList = getArrayFallback(await getUserIndex(userStatusList.admin), [superUserId]);
     const filteredAdminIdList = adminIdList.filter(adminId => ![String(ctx.from.id), accountId].includes(String(adminId)));
 
-    for (const recipientAccountId of filteredAdminIdList) {
-        const adminUserLink = getUserNameLink(ctx.from);
-        const residentData = await getUserData(accountId);
-        const residentLinkData = { id: accountId, first_name: residentData.userName };
-        const residentUserLink = getUserNameLink(residentLinkData);
+    const adminUserLink = getUserNameLink(ctx.from);
+    const residentData = await getUserData(accountId);
+    const residentLinkData = { id: accountId, first_name: residentData.userName };
+    const residentUserLink = getUserNameLink(residentLinkData);
 
+    for (const recipientAccountId of filteredAdminIdList) {
         const messageText = {
             [userStatusList.chairman]: `${adminUserLink} выдал права председателя ${residentUserLink}`,
             [userStatusList.accountant]: `${adminUserLink} выдал права бухгалтера ${residentUserLink}`,
@@ -185,6 +185,14 @@ const validationHandler = async (ctx, userStatus, accountId) => {
         await removeMessage(ctx, { chatId, messageId });
     }
     await setVerificationIndexItem(accountId, []);
+
+    if (userStatus === userStatusList.blocked) {
+        await sendMessage(ctx, {
+            accountId: homeChatId,
+            text: `⛔️ Пользователь ${residentUserLink} заблокирован`,
+            buttons: {},
+        });
+    }
 
     await ctx.answerCbQuery('Запрос обработан');
 };
