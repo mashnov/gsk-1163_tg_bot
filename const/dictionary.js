@@ -11,6 +11,7 @@ const moduleNames = {
     rules: 'rules',
     verification: 'verification',
     unblock: 'unblock',
+    backup: 'backup',
 };
 
 const commandNames = {
@@ -21,6 +22,7 @@ const commandNames = {
     meter: 'meter:start',
     profiles: 'profiles:start',
     unblock: 'unblock:start',
+    backup: 'backup:start',
 };
 
 const backOption = { start: '⬅️ Назад' };

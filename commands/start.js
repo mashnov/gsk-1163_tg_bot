@@ -35,6 +35,7 @@ const initAction = async (ctx, bot, needAnswer) => {
 
     if (isPrivateChat && isAdmin) {
         buttons[commandNames.profiles] = '🪪 Администрирование';
+        buttons[commandNames.backup] = '💾 Резервное копирование';
     }
 
     let messageText =

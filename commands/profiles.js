@@ -35,7 +35,7 @@ const startAction = async (ctx, needAnswer) => {
     };
 
     const messageText =
-        `👥 Администрирование \n\n` +
+        `🪪 Администрирование \n\n` +
         `Имя профиля: ${ getUserName(ctx.from) }\n` +
         `Статус: ${ userStatusText[userStatus] }`;
 

@@ -6,6 +6,7 @@ const rulesCommand = require('./commands/rules');
 const contactsCommand = require('./commands/contacts');
 const verificationCommand = require('./commands/verification');
 const profilesCommand = require('./commands/profiles');
+const backupCommand = require('./commands/backup');
 const meterCommand = require('./commands/meter');
 const messagesCommand = require('./commands/messages');
 const unblockCommand = require('./commands/unblock');
@@ -21,6 +22,7 @@ const createBot = () => {
     contactsCommand(bot);
     verificationCommand(bot);
     profilesCommand(bot);
+    backupCommand(bot);
     meterCommand(bot);
     messagesCommand(bot);
     unblockCommand(bot);
