@@ -5,7 +5,7 @@ const { getUserIndex, getUserData, setUserData, getVerificationIndexItem, setVer
 const { sendMessage, removeMessage } = require('../helpers/message');
 const { isValidOwner } = require('../helpers/validation');
 const { getArrayFallback } = require('../helpers/array');
-const { banUserById, unbanUserById } = require('../helpers/profiles');
+const { banUserById, unbanUserById, makeAdmin, makeUser } = require('../helpers/profiles');
 const { guard } = require('../helpers/guard');
 
 const { superUserId, homeChatId } = require('../const/env');
@@ -179,15 +179,13 @@ const validationHandler = async (ctx, userStatus, accountId) => {
         buttons: closeOption,
     });
 
-    await setUserData(accountId, { userStatus });
+    const residentCurrentStatus = residentData?.userStatus;
+    const residentIsAdmin = [userStatusList.chairman, userStatusList.accountant, userStatusList.admin].includes(residentCurrentStatus);
+    const residentIsBlocked = residentCurrentStatus === userStatusList.blocked;
+    const residentToAdmin = [userStatusList.chairman, userStatusList.accountant, userStatusList.admin].includes(userStatus);
+    const residentToBlocked = userStatus === userStatusList.blocked;
 
-    const verificationMessages = await getVerificationIndexItem(accountId);
-    for (const { chatId, messageId } of verificationMessages) {
-        await removeMessage(ctx, { chatId, messageId });
-    }
-    await setVerificationIndexItem(accountId, []);
-
-    if (userStatus === userStatusList.blocked) {
+    if (residentToBlocked) {
         await banUserById(ctx, { chatId: homeChatId, userId: accountId });
         await sendMessage(ctx, {
             accountId: homeChatId,
@@ -196,7 +194,7 @@ const validationHandler = async (ctx, userStatus, accountId) => {
         });
     }
 
-    if (residentData?.userStatus === userStatusList.blocked && userStatus !== userStatusList.blocked) {
+    if (residentIsBlocked && !residentToBlocked) {
         await unbanUserById(ctx, { chatId: homeChatId, userId: accountId });
         await sendMessage(ctx, {
             accountId: homeChatId,
@@ -204,6 +202,22 @@ const validationHandler = async (ctx, userStatus, accountId) => {
             buttons: {},
         });
     }
+
+    if (residentToAdmin) {
+        await makeAdmin(ctx, { chatId: homeChatId, userId: accountId });
+    }
+
+    if (residentIsAdmin && !residentToAdmin) {
+        await makeUser(ctx, { chatId: homeChatId, userId: accountId });
+    }
+
+    await setUserData(accountId, { userStatus });
+
+    const verificationMessages = await getVerificationIndexItem(accountId);
+    for (const { chatId, messageId } of verificationMessages) {
+        await removeMessage(ctx, { chatId, messageId });
+    }
+    await setVerificationIndexItem(accountId, []);
 
     await ctx.answerCbQuery('Запрос обработан');
 };
