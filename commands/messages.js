@@ -1,4 +1,4 @@
-const { initStepper } = require('../helpers/stepper');
+const { startStepper } = require('../helpers/stepper');
 const { getUserIndex, getUserData } = require('../helpers/db');
 const { initStore, getSession } = require('../helpers/sessions');
 const { getUserNameLink, getSummaryMessage } = require('../helpers/getters');
@@ -18,7 +18,7 @@ const moduleParam = {
 
 let stepper = undefined;
 
-(async () => {
+const initStepper = async () => {
     const chairmanIdList = await getUserIndex(userStatusList.chairman);
     const accountantIdList = await getUserIndex(userStatusList.accountant);
     const adminIdList = getArrayFallback(await getUserIndex(userStatusList.admin), [superUserId]);
@@ -37,12 +37,12 @@ let stepper = undefined;
         submitActions[`${moduleParam.name}:${moduleParam.submit}:${userStatusList.admin}`] = 'Отправить администратору';
     }
 
-    stepper = initStepper({
+    stepper = startStepper({
         stepList,
         actionName: moduleParam.name,
         submitActions,
     });
-})();
+};
 
 const initAction = async (ctx) => {
     const isGuardPassed = await guard(ctx, { privateChat: true, verify: true });
@@ -54,6 +54,7 @@ const initAction = async (ctx) => {
     }
 
     initStore(ctx.from.id, moduleParam.name);
+    await initStepper();
 
     await stepper?.startHandler(ctx);
     await removeMessage(ctx);

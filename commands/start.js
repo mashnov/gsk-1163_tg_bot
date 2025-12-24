@@ -27,8 +27,6 @@ const initAction = async (ctx) => {
     const buttons = {
         [moduleNames.rules]: '📚 Правила',
         [moduleNames.contact]: '📖 Контакты',
-        [moduleNames.weather]: '🌤️ Погода',
-        [moduleNames.horoscope]: '💫 Гороскоп',
     };
 
     if (isPrivateChat && (isUnverified || isPending)) {
@@ -39,13 +37,17 @@ const initAction = async (ctx) => {
         buttons[moduleNames.unblock] = '🫥 Разблокировка';
     }
 
+    if (!isBlocked) {
+        buttons[moduleNames.weather] = '🌤️ Прогноз погоды';
+        buttons[moduleNames.horoscope] = '💫 Личный Гороскоп';
+    }
+
     if (isPrivateChat && (isResident || isAdmin)) {
         buttons[moduleNames.meter] = '〽️ Показания счетчиков';
-        buttons[moduleNames.messages] = '💬 Написать сообщение';
     }
 
     if (isPrivateChat && isAdmin) {
-        buttons[moduleNames.profiles] = '🪪 Администрирование';
+        buttons[moduleNames.profiles] = '🪪 Управление пользователями';
         buttons[moduleNames.backup] = '💾 Резервное копирование';
     }
 
@@ -72,15 +74,21 @@ const initAction = async (ctx) => {
             '\n\n🔒 Доступ к чату временно ограничен. Чтобы продолжить работу с ботом, запустите процедуру снятия блокировки.';
     }
 
+    if (!isBlocked) {
+        messageText +=
+            '\n\n• Узнать прогноз погоды' +
+            '\n• Получить личный гороскоп';
+    }
+
     if (isPrivateChat && (isResident || isAdmin)) {
         messageText +=
-            '\n• Передать показания счётчиков' +
-            '\n• Связаться с правлением или администратором';
+            '\n\n• Передать показания счётчиков';
     }
 
     if (isPrivateChat && isAdmin) {
         messageText +=
-            '\n• Управлять пользователями';
+            '\n\n• Управлять пользователями' +
+            '\n• Сделать резервную копию БД';
     }
 
     await sendMessage(ctx, {

@@ -1,8 +1,8 @@
-const { initStepper } = require('../helpers/stepper');
+const { startStepper } = require('../helpers/stepper');
 const { initStore, getSession } = require('../helpers/sessions');
 const { getUserNameLink, getUserName, getFormattedDate, getSummaryMessage, getRoomOwner } = require('../helpers/getters');
 const { getUserIndex, getUserData, setUserData, getVerificationIndexItem, setVerificationIndexItem } = require('../helpers/db');
-const { sendMessage, removeMessage, commandAnswer, banUserById, unbanUserById, makeAdmin, demoteUser, restrictUser, unRestrictUser } = require('../helpers/telegraf');
+const { sendMessage, removeMessage, commandAnswer, banUserById, unBanUserById, makeAdmin, demoteUser, restrictUser, unRestrictUser } = require('../helpers/telegraf');
 const { isValidOwner } = require('../helpers/validation');
 const { getArrayFallback } = require('../helpers/array');
 const { guard } = require('../helpers/guard');
@@ -20,15 +20,15 @@ const moduleParam = {
 
 let stepper = undefined;
 
-(async () => {
-    stepper = initStepper({
+const initStepper = async () => {
+    stepper = startStepper({
         stepList,
         actionName: moduleParam.name,
         submitActions: {
             [`${moduleParam.name}:${moduleParam.submit}`]: 'Отправить ✅'
         },
     });
-})();
+};
 
 const startAction = async (ctx) => {
     const isGuardPassed = await guard(ctx, { privateChat: true, unBlocked: true });
@@ -38,6 +38,8 @@ const startAction = async (ctx) => {
         await commandAnswer(ctx);
         return;
     }
+
+    await initStepper();
 
     const userData = await getUserData(ctx.from.id);
     const isUnverified = userData?.userStatus === userStatusList.undefined || !userData?.userStatus;
@@ -87,12 +89,13 @@ const initAction = async (ctx) => {
     await commandAnswer(ctx);
 };
 
-const submitAction = async (ctx) => {
+const sendResidentVerificationRequest = async (ctx) => {
     const senderMessage = '🟢 Ваш запрос отправлен';
     await sendMessage(ctx, { text: senderMessage });
+};
 
+const sendAdminVerificationRequest = async (ctx, session) => {
     const accountId = ctx.from.id;
-    const session = getSession(accountId);
 
     const recipientIcon = `${ isValidOwner(session.room, session.owner) ? '🟢' : '🔴'}`;
     const recipientHeader = `${ recipientIcon } Новый запрос авторизации\n\n`;
@@ -124,27 +127,87 @@ const submitAction = async (ctx) => {
     }
 
     await setVerificationIndexItem(accountId, messageList);
-    await removeMessage(ctx);
-    await setUserData(accountId, {
+};
+
+const setResidentVerificationRequest = async (ctx, session) => {
+    await setUserData(ctx.from.id, {
         residentName: session.name,
         userName: getUserName(ctx.from),
         userStatus: userStatusList.pending,
         roomNumber: session.room,
         phoneNumber: session.phone,
     });
-    await commandAnswer(ctx, 'Запрос успешно отправлен!');
 }
 
-const validationHandler = async (ctx, userStatus, accountId) => {
-    const adminIdList = getArrayFallback(await getUserIndex(userStatusList.admin), [superUserId]);
-    const filteredAdminIdList = adminIdList.filter(adminId => ![String(ctx.from.id), accountId].includes(String(adminId)));
+const submitAction = async (ctx) => {
+    const session = getSession(ctx.from.id);
 
+    await sendResidentVerificationRequest(ctx);
+    await sendAdminVerificationRequest(ctx, session);
+    await setResidentVerificationRequest(ctx, session);
+    await removeMessage(ctx);
+    await commandAnswer(ctx, 'Запрос успешно отправлен!');
+};
+
+
+const removeAdminVerificationMessages = async (ctx, accountId) => {
+    const verificationMessages = await getVerificationIndexItem(accountId);
+
+    for (const { chatId, messageId } of verificationMessages) {
+        await removeMessage(ctx, { chatId, messageId });
+    }
+
+    await setVerificationIndexItem(accountId, []);
+};
+
+const removeResidentVerificationStatus = async (ctx, userStatus, accountId, residentData) => {
+    const residentIsAdmin = [userStatusList.chairman, userStatusList.accountant, userStatusList.admin].includes(residentData?.userStatus);
+    const residentIsRestricted = userStatusList.restricted === residentData?.userStatus;
+    const residentIsBlocked = userStatusList.blocked === residentData?.userStatus;
+
+    if (residentIsAdmin) {
+        await demoteUser(ctx, { chatId: homeChatId, userId: accountId });
+    }
+
+    if (residentIsRestricted) {
+        await unRestrictUser(ctx, { chatId: homeChatId, userId: accountId });
+    }
+
+    if (residentIsBlocked) {
+        await unBanUserById(ctx, { chatId: homeChatId, userId: accountId });
+    }
+};
+
+
+const setResidentVerificationStatus = async (ctx, userStatus, accountId) => {
+    const residentIsAdmin = [userStatusList.chairman, userStatusList.accountant, userStatusList.admin].includes(userStatus);
+    const residentIsRestricted = userStatusList.restricted === userStatus;
+    const residentIsBlocked = userStatusList.blocked === userStatus;
+
+    if (residentIsAdmin) {
+        await makeAdmin(ctx, { chatId: homeChatId, userId: accountId });
+    }
+
+    if (residentIsRestricted) {
+        await restrictUser(ctx, { chatId: homeChatId, userId: accountId });
+    }
+
+    if (residentIsBlocked) {
+        await banUserById(ctx, { chatId: homeChatId, userId: accountId });
+    }
+
+    await setUserData(accountId, { userStatus });
+};
+
+const sendAdminVerificationNotification = async (ctx, userStatus, accountId, residentData) => {
+    const adminIdList = getArrayFallback(await getUserIndex(userStatusList.admin), [superUserId]);
+    const adminFilteredList = adminIdList.filter(adminId => ![String(ctx.from.id), accountId].includes(String(adminId)));
     const adminUserLink = getUserNameLink(ctx.from);
-    const residentData = await getUserData(accountId);
+
     const residentLinkData = { id: accountId, first_name: residentData.userName };
     const residentUserLink = getUserNameLink(residentLinkData);
 
-    for (const recipientAccountId of filteredAdminIdList) {
+    for (const adminId of adminFilteredList) {
         const messageText = {
             [userStatusList.chairman]: `${adminUserLink} выдал права председателя ${residentUserLink}.`,
             [userStatusList.accountant]: `${adminUserLink} выдал права бухгалтера ${residentUserLink}.`,
@@ -155,64 +218,20 @@ const validationHandler = async (ctx, userStatus, accountId) => {
         };
 
         await sendMessage(ctx, {
-            accountId: recipientAccountId,
+            accountId: adminId,
             text: messageText[userStatus],
             buttons: closeOption,
         });
     }
+};
 
-    const validationText = {
-        [userStatusList.chairman]: '🟢 Вам выданы права председателя!',
-        [userStatusList.accountant]: '🟢 Вам выданы права бухгалтера!',
-        [userStatusList.admin]: '🟢 Вам выданы права администратора!',
-        [userStatusList.resident]: '🟢 Ваш запрос верификации одобрен!',
-        [userStatusList.restricted]: '🟠 Вы были ограничены. Для снятия ограничений, пожалуйста, воспользуйтесь ботом.',
-        [userStatusList.blocked]: '🔴 Вы были заблокированы. Для снятия ограничений, пожалуйста, воспользуйтесь ботом.',
-    };
+const sendChatVerificationNotification = async (ctx, userStatus, accountId, residentData) => {
+    const residentLinkData = { id: accountId, first_name: residentData.userName };
+    const residentUserLink = getUserNameLink(residentLinkData);
+    const residentIsBlocked = [userStatusList.restricted, userStatusList.blocked].includes(residentData?.userStatus);
+    const residentWillBlocked = [userStatusList.blocked, userStatusList.restricted].includes(userStatus);
 
-    await sendMessage(ctx, {
-        accountId,
-        text: validationText[userStatus],
-        buttons: closeOption,
-    });
-
-    const residentCurrentStatus = residentData?.userStatus;
-    const residentIsAdmin = [userStatusList.chairman, userStatusList.accountant, userStatusList.admin].includes(residentCurrentStatus);
-    const residentIsBlocked = residentCurrentStatus === userStatusList.blocked;
-    const residentIsRestricted = residentCurrentStatus === userStatusList.restricted;
-    const residentToAdmin = [userStatusList.chairman, userStatusList.accountant, userStatusList.admin].includes(userStatus);
-    const residentToBlocked = userStatus === userStatusList.blocked;
-    const residentToRestricted = userStatus === userStatusList.restricted;
-
-    if (residentToBlocked) {
-        await banUserById(ctx, { chatId: homeChatId, userId: accountId });
-        await sendMessage(ctx, {
-            accountId: homeChatId,
-            text: `🔴 Пользователь ${residentUserLink} заблокирован.`,
-            buttons: {},
-        });
-    }
-
-    if (residentIsBlocked && !residentToBlocked) {
-        await unbanUserById(ctx, { chatId: homeChatId, userId: accountId });
-        await sendMessage(ctx, {
-            accountId: homeChatId,
-            text: `🟢 Пользователю ${residentUserLink} разблокирован`,
-            buttons: {},
-        });
-    }
-
-    if (residentToRestricted) {
-        await restrictUser(ctx, { chatId: homeChatId, userId: accountId });
-        await sendMessage(ctx, {
-            accountId: homeChatId,
-            text: `🟠 Пользователь ${residentUserLink} ограничен.\n\nДля снятия ограничений воспользуйтесь <a href="https://t.me/${botUsername}">ботом</a>.`,
-            buttons: {},
-        });
-    }
-
-    if (residentIsRestricted && !residentToRestricted) {
-        await unRestrictUser(ctx, { chatId: homeChatId, userId: accountId });
+    if (residentIsBlocked && !residentWillBlocked) {
         await sendMessage(ctx, {
             accountId: homeChatId,
             text: `🟢 С пользователя ${residentUserLink} сняты все ограничения`,
@@ -220,22 +239,45 @@ const validationHandler = async (ctx, userStatus, accountId) => {
         });
     }
 
-    if (residentToAdmin) {
-        await makeAdmin(ctx, { chatId: homeChatId, userId: accountId });
+    if (!residentIsBlocked && residentWillBlocked) {
+        await sendMessage(ctx, {
+            accountId: homeChatId,
+            text: `🟠 Пользователь ${residentUserLink} ограничен.\n\nДля снятия ограничений воспользуйтесь <a href="https://t.me/${botUsername}">ботом</a>.`,
+            buttons: {},
+        });
     }
+};
 
-    if (residentIsAdmin && !residentToAdmin) {
-        await demoteUser(ctx, { chatId: homeChatId, userId: accountId });
-    }
+const sendResidentVerificationNotification = async (ctx, userStatus, accountId) => {
+    const residentIsBlocked = userStatusList.blocked === userStatus;
 
-    await setUserData(accountId, { userStatus });
+    const validationText = {
+        [userStatusList.chairman]: '🟢 Вам выданы права председателя!',
+        [userStatusList.accountant]: '🟢 Вам выданы права бухгалтера!',
+        [userStatusList.admin]: '🟢 Вам выданы права администратора!',
+        [userStatusList.resident]: '🟢 Вам выданы права жителя!',
+        [userStatusList.restricted]: '🟠 Вы были ограничены. Для снятия ограничений, пожалуйста, воспользуйтесь ботом.',
+        [userStatusList.blocked]: '🔴 Вы были заблокированы. Для снятия ограничений, пожалуйста, воспользуйтесь ботом.',
+    };
 
-    const verificationMessages = await getVerificationIndexItem(accountId);
-    for (const { chatId, messageId } of verificationMessages) {
-        await removeMessage(ctx, { chatId, messageId });
-    }
-    await setVerificationIndexItem(accountId, []);
+    await sendMessage(ctx, {
+        accountId,
+        text: validationText[userStatus],
+        buttons: {
+            ...(residentIsBlocked ? { [moduleNames.unblock]: '🫥 Разблокировка' } : {}),
+            ...closeOption,
+        }
+    });
+};
 
+const verificationHandler = async (ctx, userStatus, accountId) => {
+    const residentData = await getUserData(accountId);
+    await removeResidentVerificationStatus(ctx, userStatus, accountId, residentData);
+    await setResidentVerificationStatus(ctx, userStatus, accountId);
+    await sendAdminVerificationNotification(ctx, userStatus, accountId, residentData);
+    await sendChatVerificationNotification(ctx, userStatus, accountId, residentData);
+    await sendResidentVerificationNotification(ctx, userStatus, accountId);
+    await removeAdminVerificationMessages(ctx, accountId);
     await commandAnswer(ctx, 'Запрос обработан');
 };
 
@@ -244,7 +286,7 @@ const callbackHandler = async (ctx, next) => {
     const [action, userStatus, accountId] = data.split(':');
 
     if (action === moduleParam.name) {
-        await validationHandler(ctx, userStatus, accountId);
+        await verificationHandler(ctx, userStatus, accountId);
     }
 
     return next();

@@ -1,4 +1,4 @@
-const { initStepper } = require('../helpers/stepper');
+const { startStepper } = require('../helpers/stepper');
 const { initStore, getSession } = require('../helpers/sessions');
 const { getUserNameLink, getSummaryMessage } = require('../helpers/getters');
 const { getUserIndex, getUserData, setVerificationIndexItem } = require('../helpers/db');
@@ -19,15 +19,15 @@ const moduleParam = {
 
 let stepper = undefined;
 
-(async () => {
-    stepper = initStepper({
+const initStepper = async () => {
+    stepper = startStepper({
         stepList,
         actionName: moduleParam.name,
         submitActions: {
             [`${moduleParam.name}:${moduleParam.submit}`]: 'Отправить ✅'
         },
     });
-})();
+};
 
 const initAction = async (ctx) => {
     const isGuardPassed = await guard(ctx, { blocked: true });
@@ -39,6 +39,7 @@ const initAction = async (ctx) => {
     }
 
     initStore(ctx.from.id, moduleParam.name);
+    await initStepper();
 
     await stepper.startHandler(ctx);
     await removeMessage(ctx);

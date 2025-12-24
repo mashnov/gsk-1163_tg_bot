@@ -9,11 +9,20 @@ const { homeChatId, homeTimeZone, homeLatitude, homeLongitude } = require('../co
 const moduleParam = {
     name: moduleNames.weather,
     keywords: ['погода', 'Погода'],
-    sendTime: [8, 14, 21],
+    sendTime: [8, 14, 20],
     serviceUrl: `https://api.open-meteo.com/v1/forecast?latitude=${homeLatitude}&longitude=${homeLongitude}&daily=temperature_2m_min,temperature_2m_max,precipitation_probability_max&timezone=${encodeURIComponent(homeTimeZone)}`,
 }
 
 const getWeatherMessage = async (ctx, { needRemove, needButtons }) => {
+    const isGuardPassed = await guard(ctx, { unBlocked: true });
+
+    if (!isGuardPassed) {
+        await removeMessage(ctx);
+        await commandAnswer(ctx);
+        return;
+    }
+
+    const isPrivateChat = ctx.chat?.type === 'private';
     const serviceResponse = await fetch(moduleParam.serviceUrl);
     const serviceData = await serviceResponse.json();
 
@@ -21,13 +30,15 @@ const getWeatherMessage = async (ctx, { needRemove, needButtons }) => {
     const maxTemperature = ((serviceData?.daily?.temperature_2m_max) || [])[0]
     const precipitation = ((serviceData?.daily?.precipitation_probability_max) || [])[0]
 
-    const messageText =
-        '🌤️ Погода на сегодня' +
-        `\n\n Минимальная температура: ${minTemperature}°C` +
-        `\n Максимальная температура: ${maxTemperature}°C` +
-        `\n Вероятность осадков: до ${precipitation}%`
+    let messageText =
+        '🌤️ Прогноз погоды' +
+        `\n\nМинимальная температура: ${minTemperature}°C` +
+        `\nМаксимальная температура: ${maxTemperature}°C` +
+        `\nВероятность осадков: до ${precipitation}%`;
 
-    const isPrivateChat = ctx.chat?.type === 'private';
+    if (!isPrivateChat) {
+        messageText += '\n\nПрогноз публикуется автоматически в 08:00, 14:00 и 20:00 ежедневно';
+    }
 
     await sendMessage(ctx, {
         accountId: isPrivateChat ? undefined : homeChatId,
@@ -41,7 +52,7 @@ const getWeatherMessage = async (ctx, { needRemove, needButtons }) => {
     await commandAnswer(ctx);
 };
 
-const hearsCallBackHandler = async (ctx) => {
+const hearsHandler = async (ctx) => {
     const isGuardPassed = await guard(ctx, { publicChat: true });
 
     if (!isGuardPassed) {
@@ -65,5 +76,5 @@ module.exports = (bot) => {
     cronAction(bot);
     bot.command(moduleParam.name, (ctx) => getWeatherMessage(ctx, { needRemove: true, needButtons: true }));
     bot.action(moduleParam.name, (ctx) => getWeatherMessage(ctx, { needRemove: true, needButtons: true }));
-    bot.hears(moduleParam.keywords, (ctx) => hearsCallBackHandler(ctx));
+    bot.hears(moduleParam.keywords, (ctx) => hearsHandler(ctx));
 };

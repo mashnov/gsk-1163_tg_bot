@@ -56,6 +56,14 @@ const initAction = async (ctx) => {
 };
 
 const getHoroscopeMessage = async (ctx, { needRemove, needButtons, horoName }) => {
+    const isGuardPassed = await guard(ctx, { unBlocked: true });
+
+    if (!isGuardPassed) {
+        await removeMessage(ctx);
+        await commandAnswer(ctx);
+        return;
+    }
+
     const serviceResponse = await fetch(moduleParam.serviceUrl);
     const serviceData = await serviceResponse.text();
     const response = await parseXml(serviceData);
@@ -111,17 +119,6 @@ const callbackHandler = async (ctx, next) => {
     return next();
 };
 
-const hearsCallBackHandler = async (ctx) => {
-    const isGuardPassed = await guard(ctx, { publicChat: true });
-
-    if (!isGuardPassed) {
-        await commandAnswer(ctx);
-        return;
-    }
-
-    await getHoroscopeMessage(ctx, { needRemove: true, needButtons: true, });
-}
-
 const cronAction = (ctx) => {
     cron.schedule(
         `${moduleParam.startM} ${moduleParam.startH} * * *`,
@@ -134,6 +131,5 @@ module.exports = (bot) => {
     cronAction(bot);
     bot.command(moduleParam.name, (ctx) => initAction(ctx));
     bot.action(moduleParam.name, (ctx) => initAction(ctx));
-    bot.hears(moduleParam.keywords, (ctx) => hearsCallBackHandler(ctx));
     bot.on('callback_query', (ctx, next) => callbackHandler(ctx, next));
 };

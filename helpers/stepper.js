@@ -4,7 +4,7 @@ const { validateMessage } = require('./validation');
 const { getMessageText, getMessageAttachment, getSummaryMessage } = require('./getters');
 const { sendMessage, removeMessage } = require('./telegraf');
 
-function initStepper({ actionName, stepList, cancelActions = homeOption, submitActions }) {
+function startStepper({ actionName, stepList, cancelActions = homeOption, submitActions }) {
     const sendStepWarning = async (ctx, session) => {
         const messageText = stepList[session.stepIndex]?.errorText;
         session.messageId = await sendMessage(ctx, { text: messageText });
@@ -77,5 +77,5 @@ function initStepper({ actionName, stepList, cancelActions = homeOption, submitA
 }
 
 module.exports = {
-    initStepper,
+    startStepper,
 };

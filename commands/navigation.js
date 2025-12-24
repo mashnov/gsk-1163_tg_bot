@@ -1,21 +1,16 @@
 const { getKeyboard } = require('../helpers/getters');
-const { removeMessage } = require('../helpers/telegraf');
+const { removeMessage, commandAnswer} = require('../helpers/telegraf');
 
 const { messageParams } = require('../const/dictionary');
 const { botUsername } = require('../const/env');
+const {guard} = require("../helpers/guard");
 
 const moduleParam = {
     keywords: ['домовенок', 'Домовенок', 'бот', 'Бот'],
-    buttons: ['Правила', 'Контакты', 'Погода'],
+    buttons: ['Правила', 'Контакты'],
 };
 
-const createNavigation = async (ctx, { next, remove }) => {
-    const isPrivateChat = ctx.chat?.type === 'private';
-
-    if (isPrivateChat) {
-        return next();
-    }
-
+const createNavigation = async (ctx, needRemove) => {
     const messageText =
         '<b>Привет!</b>\n' +
         'Я <b>Домовёнок</b> - бот нашего дома.\n\n' +
@@ -26,12 +21,24 @@ const createNavigation = async (ctx, { next, remove }) => {
 
     ctx.reply(messageText, { ...messageParams, ...getKeyboard(moduleParam.buttons) });
 
-    if (remove) {
+    if (needRemove) {
         await removeMessage(ctx);
     }
 }
 
+const hearsHandler = async (ctx) => {
+    const isGuardPassed = await guard(ctx, { publicChat: true });
+
+    if (!isGuardPassed) {
+        await removeMessage(ctx);
+        await commandAnswer(ctx);
+        return;
+    }
+
+    await createNavigation(ctx, true);
+}
+
 module.exports = (bot) => {
-    bot.start((ctx, next) => createNavigation(ctx, { next }));
-    bot.hears(moduleParam.keywords, (ctx) => createNavigation(ctx, { remove: true }));
+    bot.start((ctx) => createNavigation(ctx));
+    bot.hears(moduleParam.keywords, (ctx) => hearsHandler(ctx));
 };

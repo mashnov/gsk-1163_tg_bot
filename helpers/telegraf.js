@@ -133,7 +133,7 @@ const banUserById = async (ctx, { chatId, userId } = {}) => {
     }
 };
 
-const unbanUserById = async (ctx, { chatId, userId } = {}) => {
+const unBanUserById = async (ctx, { chatId, userId } = {}) => {
     try {
         await ctx.telegram.unbanChatMember(chatId, userId)
     } catch (error) {
@@ -150,5 +150,5 @@ module.exports = {
     restrictUser,
     unRestrictUser,
     banUserById,
-    unbanUserById,
+    unBanUserById,
 };
