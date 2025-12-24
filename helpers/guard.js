@@ -1,15 +1,21 @@
-const { sendMessage } = require('../helpers/message');
+const { sendMessage } = require('./telegraf');
 const { getUserData } = require('../helpers/db');
 
 const { closeOption } = require('../const/dictionary');
 const { userStatusList } = require('../const/db');
 
-const guard = async (ctx, { privateChat, verify, admin, blocked, unBlocked }) => {
+const guard = async (ctx, { privateChat, publicChat, verify, admin, blocked, unBlocked }) => {
     const userData = await getUserData(ctx.from.id);
     const isUnverified = userData?.userStatus === userStatusList.undefined || !userData?.userStatus;
     const isBlocked = [userStatusList.blocked, userStatusList.restricted].includes(userData?.userStatus);
     const isAdmin = [userStatusList.admin, userStatusList.accountant, userStatusList.chairman].includes(userData?.userStatus);
     const isPrivateChat = ctx.chat?.type === 'private';
+
+    if (isPrivateChat && publicChat) {
+        const text = '🔒 Это действие доступно только в чате';
+        await sendMessage(ctx, { text, silent: true, buttons: closeOption });
+        return;
+    }
 
     if (!isPrivateChat && privateChat) {
         const text = '🔒 Это действие доступно только в личном общении с ботом';
