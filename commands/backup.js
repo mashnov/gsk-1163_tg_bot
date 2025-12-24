@@ -1,25 +1,22 @@
-const { sendMessage, removeMessage } = require('../helpers/message');
+const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { guard } = require('../helpers/guard');
 
 const { moduleNames, homeOption } = require('../const/dictionary');
 
 const moduleParam = {
     name: moduleNames.backup,
-    start: 'start',
 };
 
-const startAction = async (ctx, needAnswer) => {
+const startAction = async (ctx) => {
     const isGuardPassed = await guard(ctx, { privateChat: true, verify: true, admin: true });
 
-    if (needAnswer && !isGuardPassed) {
-        await ctx.answerCbQuery();
-    }
-
     if (!isGuardPassed) {
+        await removeMessage(ctx);
+        await commandAnswer(ctx);
         return;
     }
 
-    const messageText = '\💾 Резервная копия готова!';
+    const messageText = '💾 Резервная копия готова!';
 
     await sendMessage(ctx, {
         text: messageText,
@@ -27,13 +24,10 @@ const startAction = async (ctx, needAnswer) => {
         filePath: './state/db.json',
     });
     await removeMessage(ctx);
-
-    if (needAnswer) {
-        await ctx.answerCbQuery();
-    }
+    await commandAnswer(ctx);
 };
 
 module.exports = (bot) => {
-    bot.command(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => startAction(ctx));
-    bot.action(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => startAction(ctx, true));
+    bot.command(moduleParam.name, (ctx) => startAction(ctx));
+    bot.action(moduleParam.name, (ctx) => startAction(ctx));
 };
