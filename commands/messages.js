@@ -1,8 +1,8 @@
 const { initStepper } = require('../helpers/stepper');
 const { getUserIndex, getUserData } = require('../helpers/db');
-const { initStore, getSession} = require('../helpers/sessions');
+const { initStore, getSession } = require('../helpers/sessions');
 const { getUserNameLink, getSummaryMessage } = require('../helpers/getters');
-const { sendMessage, removeMessage } = require('../helpers/message');
+const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { getArrayFallback } = require('../helpers/array');
 const { guard } = require('../helpers/guard');
 
@@ -13,7 +13,6 @@ const { superUserId } = require('../const/env');
 
 const moduleParam = {
     name: moduleNames.messages,
-    start: 'start',
     submit: 'submit',
 };
 
@@ -45,14 +44,12 @@ let stepper = undefined;
     });
 })();
 
-const initAction = async (ctx, needAnswer) => {
+const initAction = async (ctx) => {
     const isGuardPassed = await guard(ctx, { privateChat: true, verify: true });
 
-    if (needAnswer && !isGuardPassed) {
-        await ctx.answerCbQuery();
-    }
-
     if (!isGuardPassed) {
+        await removeMessage(ctx);
+        await commandAnswer(ctx);
         return;
     }
 
@@ -60,10 +57,7 @@ const initAction = async (ctx, needAnswer) => {
 
     await stepper?.startHandler(ctx);
     await removeMessage(ctx);
-
-    if (needAnswer) {
-        await ctx.answerCbQuery();
-    }
+    await commandAnswer(ctx);
 }
 
 const submitAction = async (ctx, listType) => {
@@ -91,10 +85,8 @@ const submitAction = async (ctx, listType) => {
             attachment: session.attachment,
         });
     }
-
     await removeMessage(ctx);
-
-    await ctx.answerCbQuery('Ваше сообщение отправлено');
+    await commandAnswer(ctx, 'Ваше сообщение отправлено');
 }
 
 const callbackHandler = async (ctx, next) => {
@@ -109,8 +101,8 @@ const callbackHandler = async (ctx, next) => {
 };
 
 module.exports = (bot) => {
-    bot.command(`${moduleParam.name}:${moduleParam.start}`, (ctx) => initAction(ctx));
-    bot.action(`${moduleParam.name}:${moduleParam.start}`, (ctx) => initAction(ctx, true));
-    bot.on('message', async (ctx, next) => stepper?.inputHandler(ctx, next));
-    bot.on('callback_query', async (ctx, next) => callbackHandler(ctx, next));
+    bot.command(moduleParam.name, (ctx) => initAction(ctx));
+    bot.action(moduleParam.name, (ctx) => initAction(ctx));
+    bot.on('message', (ctx, next) => stepper?.inputHandler(ctx, next));
+    bot.on('callback_query', (ctx, next) => callbackHandler(ctx, next));
 };

@@ -1,8 +1,8 @@
 const { initStepper } = require('../helpers/stepper');
-const { initStore, getSession} = require('../helpers/sessions');
+const { initStore, getSession } = require('../helpers/sessions');
 const { getUserNameLink, getSummaryMessage } = require('../helpers/getters');
 const { getUserIndex, getUserData } = require('../helpers/db');
-const { sendMessage, removeMessage } = require('../helpers/message');
+const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { getArrayFallback } = require('../helpers/array');
 const { guard } = require('../helpers/guard');
 
@@ -13,7 +13,6 @@ const { superUserId } = require('../const/env');
 
 const moduleParam = {
     name: moduleNames.meter,
-    start: 'start',
     submit: 'submit',
 };
 
@@ -29,14 +28,12 @@ let stepper = undefined;
     });
 })();
 
-const initAction = async (ctx, needAnswer) => {
+const initAction = async (ctx) => {
     const isGuardPassed = await guard(ctx, { privateChat: true, verify: true });
 
-    if (needAnswer && !isGuardPassed) {
-        await ctx.answerCbQuery();
-    }
-
     if (!isGuardPassed) {
+        await removeMessage(ctx);
+        await commandAnswer(ctx);
         return;
     }
 
@@ -44,10 +41,7 @@ const initAction = async (ctx, needAnswer) => {
 
     await stepper.startHandler(ctx);
     await removeMessage(ctx);
-
-    if (needAnswer) {
-        await ctx.answerCbQuery();
-    }
+    await commandAnswer(ctx);
 }
 
 const submitAction = async (ctx) => {
@@ -75,15 +69,13 @@ const submitAction = async (ctx) => {
             buttons: closeOption
         });
     }
-
     await removeMessage(ctx);
-
-    await ctx.answerCbQuery('Показания счетчиков успешно отправлены');
+    await commandAnswer(ctx, 'Показания счетчиков успешно отправлены');
 }
 
 module.exports = (bot) => {
-    bot.command(`${moduleParam.name}:${moduleParam.start}`, (ctx) => initAction(ctx));
-    bot.action(`${moduleParam.name}:${moduleParam.start}`, (ctx) => initAction(ctx, true));
+    bot.command(moduleParam.name, (ctx) => initAction(ctx));
+    bot.action(moduleParam.name, (ctx) => initAction(ctx));
     bot.action(`${moduleParam.name}:${moduleParam.submit}`, (ctx) => submitAction(ctx));
-    bot.on('text', async (ctx, next) => stepper.inputHandler(ctx, next));
+    bot.on('text', (ctx, next) => stepper.inputHandler(ctx, next));
 };

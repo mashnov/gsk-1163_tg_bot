@@ -1,15 +1,15 @@
-const { sendMessage, removeMessage } = require('../helpers/message');
+const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { homeOption, closeOption, moduleNames } = require('../const/dictionary');
 
 const moduleParam = {
     name: moduleNames.rules,
-    start: 'start',
+    keywords: ['правила', 'Правила'],
     chat: 'chat',
     silent: 'silent',
     dog: 'dog',
 };
 
-const initAction = async (ctx, bot, needAnswer) => {
+const initAction = async (ctx) => {
     const messageText =
         '📚 Правила\n\n' +
         'В этом разделе собраны основные правила.\n' +
@@ -33,10 +33,7 @@ const initAction = async (ctx, bot, needAnswer) => {
     });
 
     await removeMessage(ctx);
-
-    if (needAnswer) {
-        await ctx.answerCbQuery();
-    }
+    await commandAnswer(ctx);
 };
 
 
@@ -46,7 +43,7 @@ const ruleSelectHandler = async (ctx, sectionName) => {
     const isPrivateChat = ctx.chat?.type === 'private';
 
     const buttons = {
-        [`${moduleParam.name}:${moduleParam.start}`]: '⬅️ Назад',
+        [moduleParam.name]: '⬅️ Назад',
         ...(isPrivateChat ? homeOption : {}),
         ...(!isPrivateChat ? closeOption : {}),
     };
@@ -98,7 +95,7 @@ const ruleSelectHandler = async (ctx, sectionName) => {
         text =
             '📖 Закон Санкт-Петербурга №588-110 о содержании собак\n\n' +
             '<b>Поводок.</b>\n' +
-            '<blockquote>• Все собаки вне места содержания обязаны находиться на поводке</blockquote>\n\n.' +
+            '<blockquote>• Все собаки вне места содержания обязаны находиться на поводке.</blockquote>\n\n' +
             '<b>Намордник.</b>\n' +
             '<blockquote>• Собаки ростом выше 40 см в холке и признанные потенциально опасными породами должны быть и в наморднике при выгуле.</blockquote>\n\n' +
             '<b>Длина поводка.</b>\n' +
@@ -120,8 +117,7 @@ const ruleSelectHandler = async (ctx, sectionName) => {
     });
 
     await removeMessage(ctx);
-
-    await ctx.answerCbQuery();
+    await commandAnswer(ctx);
 };
 
 const callbackHandler = async (ctx, next) => {
@@ -136,9 +132,8 @@ const callbackHandler = async (ctx, next) => {
 };
 
 module.exports = (bot) => {
-    bot.command(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => initAction(ctx, bot));
-    bot.action(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => initAction(ctx, bot, true));
-    bot.on('callback_query', async (ctx, next) => callbackHandler(ctx, next));
-    bot.hears('правила', async (ctx) => initAction(ctx, bot));
-    bot.hears('Правила', async (ctx) => initAction(ctx, bot));
+    bot.command(moduleParam.name, (ctx) => initAction(ctx));
+    bot.action(moduleParam.name, (ctx) => initAction(ctx));
+    bot.hears(moduleParam.keywords, (ctx) => initAction(ctx));
+    bot.on('callback_query', (ctx, next) => callbackHandler(ctx, next));
 };

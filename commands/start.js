@@ -1,12 +1,21 @@
-const { sendMessage, removeMessage } = require('../helpers/message');
+const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { getUserName } = require('../helpers/getters');
 const { getUserData } = require('../helpers/db');
+const { guard } = require('../helpers/guard');
 
 const { botUsername } = require('../const/env');
-const { commandNames } = require('../const/dictionary');
+const { moduleNames } = require('../const/dictionary');
 const { userStatusList } = require('../const/db');
 
-const initAction = async (ctx, bot, needAnswer) => {
+const initAction = async (ctx) => {
+    const isGuardPassed = await guard(ctx, { privateChat: true });
+
+    if (!isGuardPassed) {
+        await removeMessage(ctx);
+        await commandAnswer(ctx);
+        return;
+    }
+
     const userData = await getUserData(ctx.from.id);
     const isUnverified = userData?.userStatus === userStatusList.undefined || !userData?.userStatus;
     const isPending = userData?.userStatus === userStatusList.pending;
@@ -16,27 +25,28 @@ const initAction = async (ctx, bot, needAnswer) => {
     const isPrivateChat = ctx.chat?.type === 'private';
 
     const buttons = {
-        [commandNames.rules]: '📚 Правила',
-        [commandNames.contact]: '📖 Контакты',
-        [commandNames.weather]: '🌤️ Погода',
+        [moduleNames.rules]: '📚 Правила',
+        [moduleNames.contact]: '📖 Контакты',
+        [moduleNames.weather]: '🌤️ Погода',
+        [moduleNames.horoscope]: '💫 Гороскоп',
     };
 
     if (isPrivateChat && (isUnverified || isPending)) {
-        buttons[commandNames.verification] = '✨ Верификация';
+        buttons[moduleNames.verification] = '🪪 Верификация';
     }
 
     if (isPrivateChat && isBlocked) {
-        buttons[commandNames.unblock] = '🫥 Разблокировка';
+        buttons[moduleNames.unblock] = '🫥 Разблокировка';
     }
 
     if (isPrivateChat && (isResident || isAdmin)) {
-        buttons[commandNames.meter] = '〽️ Показания счетчиков';
-        buttons[commandNames.messages] = '💬 Написать сообщение';
+        buttons[moduleNames.meter] = '〽️ Показания счетчиков';
+        buttons[moduleNames.messages] = '💬 Написать сообщение';
     }
 
     if (isPrivateChat && isAdmin) {
-        buttons[commandNames.profiles] = '🪪 Администрирование';
-        buttons[commandNames.backup] = '💾 Резервное копирование';
+        buttons[moduleNames.profiles] = '🪪 Администрирование';
+        buttons[moduleNames.backup] = '💾 Резервное копирование';
     }
 
     let messageText =
@@ -54,7 +64,7 @@ const initAction = async (ctx, bot, needAnswer) => {
     if (isPrivateChat && isUnverified) {
         messageText +=
             '\n• Пройти верификацию' +
-            '\n\n✨ <b>Пожалуйста, пройдите верификацию, чтобы получить доступ ко всем возможностям бота.</b>'
+            '\n\n🪪 <b>Пожалуйста, пройдите верификацию, чтобы получить доступ ко всем возможностям бота.</b>'
     }
 
     if (isPrivateChat && isBlocked) {
@@ -79,23 +89,17 @@ const initAction = async (ctx, bot, needAnswer) => {
     });
 
     await removeMessage(ctx);
-
-    if (needAnswer) {
-        await ctx.answerCbQuery();
-    }
+    await commandAnswer(ctx);
 };
 
-const closeAction = async (ctx, bot, needAnswer) => {
+const closeAction = async (ctx) => {
     await removeMessage(ctx);
-
-    if (needAnswer) {
-        await ctx.answerCbQuery();
-    }
+    await commandAnswer(ctx);
 };
 
 module.exports = (bot) => {
-    bot.command('start', async (ctx) => initAction(ctx, bot));
-    bot.action('start', async (ctx) => initAction(ctx, bot, true));
-    bot.command('close', async (ctx) => closeAction(ctx, bot));
-    bot.action('close', async (ctx) => closeAction(ctx, bot, true));
+    bot.command('start', (ctx) => initAction(ctx));
+    bot.action('start', (ctx) => initAction(ctx));
+    bot.command('close', (ctx) => closeAction(ctx));
+    bot.action('close', (ctx) => closeAction(ctx));
 };

@@ -2,7 +2,7 @@ const { getSession } = require('../helpers/sessions');
 const { homeOption } = require('../const/dictionary');
 const { validateMessage } = require('./validation');
 const { getMessageText, getMessageAttachment, getSummaryMessage } = require('./getters');
-const { sendMessage, removeMessage } = require('./message');
+const { sendMessage, removeMessage } = require('./telegraf');
 
 function initStepper({ actionName, stepList, cancelActions = homeOption, submitActions }) {
     const sendStepWarning = async (ctx, session) => {

@@ -13,18 +13,7 @@ const moduleNames = {
     unblock: 'unblock',
     backup: 'backup',
     weather: 'weather',
-};
-
-const commandNames = {
-    rules: 'rules:start',
-    contact: 'contact:start',
-    verification: 'verification:start',
-    messages: 'messages:start',
-    meter: 'meter:start',
-    profiles: 'profiles:start',
-    unblock: 'unblock:start',
-    backup: 'backup:start',
-    weather: 'weather:start',
+    horoscope: 'horoscope',
 };
 
 const backOption = { start: '⬅️ Назад' };
@@ -33,7 +22,6 @@ const closeOption = { close: 'Закрыть' };
 
 module.exports = {
     messageParams,
-    commandNames,
     moduleNames,
     backOption,
     homeOption,

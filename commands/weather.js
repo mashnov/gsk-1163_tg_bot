@@ -1,19 +1,19 @@
 const cron = require('node-cron');
 
-const { sendMessage, removeMessage} = require('../helpers/message');
+const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
+const { guard } = require('../helpers/guard');
 
 const { homeOption, closeOption, moduleNames} = require('../const/dictionary');
 const { homeChatId, homeTimeZone, homeLatitude, homeLongitude } = require('../const/env');
 
 const moduleParam = {
     name: moduleNames.weather,
-    start: 'start',
-    startH: '8',
-    startM: '00',
+    keywords: ['погода', 'Погода'],
+    sendTime: [8, 14, 21],
     serviceUrl: `https://api.open-meteo.com/v1/forecast?latitude=${homeLatitude}&longitude=${homeLongitude}&daily=temperature_2m_min,temperature_2m_max,precipitation_probability_max&timezone=${encodeURIComponent(homeTimeZone)}`,
 }
 
-const getWeatherMessage = async (ctx, { needRemove, needAnswer, needButtons }) => {
+const getWeatherMessage = async (ctx, { needRemove, needButtons }) => {
     const serviceResponse = await fetch(moduleParam.serviceUrl);
     const serviceData = await serviceResponse.json();
 
@@ -38,24 +38,32 @@ const getWeatherMessage = async (ctx, { needRemove, needAnswer, needButtons }) =
     if (needRemove) {
         await removeMessage(ctx);
     }
-
-    if (needAnswer) {
-        await ctx.answerCbQuery();
-    }
+    await commandAnswer(ctx);
 };
 
-const initAction = (bot) => {
+const hearsCallBackHandler = async (ctx) => {
+    const isGuardPassed = await guard(ctx, { publicChat: true });
+
+    if (!isGuardPassed) {
+        await removeMessage(ctx);
+        await commandAnswer(ctx);
+        return;
+    }
+
+    await getWeatherMessage(ctx, { needRemove: true, needButtons: true, });
+}
+
+const cronAction = (bot) => {
     cron.schedule(
-        `${moduleParam.startM} ${moduleParam.startH} * * *`,
+        `0 ${moduleParam.sendTime} * * *`,
         async () => getWeatherMessage(bot, {}),
         { timezone: homeTimeZone },
     );
 }
 
 module.exports = (bot) => {
-    initAction(bot);
-    bot.command(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => getWeatherMessage(ctx, { needRemove: true, needButtons: true, needAnswer: true }));
-    bot.action(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => getWeatherMessage(ctx, { needRemove: true, needButtons: true }));
-    bot.hears('погода', async (ctx) => getWeatherMessage(ctx, { needRemove: true, needButtons: true, }));
-    bot.hears('Погода', async (ctx) => getWeatherMessage(ctx, { needRemove: true, needButtons: true, }));
+    cronAction(bot);
+    bot.command(moduleParam.name, (ctx) => getWeatherMessage(ctx, { needRemove: true, needButtons: true }));
+    bot.action(moduleParam.name, (ctx) => getWeatherMessage(ctx, { needRemove: true, needButtons: true }));
+    bot.hears(moduleParam.keywords, (ctx) => hearsCallBackHandler(ctx));
 };

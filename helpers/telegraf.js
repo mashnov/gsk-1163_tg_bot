@@ -1,3 +1,72 @@
+const { Input } = require('telegraf');
+
+const { getButtons } = require('../helpers/getters');
+const { sleep } = require('../helpers/sleep');
+
+const { homeOption, messageParams } = require('../const/dictionary');
+
+const commandAnswer = async (ctx, messageText = '') => {
+    if (!ctx?.callbackQuery) {
+        return;
+    }
+    try {
+        await ctx.answerCbQuery(messageText);
+    } catch (error) {
+        console.error(error.message);
+    }
+};
+
+const preventBotBlock = async () => {
+    await sleep(250);
+};
+
+const sendMessage = async (ctx, { accountId = ctx.chat.id, text, filePath, buttons = homeOption, attachment, silent }) => {
+    await preventBotBlock();
+    const messageButtons = getButtons(buttons);
+    const params = {
+        disable_notification: silent || ctx.chat?.type !== 'private',
+        caption: text,
+        ...messageButtons,
+        ...messageParams,
+    };
+
+    if (filePath) {
+        try {
+            const message = await ctx.replyWithDocument(Input.fromLocalFile(filePath), params);
+            return message.message_id;
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
+
+    const methods = {
+        photo: 'sendPhoto',
+        video: 'sendVideo',
+        document: 'sendDocument',
+        undefined: 'sendMessage',
+    };
+
+    try {
+        const message = await ctx.telegram[methods[attachment?.type]](accountId, attachment?.fileId || text, params);
+        return message.message_id;
+    } catch (error) {
+        console.error(error.message);
+    }
+};
+
+const removeMessage = async (ctx, { chatId, messageId } = {}) => {
+    await preventBotBlock();
+    try {
+        if (chatId && messageId) {
+            return await ctx.telegram.deleteMessage(chatId, messageId);
+        } else {
+            return await ctx.deleteMessage(messageId);
+        }
+    } catch (error) {
+        console.error(error.message);
+    }
+};
+
 const makeAdmin = async (ctx, { chatId, userId } = {}) => {
     try {
         await ctx.telegram.promoteChatMember(chatId, userId, {
@@ -73,6 +142,9 @@ const unbanUserById = async (ctx, { chatId, userId } = {}) => {
 };
 
 module.exports = {
+    commandAnswer,
+    sendMessage,
+    removeMessage,
     makeAdmin,
     demoteUser,
     restrictUser,

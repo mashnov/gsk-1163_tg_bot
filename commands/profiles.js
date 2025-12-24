@@ -1,6 +1,6 @@
 const { getUserName, getUserNameLink, getFormattedDate } = require('../helpers/getters');
 const { getUserData, getUserIndex, getUserListByIndex } = require('../helpers/db');
-const { sendMessage, removeMessage } = require('../helpers/message');
+const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { guard } = require('../helpers/guard');
 
 const { userStatusList, userStatusText } = require('../const/db');
@@ -11,17 +11,14 @@ const moduleParam = {
     verification: moduleNames.verification,
     list: 'list',
     review: 'review',
-    start: 'start',
 };
 
-const startAction = async (ctx, needAnswer) => {
+const startAction = async (ctx) => {
     const isGuardPassed = await guard(ctx, { privateChat: true, verify: true, admin: true });
 
-    if (needAnswer && !isGuardPassed) {
-        await ctx.answerCbQuery();
-    }
-
     if (!isGuardPassed) {
+        await removeMessage(ctx);
+        await commandAnswer(ctx);
         return;
     }
 
@@ -51,10 +48,7 @@ const startAction = async (ctx, needAnswer) => {
         },
     });
     await removeMessage(ctx);
-
-    if (needAnswer) {
-        await ctx.answerCbQuery();
-    }
+    await commandAnswer(ctx);
 };
 
 const profileListHandler = async (ctx, listType) => {
@@ -72,16 +66,14 @@ const profileListHandler = async (ctx, listType) => {
         buttons[`${moduleParam.name}:${userData.accountId}:${moduleParam.review}`] = userData.userName;
     }
 
-    buttons[`${moduleParam.name}:${moduleParam.start}`] = '⬅️ Назад';
+    buttons[moduleParam.name] = '⬅️ Назад';
 
     await sendMessage(ctx, {
         text: messageText,
         buttons,
     });
-
     await removeMessage(ctx);
-
-    await ctx.answerCbQuery();
+    await commandAnswer(ctx);
 };
 
 const profileReviewHandler = async (ctx, accountId) => {
@@ -105,17 +97,15 @@ const profileReviewHandler = async (ctx, accountId) => {
         [`${moduleParam.verification}:${userStatusList.undefined}:${accountId}`]: '🔴 Отклонить',
         [`${moduleParam.verification}:${userStatusList.restricted}:${accountId}`]: '🟠 Ограничить',
         [`${moduleParam.verification}:${userStatusList.blocked}:${accountId}`]: '⛔ Заблокировать',
-        [`${moduleParam.name}:${moduleParam.start}`]: '⬅️ Назад',
+        [moduleParam.name]: '⬅️ Назад',
     };
 
     await sendMessage(ctx, {
         text: messageText,
         buttons: messageButtons,
     });
-
     await removeMessage(ctx);
-
-    await ctx.answerCbQuery();
+    await commandAnswer(ctx);
 };
 
 const callbackHandler = async (ctx, next) => {
@@ -134,7 +124,7 @@ const callbackHandler = async (ctx, next) => {
 };
 
 module.exports = (bot) => {
-    bot.command(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => startAction(ctx));
-    bot.action(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => startAction(ctx, true));
-    bot.on('callback_query', async (ctx, next) => callbackHandler(ctx, next));
+    bot.command(moduleParam.name, (ctx) => startAction(ctx));
+    bot.action(moduleParam.name, (ctx) => startAction(ctx));
+    bot.on('callback_query', (ctx, next) => callbackHandler(ctx, next));
 };

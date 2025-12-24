@@ -12,6 +12,7 @@ const unblockCommand = require('./commands/unblock');
 
 const navigationService = require('./commands/navigation');
 const weatherService = require('./commands/weather');
+const horoscopeService = require('./commands/horoscope');
 
 const { botToken } = require('./const/env');
 
@@ -30,6 +31,7 @@ const createBot = () => {
 
     navigationService(bot);
     weatherService(bot);
+    horoscopeService(bot);
 
     return bot;
 }
