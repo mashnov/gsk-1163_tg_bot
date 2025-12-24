@@ -57,7 +57,7 @@ const profileListHandler = async (ctx, listType) => {
     const mappedProfileList = await getUserListByIndex(filteredProfileList);
 
     const messageText =
-        `👥 Администрирование \n\n` +
+        `🪪 Администрирование \n\n` +
         `Список профилей в статусе: ${ userStatusText[listType] }`;
 
     const buttons = {};
@@ -94,9 +94,8 @@ const profileReviewHandler = async (ctx, accountId) => {
         [`${moduleParam.verification}:${userStatusList.accountant}:${accountId}`]: `🟡 ${userStatusText.accountant}`,
         [`${moduleParam.verification}:${userStatusList.admin}:${accountId}`]: `🟡 ${userStatusText.admin}`,
         [`${moduleParam.verification}:${userStatusList.resident}:${accountId}`]: `🟢 ${userStatusText.resident}`,
-        [`${moduleParam.verification}:${userStatusList.undefined}:${accountId}`]: '🔴 Отклонить',
         [`${moduleParam.verification}:${userStatusList.restricted}:${accountId}`]: '🟠 Ограничить',
-        [`${moduleParam.verification}:${userStatusList.blocked}:${accountId}`]: '⛔ Заблокировать',
+        [`${moduleParam.verification}:${userStatusList.blocked}:${accountId}`]: '🔴 Заблокировать',
         [moduleParam.name]: '⬅️ Назад',
     };
 

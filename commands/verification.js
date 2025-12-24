@@ -116,9 +116,8 @@ const submitAction = async (ctx) => {
                 [`${moduleParam.name}:${userStatusList.accountant}:${accountId}`]: `🟡 ${userStatusText.accountant}`,
                 [`${moduleParam.name}:${userStatusList.admin}:${accountId}`]: `🟡 ${userStatusText.admin}`,
                 [`${moduleParam.name}:${userStatusList.resident}:${accountId}`]: `🟢 ${userStatusText.resident}`,
-                [`${moduleParam.name}:${userStatusList.undefined}:${accountId}`]: '🔴 Отклонить',
                 [`${moduleParam.name}:${userStatusList.restricted}:${accountId}`]: '🟠 Ограничить',
-                [`${moduleParam.name}:${userStatusList.blocked}:${accountId}`]: '⛔ Заблокировать',
+                [`${moduleParam.name}:${userStatusList.blocked}:${accountId}`]: '🔴 Заблокировать',
             },
         });
         messageList.push({ chatId: recipientAccountId, messageId });
@@ -151,7 +150,6 @@ const validationHandler = async (ctx, userStatus, accountId) => {
             [userStatusList.accountant]: `${adminUserLink} выдал права бухгалтера ${residentUserLink}.`,
             [userStatusList.admin]: `${adminUserLink} выдал права администратора ${residentUserLink}.`,
             [userStatusList.resident]: `${adminUserLink} одобрил запрос верификации ${residentUserLink}.`,
-            [userStatusList.undefined]: `${adminUserLink} отклонил запрос верификации ${residentUserLink}.`,
             [userStatusList.restricted]: `${adminUserLink} ограничил ${residentUserLink}.`,
             [userStatusList.blocked]: `${adminUserLink} заблокировал ${residentUserLink}.`,
         };
@@ -168,9 +166,8 @@ const validationHandler = async (ctx, userStatus, accountId) => {
         [userStatusList.accountant]: '🟢 Вам выданы права бухгалтера!',
         [userStatusList.admin]: '🟢 Вам выданы права администратора!',
         [userStatusList.resident]: '🟢 Ваш запрос верификации одобрен!',
-        [userStatusList.undefined]: '🔴 Ваш запрос верификации отклонен.',
         [userStatusList.restricted]: '🟠 Вы были ограничены. Для снятия ограничений, пожалуйста, воспользуйтесь ботом.',
-        [userStatusList.blocked]: '⛔️ Вы были заблокированы. Для снятия ограничений, пожалуйста, воспользуйтесь ботом.',
+        [userStatusList.blocked]: '🔴 Вы были заблокированы. Для снятия ограничений, пожалуйста, воспользуйтесь ботом.',
     };
 
     await sendMessage(ctx, {
@@ -191,7 +188,7 @@ const validationHandler = async (ctx, userStatus, accountId) => {
         await banUserById(ctx, { chatId: homeChatId, userId: accountId });
         await sendMessage(ctx, {
             accountId: homeChatId,
-            text: `⛔️ Пользователь ${residentUserLink} заблокирован.`,
+            text: `🔴 Пользователь ${residentUserLink} заблокирован.`,
             buttons: {},
         });
     }
