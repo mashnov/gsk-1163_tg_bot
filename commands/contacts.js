@@ -1,15 +1,15 @@
 const { getUserData } = require('../helpers/db');
-const { sendMessage, removeMessage } = require('../helpers/message');
+const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 
 const { userStatusList } = require('../const/db');
-const { backOption, closeOption, commandNames, moduleNames } = require('../const/dictionary');
+const { backOption, closeOption, moduleNames } = require('../const/dictionary');
 
 const moduleParam = {
     name: moduleNames.contact,
-    start: 'start',
+    keywords: ['контакты', 'Контакты'],
 }
 
-const initAction = async (ctx, bot, needAnswer) => {
+const initAction = async (ctx) => {
     const userData = await getUserData(ctx.from.id);
     const isResident = userData?.userStatus === userStatusList.resident;
     const isAdmin = [userStatusList.admin, userStatusList.accountant, userStatusList.chairman].includes(userData?.userStatus);
@@ -35,24 +35,19 @@ const initAction = async (ctx, bot, needAnswer) => {
     const buttons = {};
 
     if (messagesIsAllowed) {
-        buttons[commandNames.messages] = '💬 Написать сообщение';
+        buttons[moduleNames.messages] = '💬 Написать сообщение';
     }
 
     await sendMessage(ctx, {
         text: messagesIsAllowed ? messageText + verifiedMessageText : messageText,
         buttons: !isPrivateChat ? { ...closeOption } : { ...buttons, ...backOption },
     });
-
     await removeMessage(ctx);
-
-    if (needAnswer) {
-        await ctx.answerCbQuery();
-    }
+    await commandAnswer(ctx);
 };
 
 module.exports = (bot) => {
-    bot.command(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => initAction(ctx, bot));
-    bot.action(`${moduleParam.name}:${moduleParam.start}`, async (ctx) => initAction(ctx, bot, true));
-    bot.hears('контакты', async (ctx) => initAction(ctx, bot));
-    bot.hears('Контакты', async (ctx) => initAction(ctx, bot));
+    bot.command(moduleParam.name, (ctx) => initAction(ctx));
+    bot.action(moduleParam.name, (ctx) => initAction(ctx));
+    bot.hears(moduleParam.keywords, (ctx) => initAction(ctx));
 };
