@@ -57,13 +57,14 @@ const profileListHandler = async (ctx, listType) => {
     const mappedProfileList = await getUserListByIndex(filteredProfileList);
 
     const messageText =
-        `🪪 Администрирование \n\n` +
-        `Список профилей в статусе: ${ userStatusText[listType] }`;
+        `🪪 Администрирование` +
+        `\n\nСтатус: ${ userStatusText[listType] }` +
+        `\nКоличество профилей: ${mappedProfileList.length}`;
 
     const buttons = {};
 
     for (const userData of mappedProfileList) {
-        buttons[`${moduleParam.name}:${userData.accountId}:${moduleParam.review}`] = userData.userName;
+        buttons[`${moduleParam.name}:${userData.accountId}:${moduleParam.review}`] = `КВ${userData.roomNumber} - ${userData.userName}`;
     }
 
     buttons[moduleParam.name] = '⬅️ Назад';
