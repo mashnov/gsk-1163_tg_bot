@@ -63,13 +63,13 @@ const initAction = async (ctx) => {
 };
 
 const submitAction = async (ctx, listType) => {
-    const senderText = '🟢 Ваше сообщение отправлено.';
+    const senderText = '💬 Ваше сообщение отправлено.';
     await sendMessage(ctx, { text: senderText });
 
     const session = getSession(ctx.from.id);
     const userData = await getUserData(ctx.from.id);
 
-    const recipientHeader = '🟡 Новое сообщение\n\n';
+    const recipientHeader = '💬 Новое сообщение\n\n';
     const recipientSender = `Отправитель: ${ getUserNameLink(ctx.from) }\n\n`;
     const recipientProfileName = `Имя отправителя: ${ userData?.residentName }\n`;
     const recipientPhoneNumber = `Номер телефона: ${ userData?.phoneNumber }\n`;

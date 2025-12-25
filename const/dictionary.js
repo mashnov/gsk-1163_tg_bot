@@ -11,6 +11,7 @@ const moduleNames = {
     rules: 'rules',
     verification: 'verification',
     complaint: 'complaint',
+    anonymous: 'anonymous',
     unblock: 'unblock',
     backup: 'backup',
     weather: 'weather',

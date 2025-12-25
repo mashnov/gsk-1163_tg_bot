@@ -1,18 +1,18 @@
 const { startStepper } = require('../helpers/stepper');
+const { getUserIndex } = require('../helpers/db');
 const { initStore, getSession } = require('../helpers/sessions');
-const { getUserNameLink, getSummaryMessage } = require('../helpers/getters');
-const { getUserIndex, getUserData } = require('../helpers/db');
+const { getUserNameLink } = require('../helpers/getters');
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { getArrayFallback } = require('../helpers/array');
 const { guard } = require('../helpers/guard');
 
-const { stepList } = require('../const/meter');
-const { userStatusList } = require('../const/db');
+const { stepList } = require('../const/anonymous');
 const { closeOption, moduleNames } = require('../const/dictionary');
-const { superUserId } = require('../const/env');
+const { homeChatId, superUserId} = require('../const/env');
+const { userStatusList } = require('../const/db');
 
 const moduleParam = {
-    name: moduleNames.meter,
+    name: moduleNames.anonymous,
     submit: 'submit',
 };
 
@@ -47,37 +47,42 @@ const initAction = async (ctx) => {
 };
 
 const submitAction = async (ctx) => {
-    const senderText = '〽️ Показания счетчиков успешно отправлены';
+    const senderText = '🎭 Ваше сообщение отправлено.';
     await sendMessage(ctx, { text: senderText });
 
     const session = getSession(ctx.from.id);
-    const userData = await getUserData(ctx.from.id);
 
-    const recipientHeader = '〽️ Новые показания\n\n';
+    const recipientHeader = '🎭 Новое анонимное сообщение\n\n';
     const recipientSender = `Отправитель: ${ getUserNameLink(ctx.from) }\n\n`;
-    const recipientResidentText = `Имя отправителя: ${ userData?.residentName }\n`;
-    const recipientPhoneText = `Номер телефона: ${ userData?.phoneNumber }\n`;
-    const recipientText = getSummaryMessage(stepList[session.stepIndex]?.summary, session);
-    const recipientMessage = `${recipientHeader}${recipientSender}${recipientResidentText}${recipientPhoneText}${recipientText}`;
+    const recipientText = `Сообщение: ${ session.message }`;
+    const recipientMessage = `${recipientHeader}${recipientSender}${recipientText}`;
+
 
     const chairmanIdList = getArrayFallback(await getUserIndex(userStatusList.chairman), [superUserId]);
-    const adminIdList = getArrayFallback(await getUserIndex(userStatusList.admin), chairmanIdList);
-    const accountantIdList = getArrayFallback(await getUserIndex(userStatusList.accountant), adminIdList);
+    const accountantIdList = getArrayFallback(await getUserIndex(userStatusList.accountant), chairmanIdList);
+    const adminIdList = getArrayFallback(await getUserIndex(userStatusList.admin), accountantIdList);
 
-    for (const recipientAccountId of accountantIdList) {
+    for (const recipientAccountId of adminIdList) {
         await sendMessage(ctx, {
             accountId: recipientAccountId,
             text: recipientMessage,
-            buttons: closeOption
+            buttons: closeOption,
         });
     }
+
+    await sendMessage(ctx, {
+        accountId: homeChatId,
+        text: session.message,
+        buttons: {},
+    });
+
     await removeMessage(ctx);
-    await commandAnswer(ctx, 'Показания счетчиков успешно отправлены');
+    await commandAnswer(ctx, 'Ваше сообщение отправлено');
 }
 
 module.exports = (bot) => {
     bot.command(moduleParam.name, (ctx) => initAction(ctx));
     bot.action(moduleParam.name, (ctx) => initAction(ctx));
     bot.action(`${moduleParam.name}:${moduleParam.submit}`, (ctx) => submitAction(ctx));
-    bot.on('text', (ctx, next) => stepper ? stepper.inputHandler(ctx, next) : next());
+    bot.on('message', (ctx, next) => stepper ? stepper.inputHandler(ctx, next) : next());
 };

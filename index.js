@@ -4,15 +4,16 @@ const navigationService = require('./commands/navigation');
 const startCommand = require('./commands/start');
 const rulesCommand = require('./commands/rules');
 const contactsCommand = require('./commands/contacts');
+const messagesCommand = require('./commands/messages');
 const weatherCommand = require('./commands/weather');
 const horoscopeCommand = require('./commands/horoscope');
-const complaintCommand = require('./commands/complaint');
 const meterCommand = require('./commands/meter');
+const anonymousCommand = require('./commands/anonymous');
+const complaintCommand = require('./commands/complaint');
 const profilesCommand = require('./commands/profiles');
 const backupCommand = require('./commands/backup');
 const verificationCommand = require('./commands/verification');
 const unblockCommand = require('./commands/unblock');
-const messagesCommand = require('./commands/messages');
 
 const { botToken } = require('./const/env');
 
@@ -23,15 +24,16 @@ const createBot = () => {
     startCommand(bot);
     rulesCommand(bot);
     contactsCommand(bot);
+    messagesCommand(bot);
     weatherCommand(bot);
     horoscopeCommand(bot);
-    complaintCommand(bot);
     meterCommand(bot);
+    anonymousCommand(bot);
+    complaintCommand(bot);
     profilesCommand(bot);
     backupCommand(bot);
     verificationCommand(bot);
     unblockCommand(bot);
-    messagesCommand(bot);
 
     return bot;
 }

@@ -1,7 +1,7 @@
 const { startStepper } = require('../helpers/stepper');
 const { getUserIndex, setVerificationIndexItem} = require('../helpers/db');
 const { initStore, getSession } = require('../helpers/sessions');
-const { getUserNameLink, getUserName } = require('../helpers/getters');
+const { getUserNameLink } = require('../helpers/getters');
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { getArrayFallback } = require('../helpers/array');
 const { guard } = require('../helpers/guard');
@@ -48,7 +48,7 @@ const initAction = async (ctx) => {
 };
 
 const submitAction = async (ctx) => {
-    const senderText = '🟢 Ваша жалоба отправлена.';
+    const senderText = '‼️ Ваша жалоба отправлена.';
     await sendMessage(ctx, { text: senderText });
 
     const session = getSession(ctx.from.id);
@@ -56,10 +56,9 @@ const submitAction = async (ctx) => {
     const senderUserLink = getUserNameLink(ctx.from);
 
     const authorAccount = session.messageOrigin?.forward_origin?.sender_user;
-    const authorUsername = getUserName(authorAccount);
     const authorUserLink = getUserNameLink(authorAccount);
 
-    const recipientHeader = '🟡 Новая жалоба на сообщение\n\n';
+    const recipientHeader = '‼️ Новая жалоба на сообщение\n\n';
     const recipientSender = `Отправитель: ${ senderUserLink }\n`;
     const recipientAuthor = `Автор: ${ authorUserLink }\n\n`;
     const recipientText = `Текст сообщения: ${session.messageOrigin.text}`;
@@ -76,8 +75,8 @@ const submitAction = async (ctx) => {
             accountId: adminAccountId,
             text: recipientMessage,
             buttons: {
-                [`${moduleParam.verification}:${userStatusList.restricted}:${authorAccount.id}`]: `🟠 Ограничить ${authorUsername}`,
-                [`${moduleParam.verification}:${userStatusList.blocked}:${authorAccount.id}`]: `🔴 Заблокировать ${authorUsername}`,
+                [`${moduleParam.verification}:${userStatusList.restricted}:${authorAccount.id}`]: '🟠 Ограничить',
+                [`${moduleParam.verification}:${userStatusList.blocked}:${authorAccount.id}`]: '🔴 Заблокировать',
                 ...closeOption,
             },
         });

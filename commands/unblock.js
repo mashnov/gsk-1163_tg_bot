@@ -48,14 +48,14 @@ const initAction = async (ctx) => {
 };
 
 const submitAction = async (ctx) => {
-    const senderText = '🟢 Ваш запрос отправлен.';
+    const senderText = '🫥 Ваш запрос отправлен.';
     await sendMessage(ctx, { text: senderText });
 
     const accountId = ctx.from.id;
     const session = getSession(accountId);
     const userData = await getUserData(accountId);
 
-    const recipientHeader = '🔴 Новый запрос разблокировки\n\n';
+    const recipientHeader = '🫥 Новый запрос разблокировки\n\n';
     const recipientSender = `Отправитель: ${ getUserNameLink(ctx.from) }\n\n`;
     const recipientRoomNumber = `Номер квартиры в БД: ${ userData?.roomNumber }\n`;
     const recipientProfileName = `Имя отправителя в БД: ${ userData?.residentName }\n`;
@@ -68,12 +68,12 @@ const submitAction = async (ctx) => {
     const adminIdList = getArrayFallback(await getUserIndex(userStatusList.admin), accountantIdList);
 
     const messageButtons = {
-        [`${moduleParam.name}:${userStatusList.chairman}:${accountId}`]: `🟡 ${userStatusText.chairman}`,
-        [`${moduleParam.name}:${userStatusList.accountant}:${accountId}`]: `🟡 ${userStatusText.accountant}`,
-        [`${moduleParam.name}:${userStatusList.admin}:${accountId}`]: `🟡 ${userStatusText.admin}`,
-        [`${moduleParam.name}:${userStatusList.resident}:${accountId}`]: `🟢 ${userStatusText.resident}`,
-        [`${moduleParam.name}:${userStatusList.restricted}:${accountId}`]: '🟠 Ограничить',
-        [`${moduleParam.name}:${userStatusList.blocked}:${accountId}`]: '⛔ Заблокировать',
+        [`${moduleParam.verification}:${userStatusList.chairman}:${accountId}`]: `🟡 ${userStatusText.chairman}`,
+        [`${moduleParam.verification}:${userStatusList.accountant}:${accountId}`]: `🟡 ${userStatusText.accountant}`,
+        [`${moduleParam.verification}:${userStatusList.admin}:${accountId}`]: `🟡 ${userStatusText.admin}`,
+        [`${moduleParam.verification}:${userStatusList.resident}:${accountId}`]: `🟢 ${userStatusText.resident}`,
+        [`${moduleParam.verification}:${userStatusList.restricted}:${accountId}`]: '🟠 Ограничить',
+        [`${moduleParam.verification}:${userStatusList.blocked}:${accountId}`]: '⛔ Заблокировать',
         ...closeOption,
     };
 

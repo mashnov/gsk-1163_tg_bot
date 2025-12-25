@@ -44,9 +44,7 @@ const initAction = async (ctx) => {
 
     if (isPrivateChat && (isResident || isAdmin)) {
         buttons[moduleNames.meter] = '〽️ Показания счетчиков';
-    }
-
-    if (!isBlocked && !isPending) {
+        buttons[moduleNames.anonymous] = '🎭 Анонимное сообщение';
         buttons[moduleNames.complaint] = '‼️ Пожаловаться на сообщение';
     }
 

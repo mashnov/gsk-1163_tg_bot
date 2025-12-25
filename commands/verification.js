@@ -3,7 +3,6 @@ const { initStore, getSession } = require('../helpers/sessions');
 const { getUserNameLink, getUserName, getFormattedDate, getSummaryMessage, getRoomOwner } = require('../helpers/getters');
 const { getUserIndex, getUserData, setUserData, getVerificationIndexItem, setVerificationIndexItem } = require('../helpers/db');
 const { sendMessage, removeMessage, commandAnswer, banUserById, unBanUserById, makeAdmin, demoteUser, restrictUser, unRestrictUser } = require('../helpers/telegraf');
-const { isValidOwner } = require('../helpers/validation');
 const { getArrayFallback } = require('../helpers/array');
 const { guard } = require('../helpers/guard');
 
@@ -90,15 +89,14 @@ const initAction = async (ctx) => {
 };
 
 const sendResidentVerificationRequest = async (ctx) => {
-    const senderMessage = '🟢 Ваш запрос отправлен';
+    const senderMessage = '🪪 Ваш запрос отправлен';
     await sendMessage(ctx, { text: senderMessage });
 };
 
 const sendAdminVerificationRequest = async (ctx, session) => {
     const accountId = ctx.from.id;
 
-    const recipientIcon = `${ isValidOwner(session.room, session.owner) ? '🟢' : '🔴'}`;
-    const recipientHeader = `${ recipientIcon } Новый запрос авторизации\n\n`;
+    const recipientHeader = '🪪 Новый запрос авторизации\n\n';
     const recipientResidentText = `Отправитель: ${ getUserNameLink(ctx.from) }\n`;
     const recipientOwnerText = `Собственник по документам: ${ getRoomOwner(session.room) }\n\n`;
     const recipientText = getSummaryMessage(stepList[session.stepIndex]?.summary, session);

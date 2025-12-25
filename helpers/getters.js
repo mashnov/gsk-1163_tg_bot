@@ -86,10 +86,6 @@ const getNormalizeNumber = (text) => {
     return text.trim().replace(',', '.');
 };
 
-const getNormalizeString = (text) => {
-    return text.trim().toLocaleLowerCase().replace(/Ё/g, 'е');
-};
-
 const getFormattedDate = (string) => {
     const date = new Date(string);
     const options = {
@@ -116,7 +112,6 @@ module.exports = {
     getUserName,
     getMessageText,
     getNormalizeNumber,
-    getNormalizeString,
     getFormattedDate,
     getRoomOwner,
 };
