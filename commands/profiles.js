@@ -55,6 +55,7 @@ const profileListHandler = async (ctx, listType) => {
     const profileList = await getUserIndex(listType);
     const filteredProfileList = profileList.filter(userId => userId !== String(ctx.from.id));
     const mappedProfileList = await getUserListByIndex(filteredProfileList);
+    const sortedProfileList = mappedProfileList.sort((a, b) => Number(a.roomNumber) - Number(b.roomNumber));
 
     const messageText =
         `🪪 Администрирование` +
@@ -63,8 +64,8 @@ const profileListHandler = async (ctx, listType) => {
 
     const buttons = {};
 
-    for (const userData of mappedProfileList) {
-        buttons[`${moduleParam.name}:${userData.accountId}:${moduleParam.review}`] = `КВ${userData.roomNumber} - ${userData.userName}`;
+    for (const userData of sortedProfileList) {
+        buttons[`${moduleParam.name}:${userData.accountId}:${moduleParam.review}`] = `КВ ${userData.roomNumber} - ${userData.residentName}`;
     }
 
     buttons[moduleParam.name] = '⬅️ Назад';
