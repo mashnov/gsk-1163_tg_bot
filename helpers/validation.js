@@ -25,7 +25,9 @@ const isValidOwner = (room, owner) => {
 };
 
 const isValidForwardMessage = (message) => {
-    return Boolean(message?.forward_from) || Boolean(message?.forward_from_chat);
+    const isForwardedMessage = Boolean(message?.forward_from) || Boolean(message?.forward_from_chat);
+    const isSelfForwarded = message.from.id === message?.forward_from?.id;
+    return !isSelfForwarded && isForwardedMessage;
 };
 
 const validateMessage = (message, stepValidation) => {
