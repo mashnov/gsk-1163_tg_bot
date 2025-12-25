@@ -7,7 +7,7 @@ const {guard} = require("../helpers/guard");
 
 const moduleParam = {
     keywords: ['домовенок', 'Домовенок', 'бот', 'Бот'],
-    buttons: ['Правила', 'Контакты'],
+    buttons: [],
 };
 
 const createNavigation = async (ctx, { needRemove, next }) => {
