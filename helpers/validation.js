@@ -13,7 +13,7 @@ const isValidPhoneNumber = (text) => text.trim().length >= 7;
 const isValidNumber = (text, { min = -Infinity, max = Infinity }, isInteger = false) => {
     const mappedString = ['-'].includes(text) ? '0' : getNormalizeNumber(text);
     const number = Number(mappedString);
-    const isValidValue = min < number && max > number;
+    const isValidValue = number >= min && number <= max;
     const isValidFormat = isInteger ? /^[0-9]+$/.test(mappedString) : /^[0-9]+([.,][0-9]+)?$/.test(text.trim());
     return isValidValue && isValidFormat;
 };
