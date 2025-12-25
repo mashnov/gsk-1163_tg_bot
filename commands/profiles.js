@@ -84,10 +84,10 @@ const profileReviewHandler = async (ctx, accountId) => {
     const userLink = getUserNameLink(userLinkData);
 
     const messageText =
-        `Детали профиля ${ userLink }\n\n` +
-        `Имя жителя: ${userData.residentName}\n` +
+        `Детали профиля ${userData.residentName}\n\n` +
+        `Телеграмм: ${ userLink }\n` +
         `Номер телефона: ${userData.phoneNumber}\n` +
-        `Номер Квартиры: ${userData.roomNumber}\n\n` +
+        `Номер квартиры: ${userData.roomNumber}\n\n` +
         `Профиль зарегистрирован: ${ getFormattedDate(userData.createdAt) } \n` +
         `Профиль обновлен: ${ getFormattedDate(userData.updatedAt) }`;
 
