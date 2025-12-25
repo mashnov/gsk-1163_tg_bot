@@ -22,7 +22,7 @@ const initAction = async (ctx) => {
         'ЖСК email: <a href="mailto:gsk1163@mail.ru">gsk1163@mail.ru</a>\n' +
         'ЖСК телефон: <a href="tel:+79312107066">+7 (931) 210-70-66</a>\n\n' +
         'Водопроводчик: <a href="tel:+78129111515">911-15-15</a>\n\n' +
-        'Лифт <a href="tel:+78129111515">911-15-15</a>\n' +
+        'Лифт <a href="tel:+78124907781">490-77-81</a>\n' +
         'Домофон: <a href="tel:+78126120033">612-00-33</a>\n\n' +
         '<a href="https://max.ru/join/WXnefLdd0qI3xONMvNrNGB3Yg_0BSJcrCz3qmyufAWU?clckid=ce28f0e7">Канал в MAX</a>\n' +
         '<a href="https://t.me/news1163">Канал в Телеграм</a>\n' +
