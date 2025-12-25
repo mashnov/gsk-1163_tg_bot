@@ -10,7 +10,13 @@ const moduleParam = {
     buttons: ['Правила', 'Контакты'],
 };
 
-const createNavigation = async (ctx, needRemove) => {
+const createNavigation = async (ctx, { needRemove, next }) => {
+    const isPrivateChat = ctx.chat?.type === 'private';
+
+    if (isPrivateChat) {
+        return next();
+    }
+
     const messageText =
         '<b>Привет!</b>\n' +
         'Я <b>Домовёнок</b> - бот нашего дома.\n\n' +
@@ -35,10 +41,10 @@ const hearsHandler = async (ctx) => {
         return;
     }
 
-    await createNavigation(ctx, true);
+    await createNavigation(ctx, { needRemove: true });
 }
 
 module.exports = (bot) => {
-    bot.start((ctx) => createNavigation(ctx));
+    bot.start((ctx, next) => createNavigation(ctx, { next }));
     bot.hears(moduleParam.keywords, (ctx) => hearsHandler(ctx));
 };

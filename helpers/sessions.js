@@ -1,11 +1,14 @@
 const { sessions } = require('../state/sessions');
-const { emptySession } = require('../const/sessions');
 
-const initStore = (accountId, action) => {
-    const session = { ...emptySession };
-    session.action = action;
+const initStore = ({ accountId, chatId, moduleName }) => {
     clearStore(accountId);
-    sessions.set(accountId, session);
+    sessions.set(accountId, {
+        moduleName,
+        chatId,
+        accountId,
+        stepIndex: 0,
+        stepMessageId: undefined,
+    });
 };
 
 const getSession = (accountId) => {

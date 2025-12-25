@@ -24,6 +24,10 @@ const isValidOwner = (room, owner) => {
     return ownerList.includes(getNormalizeString(owner));
 };
 
+const isValidForwardMessage = (message) => {
+    return Boolean(message?.forward_from) || Boolean(message?.forward_from_chat);
+};
+
 const validateMessage = (message, stepValidation) => {
     const text = getMessageText(message);
     switch (stepValidation?.dataType) {
@@ -37,6 +41,8 @@ const validateMessage = (message, stepValidation) => {
             return isValidNumber(text, stepValidation);
         case 'phone':
             return isValidPhoneNumber(text);
+        case 'forward':
+            return isValidForwardMessage(message);
         default:
             return true;
     }

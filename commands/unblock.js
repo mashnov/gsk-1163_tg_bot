@@ -38,10 +38,11 @@ const initAction = async (ctx) => {
         return;
     }
 
-    initStore(ctx.from.id, moduleParam.name);
-    await initStepper();
+    initStore({ accountId: ctx.from.id, chatId: ctx.chat.id, moduleName: moduleParam.name });
 
-    await stepper.startHandler(ctx);
+    await initStepper();
+    await stepper?.startHandler(ctx);
+
     await removeMessage(ctx);
     await commandAnswer(ctx);
 };
@@ -96,5 +97,5 @@ module.exports = (bot) => {
     bot.command(moduleParam.name, (ctx) => initAction(ctx));
     bot.action(moduleParam.name, (ctx) => initAction(ctx));
     bot.action(`${moduleParam.name}:${moduleParam.submit}`, (ctx) => submitAction(ctx));
-    bot.on('text', (ctx, next) => stepper.inputHandler(ctx, next));
+    bot.on('text', (ctx, next) => stepper ? stepper.inputHandler(ctx, next) : next());
 };

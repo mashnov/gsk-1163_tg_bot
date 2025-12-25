@@ -37,13 +37,17 @@ const initAction = async (ctx) => {
         buttons[moduleNames.unblock] = '🫥 Разблокировка';
     }
 
-    if (!isBlocked) {
+    if (!isBlocked && !isPending) {
         buttons[moduleNames.weather] = '🌤️ Прогноз погоды';
         buttons[moduleNames.horoscope] = '💫 Личный Гороскоп';
     }
 
     if (isPrivateChat && (isResident || isAdmin)) {
         buttons[moduleNames.meter] = '〽️ Показания счетчиков';
+    }
+
+    if (!isBlocked && !isPending) {
+        buttons[moduleNames.complaint] = '‼️ Пожаловаться на сообщение';
     }
 
     if (isPrivateChat && isAdmin) {
@@ -83,6 +87,11 @@ const initAction = async (ctx) => {
     if (isPrivateChat && (isResident || isAdmin)) {
         messageText +=
             '\n\n• Передать показания счётчиков';
+    }
+
+    if (!isBlocked && !isPending) {
+        messageText +=
+            '\n• Пожаловаться на сообщение';
     }
 
     if (isPrivateChat && isAdmin) {

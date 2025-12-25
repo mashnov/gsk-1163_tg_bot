@@ -39,8 +39,6 @@ const startAction = async (ctx) => {
         return;
     }
 
-    await initStepper();
-
     const userData = await getUserData(ctx.from.id);
     const isUnverified = userData?.userStatus === userStatusList.undefined || !userData?.userStatus;
     const isPending = userData?.userStatus === userStatusList.pending;
@@ -82,9 +80,11 @@ const initAction = async (ctx) => {
         return;
     }
 
-    initStore(ctx.from.id, moduleParam.name);
+    initStore({ accountId: ctx.from.id, chatId: ctx.chat.id, moduleName: moduleParam.name });
 
-    await stepper.startHandler(ctx);
+    await initStepper();
+    await stepper?.startHandler(ctx);
+
     await removeMessage(ctx);
     await commandAnswer(ctx);
 };
@@ -297,6 +297,6 @@ module.exports = (bot) => {
     bot.action(moduleParam.name, (ctx) => startAction(ctx));
     bot.action(`${moduleParam.name}:${moduleParam.init}`, (ctx) => initAction(ctx));
     bot.action(`${moduleParam.name}:${moduleParam.submit}`, (ctx) => submitAction(ctx));
-    bot.on('text', (ctx, next) => stepper.inputHandler(ctx, next));
+    bot.on('text', (ctx, next) => stepper ? stepper.inputHandler(ctx, next) : next());
     bot.on('callback_query', (ctx, next) => callbackHandler(ctx, next));
 };

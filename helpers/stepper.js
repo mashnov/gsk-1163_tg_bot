@@ -7,7 +7,7 @@ const { sendMessage, removeMessage } = require('./telegraf');
 function startStepper({ actionName, stepList, cancelActions = homeOption, submitActions }) {
     const sendStepWarning = async (ctx, session) => {
         const messageText = stepList[session.stepIndex]?.errorText;
-        session.messageId = await sendMessage(ctx, { text: messageText });
+        session.stepMessageId = await sendMessage(ctx, { text: messageText });
     };
 
     const sendStepMessage = async (ctx, session) => {
@@ -16,13 +16,13 @@ function startStepper({ actionName, stepList, cancelActions = homeOption, submit
         if (stepId === 'summary') {
             const summaryText = getSummaryMessage(stepList[session.stepIndex]?.summary, session);
             const summaryMessage = `${messageText}\n\n${summaryText}`;
-            session.messageId = await sendMessage(ctx, {
+            session.stepMessageId = await sendMessage(ctx, {
                 text: summaryMessage,
                 buttons: { ...submitActions, ...cancelActions },
                 attachment: session.attachment,
             });
         } else {
-            session.messageId = await sendMessage(ctx, { text: messageText });
+            session.stepMessageId = await sendMessage(ctx, { text: messageText });
         }
     };
 
@@ -32,33 +32,50 @@ function startStepper({ actionName, stepList, cancelActions = homeOption, submit
     };
 
     const inputHandler = async (ctx, next) => {
-
         const session = getSession(ctx.from.id);
 
-        if (session?.action !== actionName) {
+        if (session?.stepMessageId) {
+            await removeMessage(ctx, { messageId: session.stepMessageId });
+        }
+
+        if (!session) {
             return next();
         }
 
-        if (session?.messageId) {
-            await removeMessage(ctx, { messageId: session.messageId });
+        if (session?.chatId !== ctx.chat.id) {
+            return next();
+        }
+
+        if (session?.accountId !== ctx.from.id) {
+            return next();
+        }
+
+        if (session?.moduleName !== actionName) {
+            return next();
         }
 
         if (!stepList[session.stepIndex]) {
-            return;
+            return next();
         }
 
         if (stepList[session.stepIndex].id === 'summary') {
-            return;
+            return next();
         }
 
         const validationRules = stepList[session.stepIndex]?.validation;
         const isMessageStep = validationRules.dataType === 'message';
+        const isForwardStep = validationRules.dataType === 'forward';
         const stepIsValid = validateMessage(ctx.message, validationRules);
 
         if (stepIsValid && isMessageStep) {
             session.attachment = getMessageAttachment(ctx.message);
             session.messageOrigin = ctx.message;
         }
+
+        if (stepIsValid && isForwardStep) {
+            session.messageOrigin = ctx.message;
+        }
+
         if (stepIsValid) {
             session[stepList[session.stepIndex]?.id] = getMessageText(ctx.message);
             session.stepIndex = session.stepIndex + 1;

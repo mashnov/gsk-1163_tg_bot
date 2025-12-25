@@ -10,6 +10,7 @@ const moduleNames = {
     profiles: 'profiles',
     rules: 'rules',
     verification: 'verification',
+    complaint: 'complaint',
     unblock: 'unblock',
     backup: 'backup',
     weather: 'weather',

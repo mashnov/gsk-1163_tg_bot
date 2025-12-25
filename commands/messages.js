@@ -53,13 +53,14 @@ const initAction = async (ctx) => {
         return;
     }
 
-    initStore(ctx.from.id, moduleParam.name);
-    await initStepper();
+    initStore({ accountId: ctx.from.id, chatId: ctx.chat.id, moduleName: moduleParam.name });
 
+    await initStepper();
     await stepper?.startHandler(ctx);
+
     await removeMessage(ctx);
     await commandAnswer(ctx);
-}
+};
 
 const submitAction = async (ctx, listType) => {
     const senderText = '🟢 Ваше сообщение отправлено.';
@@ -104,6 +105,6 @@ const callbackHandler = async (ctx, next) => {
 module.exports = (bot) => {
     bot.command(moduleParam.name, (ctx) => initAction(ctx));
     bot.action(moduleParam.name, (ctx) => initAction(ctx));
-    bot.on('message', (ctx, next) => stepper?.inputHandler(ctx, next));
+    bot.on('message', (ctx, next) => stepper ? stepper.inputHandler(ctx, next) : next());
     bot.on('callback_query', (ctx, next) => callbackHandler(ctx, next));
 };
