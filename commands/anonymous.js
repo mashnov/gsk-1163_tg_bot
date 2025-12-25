@@ -72,7 +72,7 @@ const submitAction = async (ctx) => {
 
     await sendMessage(ctx, {
         accountId: homeChatId,
-        text: session.message,
+        text: `Анонимное сообщение.\n\n${session.message}`,
         buttons: {},
     });
 
