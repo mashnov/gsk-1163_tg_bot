@@ -55,8 +55,8 @@ const initAction = async (ctx) => {
     await commandAnswer(ctx);
 };
 
-const getHoroscopeMessage = async (ctx, { needRemove, needButtons, horoName }) => {
-    const isGuardPassed = await guard(ctx, { unBlocked: true });
+const getHoroscopeMessage = async (ctx, { needRemove, needButtons, horoName, isCronAction } = {}) => {
+    const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true });
 
     if (!isGuardPassed) {
         await removeMessage(ctx);
@@ -83,7 +83,7 @@ const getHoroscopeMessage = async (ctx, { needRemove, needButtons, horoName }) =
         pisces: '♓ Рыбы',
     }
 
-    const isPrivateChat = ctx.chat?.type === 'private';
+    const isPrivateChat = isCronAction ? false : ctx.chat?.type === 'private';
     const horoList = Object.keys(horoItems);
     const horoFilteredList = !isPrivateChat ? horoList : horoList.filter(horoItem => horoItem === horoName);
 
@@ -119,10 +119,10 @@ const callbackHandler = async (ctx, next) => {
     return next();
 };
 
-const cronAction = (ctx) => {
+const cronAction = (bot) => {
     cron.schedule(
         `${moduleParam.startM} ${moduleParam.startH} * * *`,
-        async () => getHoroscopeMessage(ctx),
+        async () => getHoroscopeMessage(bot, { isCronAction: true }),
         { timezone: homeTimeZone },
     );
 }

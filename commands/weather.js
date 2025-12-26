@@ -13,8 +13,8 @@ const moduleParam = {
     serviceUrl: `https://api.open-meteo.com/v1/forecast?latitude=${homeLatitude}&longitude=${homeLongitude}&daily=temperature_2m_min,temperature_2m_max,precipitation_probability_max&timezone=${encodeURIComponent(homeTimeZone)}`,
 }
 
-const getWeatherMessage = async (ctx, { needRemove, needButtons }) => {
-    const isGuardPassed = await guard(ctx, { unBlocked: true });
+const getWeatherMessage = async (ctx, { needRemove, needButtons, isCronAction }) => {
+    const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true });
 
     if (!isGuardPassed) {
         await removeMessage(ctx);
@@ -22,7 +22,7 @@ const getWeatherMessage = async (ctx, { needRemove, needButtons }) => {
         return;
     }
 
-    const isPrivateChat = ctx.chat?.type === 'private';
+    const isPrivateChat = isCronAction ? false : ctx.chat?.type === 'private';
     const serviceResponse = await fetch(moduleParam.serviceUrl);
     const serviceData = await serviceResponse.json();
 
@@ -67,7 +67,7 @@ const hearsHandler = async (ctx) => {
 const cronAction = (bot) => {
     cron.schedule(
         `0 ${moduleParam.sendTime} * * *`,
-        async () => getWeatherMessage(bot, {}),
+        async () => getWeatherMessage(bot, { isCronAction: true }),
         { timezone: homeTimeZone },
     );
 }
