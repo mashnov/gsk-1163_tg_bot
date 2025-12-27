@@ -1,8 +1,10 @@
 const { getUserName, getUserNameLink, getFormattedDate } = require('../helpers/getters');
 const { getUserData, getUserIndex, getUserListByIndex } = require('../helpers/db');
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
+const { getPaginatedItems } = require('../helpers/array');
 const { guard } = require('../helpers/guard');
 
+const { profilesPageCount } = require('../const/env');
 const { userStatusList, userStatusText } = require('../const/db');
 const { homeOption, moduleNames } = require('../const/dictionary');
 
@@ -51,11 +53,12 @@ const startAction = async (ctx) => {
     await commandAnswer(ctx);
 };
 
-const profileListHandler = async (ctx, listType) => {
+const profileListHandler = async (ctx, listType, listIndex = '0') => {
     const profileList = await getUserIndex(listType);
     const filteredProfileList = profileList.filter(userId => userId !== String(ctx.from.id));
     const mappedProfileList = await getUserListByIndex(filteredProfileList);
     const sortedProfileList = mappedProfileList.sort((a, b) => Number(a.roomNumber) - Number(b.roomNumber));
+    const paginatedList = getPaginatedItems(sortedProfileList, listIndex, profilesPageCount);
 
     const messageText =
         `🪪 Администрирование` +
@@ -64,15 +67,26 @@ const profileListHandler = async (ctx, listType) => {
 
     const buttons = {};
 
-    for (const userData of sortedProfileList) {
+    for (const userData of paginatedList) {
         buttons[`${moduleParam.name}:${userData.accountId}:${moduleParam.review}`] = `КВ ${userData.roomNumber} - ${userData.residentName}`;
+    }
+
+    if (Number(listIndex) !== 0) {
+        buttons[`${moduleParam.name}:${listType}:${moduleParam.list}:${Number(listType) - 1}`] = '⏮️ Предыдущий список';
+    }
+
+    if (Math.ceil(mappedProfileList.length / profilesPageCount) > listIndex) {
+        buttons[`${moduleParam.name}:${listType}:${moduleParam.list}:${Number(listType) + 1}`] = '⏭️ Следующий список';
     }
 
     buttons[moduleParam.name] = '⬅️ Назад';
 
     await sendMessage(ctx, {
         text: messageText,
-        buttons,
+        buttons: {
+            ...buttons,
+            ...homeOption,
+        },
     });
     await removeMessage(ctx);
     await commandAnswer(ctx);
@@ -111,10 +125,10 @@ const profileReviewHandler = async (ctx, accountId) => {
 
 const callbackHandler = async (ctx, next) => {
     const data = ctx.callbackQuery.data;
-    const [action, params, actionName] = data.split(':');
+    const [action, params, actionName, listIndex] = data.split(':');
 
     if (action === moduleParam.name && actionName === moduleParam.list) {
-        await profileListHandler(ctx, params);
+        await profileListHandler(ctx, params, listIndex);
     }
 
     if (action === moduleParam.name && actionName === moduleParam.review) {

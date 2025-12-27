@@ -8,6 +8,14 @@ const getArrayFallback = (array, fallback) => {
     return arrayValue.length ? arrayValue : fallbackValue;
 };
 
+const getPaginatedItems = (array = [], page = 0, size = 50) => {
+    const startIndex = page * size;
+    const endIndex = startIndex + size;
+    return array.slice(startIndex, endIndex);
+}
+
+
 module.exports = {
     getArrayFallback,
+    getPaginatedItems,
 };

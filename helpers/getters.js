@@ -13,7 +13,7 @@ const getButtons = (options) => {
 };
 
 const getSummaryMessage = (template, values) => {
-    return Object.entries(template).map(([key, text]) => `${text}${values[key] ?? ''}\n`).join('');
+    return Object.entries(template || {}).map(([key, text]) => `${text}${values[key] ?? ''}\n`).join('');
 };
 
 const getUserName = (data) => {
