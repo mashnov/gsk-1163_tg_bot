@@ -58,7 +58,7 @@ const profileListHandler = async (ctx, listType, listIndex = '0') => {
     const filteredProfileList = profileList.filter(userId => userId !== String(ctx.from.id));
     const mappedProfileList = await getUserListByIndex(filteredProfileList);
     const sortedProfileList = mappedProfileList.sort((a, b) => Number(a.roomNumber) - Number(b.roomNumber));
-    const paginatedList = getPaginatedItems(sortedProfileList, listIndex, profilesPageCount);
+    const paginatedList = getPaginatedItems(sortedProfileList, Number(listIndex), profilesPageCount);
 
     const messageText =
         `🪪 Администрирование` +
@@ -72,11 +72,11 @@ const profileListHandler = async (ctx, listType, listIndex = '0') => {
     }
 
     if (Number(listIndex) !== 0) {
-        buttons[`${moduleParam.name}:${listType}:${moduleParam.list}:${Number(listType) - 1}`] = '⏮️ Предыдущий список';
+        buttons[`${moduleParam.name}:${listType}:${moduleParam.list}:${Number(listIndex) - 1}`] = '⏮️ Предыдущий список';
     }
 
     if (Math.ceil(mappedProfileList.length / profilesPageCount) > listIndex) {
-        buttons[`${moduleParam.name}:${listType}:${moduleParam.list}:${Number(listType) + 1}`] = '⏭️ Следующий список';
+        buttons[`${moduleParam.name}:${listType}:${moduleParam.list}:${Number(listIndex) + 1}`] = 'Следующий список ⏭️';
     }
 
     buttons[moduleParam.name] = '⬅️ Назад';
@@ -128,6 +128,7 @@ const callbackHandler = async (ctx, next) => {
     const [action, params, actionName, listIndex] = data.split(':');
 
     if (action === moduleParam.name && actionName === moduleParam.list) {
+        console.log({ listIndex });
         await profileListHandler(ctx, params, listIndex);
     }
 

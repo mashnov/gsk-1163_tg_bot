@@ -7,6 +7,8 @@ const homeChatId = process.env.HOME_CHAT_ID;
 const homeTimeZone = process.env.HOME_TZ;
 const homeLatitude = process.env.HOME_WEATHER_LAT;
 const homeLongitude = process.env.HOME_WEATHER_LON;
+const weatherApi = process.env.HOME_WEATHER_API;
+const horoscopeApi = process.env.HOROSCOPE_API;
 const profilesPageCount = Number(process.env.PROFILES_PAGE_COUNT);
 
 module.exports = {
@@ -18,4 +20,6 @@ module.exports = {
     homeLatitude,
     homeLongitude,
     profilesPageCount,
+    weatherApi,
+    horoscopeApi,
 };

@@ -1,11 +1,12 @@
 const cron = require('node-cron');
 
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
-const { parseXml } = require('../helpers/xmlParser');
+const { fetchHoroscopeData } = require('../helpers/horoscope');
 const { guard } = require('../helpers/guard');
 
 const { homeOption, closeOption, moduleNames} = require('../const/dictionary');
 const { homeChatId, homeTimeZone } = require('../const/env');
+const { horoscopeTitleMapper } = require('../const/horoscope');
 
 const moduleParam = {
     name: moduleNames.horoscope,
@@ -13,7 +14,6 @@ const moduleParam = {
     item: 'item',
     startH: '8',
     startM: '30',
-    serviceUrl: `https://ignio.com/r/export/utf/xml/daily/com.xml`,
 }
 
 const initAction = async (ctx) => {
@@ -30,18 +30,18 @@ const initAction = async (ctx) => {
         '\n\nВыберите интересующий вас знак';
 
     const buttons = {
-        [`${moduleParam.name}:${moduleParam.item}:aries`]: '♈ Овен',
-        [`${moduleParam.name}:${moduleParam.item}:taurus`]: '♉ Телец',
-        [`${moduleParam.name}:${moduleParam.item}:gemini`]: '♊ Близнецы',
-        [`${moduleParam.name}:${moduleParam.item}:cancer`]: '♋ Рак',
-        [`${moduleParam.name}:${moduleParam.item}:leo`]: '♌ Лев',
-        [`${moduleParam.name}:${moduleParam.item}:virgo`]: '♍ Дева',
-        [`${moduleParam.name}:${moduleParam.item}:libra`]: '♎ Весы',
-        [`${moduleParam.name}:${moduleParam.item}:scorpio`]: '♏ Скорпион',
-        [`${moduleParam.name}:${moduleParam.item}:sagittarius`]: '♐ Стрелец',
-        [`${moduleParam.name}:${moduleParam.item}:capricorn`]: '♑ Козерог',
-        [`${moduleParam.name}:${moduleParam.item}:aquarius`]: '♒ Водолей',
-        [`${moduleParam.name}:${moduleParam.item}:pisces`]: '♓ Рыбы',
+        [`${moduleParam.name}:${moduleParam.item}:aries`]: horoscopeTitleMapper['aries'],
+        [`${moduleParam.name}:${moduleParam.item}:taurus`]: horoscopeTitleMapper['taurus'],
+        [`${moduleParam.name}:${moduleParam.item}:gemini`]: horoscopeTitleMapper['gemini'],
+        [`${moduleParam.name}:${moduleParam.item}:cancer`]: horoscopeTitleMapper['cancer'],
+        [`${moduleParam.name}:${moduleParam.item}:leo`]: horoscopeTitleMapper['leo'],
+        [`${moduleParam.name}:${moduleParam.item}:virgo`]: horoscopeTitleMapper['virgo'],
+        [`${moduleParam.name}:${moduleParam.item}:libra`]: horoscopeTitleMapper['libra'],
+        [`${moduleParam.name}:${moduleParam.item}:scorpio`]: horoscopeTitleMapper['scorpio'],
+        [`${moduleParam.name}:${moduleParam.item}:sagittarius`]: horoscopeTitleMapper['sagittarius'],
+        [`${moduleParam.name}:${moduleParam.item}:capricorn`]: horoscopeTitleMapper['capricorn'],
+        [`${moduleParam.name}:${moduleParam.item}:aquarius`]: horoscopeTitleMapper['aquarius'],
+        [`${moduleParam.name}:${moduleParam.item}:pisces`]: horoscopeTitleMapper['pisces'],
     };
 
     await sendMessage(ctx, {
@@ -64,31 +64,14 @@ const getHoroscopeMessage = async (ctx, { needRemove, needButtons, horoName, isC
         return;
     }
 
-    const serviceResponse = await fetch(moduleParam.serviceUrl);
-    const serviceData = await serviceResponse.text();
-    const response = await parseXml(serviceData);
-
-    const horoItems = {
-        aries: '♈ Овен',
-        taurus: '♉ Телец',
-        gemini: '♊ Близнецы',
-        cancer: '♋ Рак',
-        leo: '♌ Лев',
-        virgo: '♍ Дева',
-        libra: '♎ Весы',
-        scorpio: '♏ Скорпион',
-        sagittarius: '♐ Стрелец',
-        capricorn: '♑ Козерог',
-        aquarius: '♒ Водолей',
-        pisces: '♓ Рыбы',
-    }
+    const response = await fetchHoroscopeData();
 
     const isPrivateChat = isCronAction ? false : ctx.chat?.type === 'private';
-    const horoList = Object.keys(horoItems);
+    const horoList = Object.keys(horoscopeTitleMapper);
     const horoFilteredList = !isPrivateChat ? horoList : horoList.filter(horoItem => horoItem === horoName);
 
     for (const horoItem of horoFilteredList) {
-        const horoTitle = horoItems[horoItem];
+        const horoTitle = horoscopeTitleMapper[horoItem];
         const horoText = response?.horo?.[horoItem]?.today;
         const messageText = horoTitle + '\n\n' + horoText;
 

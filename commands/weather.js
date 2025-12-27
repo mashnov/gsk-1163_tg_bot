@@ -1,16 +1,17 @@
 const cron = require('node-cron');
 
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
+const { fetchWeatherData, windUnitTransformer } = require('../helpers/weather');
 const { guard } = require('../helpers/guard');
 
+const { weatherCodeMap } = require('../const/weather');
 const { homeOption, closeOption, moduleNames} = require('../const/dictionary');
-const { homeChatId, homeTimeZone, homeLatitude, homeLongitude } = require('../const/env');
+const { homeChatId, homeTimeZone } = require('../const/env');
 
 const moduleParam = {
     name: moduleNames.weather,
     keywords: ['погода', 'Погода'],
     sendTime: [8, 14, 20],
-    serviceUrl: `https://api.open-meteo.com/v1/forecast?latitude=${homeLatitude}&longitude=${homeLongitude}&daily=temperature_2m_min,temperature_2m_max,precipitation_probability_max&timezone=${encodeURIComponent(homeTimeZone)}`,
 }
 
 const getWeatherMessage = async (ctx, { needRemove, needButtons, isCronAction }) => {
@@ -22,19 +23,22 @@ const getWeatherMessage = async (ctx, { needRemove, needButtons, isCronAction })
         return;
     }
 
-    const isPrivateChat = isCronAction ? false : ctx.chat?.type === 'private';
-    const serviceResponse = await fetch(moduleParam.serviceUrl);
-    const serviceData = await serviceResponse.json();
+    const isPrivateChat = ctx.chat?.type === 'private';
+    const serviceData = await fetchWeatherData();
 
-    const minTemperature = ((serviceData?.daily?.temperature_2m_min) || [])[0]
-    const maxTemperature = ((serviceData?.daily?.temperature_2m_max) || [])[0]
-    const precipitation = ((serviceData?.daily?.precipitation_probability_max) || [])[0]
+    const currentWeather = serviceData?.current ?? {}
+    const currentWeatherUnits = serviceData?.current_units ?? {}
+
+    const currentWeatherCode = weatherCodeMap[currentWeather?.weather_code];
+    const windSpeed = windUnitTransformer(currentWeather?.wind_speed_10m);
 
     let messageText =
         '🌤️ Прогноз погоды' +
-        `\n\nМинимальная температура: ${minTemperature}°C` +
-        `\nМаксимальная температура: ${maxTemperature}°C` +
-        `\nВероятность осадков: до ${precipitation}%`;
+        `\n\n${currentWeatherCode.icon} Сейчас: ${currentWeatherCode.text}` +
+        `\n🌡 Температура на улице: ${currentWeather?.temperature_2m ?? '-'}${currentWeatherUnits?.temperature_2m}` +
+        `\n💧 Относительная влажность: ${currentWeather?.relative_humidity_2m ?? '-'}${currentWeatherUnits?.relative_humidity_2m}` +
+        `\n💨 Скорость ветра: ${windSpeed}м/с` +
+        `\n☁️ Облачность: ${currentWeather?.cloud_cover ?? '-'}${currentWeatherUnits?.cloud_cover}`;
 
     if (!isPrivateChat) {
         messageText += '\n\nПрогноз публикуется автоматически в 08:00, 14:00 и 20:00 ежедневно';
