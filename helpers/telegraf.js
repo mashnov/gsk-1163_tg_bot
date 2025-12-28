@@ -20,7 +20,7 @@ const preventBotBlock = async () => {
     await sleep(250);
 };
 
-const sendMessage = async (ctx, { accountId = ctx.chat.id, text = '', filePath, buttons = homeOption, attachment, silent }) => {
+const sendMessage = async (ctx, { accountId = ctx.chat.id, text = '', buttons = homeOption, attachment, silent }) => {
     await preventBotBlock();
     const messageButtons = getButtons(buttons);
     const params = {
@@ -29,15 +29,6 @@ const sendMessage = async (ctx, { accountId = ctx.chat.id, text = '', filePath, 
         ...messageButtons,
         ...messageParams,
     };
-
-    if (filePath) {
-        try {
-            const message = await ctx.replyWithDocument(Input.fromLocalFile(filePath), params);
-            return message.message_id;
-        } catch (error) {
-            console.error(error.message);
-        }
-    }
 
     const methods = {
         photo: 'sendPhoto',
@@ -54,6 +45,23 @@ const sendMessage = async (ctx, { accountId = ctx.chat.id, text = '', filePath, 
     }
 };
 
+const sendLocalFileMessage = async (ctx, { accountId, text, buttons, filePath, silent }) => {
+    const attachment = {
+        type: 'document',
+        fileId: Input.fromLocalFile(filePath),
+    };
+    return await sendMessage(ctx, { accountId, text, buttons, attachment, silent });
+};
+
+const setMessageReaction = async (ctx, { chatId, messageId, emoji = '👀' } = {}) => {
+    await preventBotBlock();
+    try {
+        return await ctx.telegram.setMessageReaction(chatId, messageId, [{ type: 'emoji', emoji }]);
+    } catch (error) {
+        console.error(error.message);
+    }
+};
+
 const removeMessage = async (ctx, { chatId, messageId } = {}) => {
     await preventBotBlock();
     try {
@@ -62,15 +70,6 @@ const removeMessage = async (ctx, { chatId, messageId } = {}) => {
         } else {
             return await ctx.deleteMessage(messageId);
         }
-    } catch (error) {
-        console.error(error.message);
-    }
-};
-
-const setMessageReaction = async (ctx, { chatId, messageId, emoji = '👀' } = {}) => {
-    await preventBotBlock();
-    try {
-        return await ctx.telegram.setMessageReaction(chatId, messageId, [{ type: 'emoji', emoji }]);
     } catch (error) {
         console.error(error.message);
     }
@@ -153,8 +152,9 @@ const unBanUserById = async (ctx, { chatId, userId } = {}) => {
 module.exports = {
     commandAnswer,
     sendMessage,
-    removeMessage,
+    sendLocalFileMessage,
     setMessageReaction,
+    removeMessage,
     makeAdmin,
     demoteUser,
     restrictUser,

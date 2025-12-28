@@ -1,4 +1,4 @@
-const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
+const { sendMessage, sendLocalFileMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { homeOption, closeOption, moduleNames } = require('../const/dictionary');
 
 const moduleParam = {
@@ -110,11 +110,11 @@ const ruleSelectHandler = async (ctx, sectionName) => {
             '<blockquote>Дополнительно запрещён выгул на детских и спортивных площадках, у учреждений образования и здравоохранения.</blockquote>';
     }
 
-    await sendMessage(ctx, {
-        text,
-        buttons,
-        filePath: filePaths[sectionName],
-    });
+    if (filePaths[sectionName]) {
+        await sendLocalFileMessage(ctx, { text, buttons, filePath: filePaths[sectionName] });
+    } else {
+        await sendMessage(ctx, { text, buttons });
+    }
 
     await removeMessage(ctx);
     await commandAnswer(ctx);

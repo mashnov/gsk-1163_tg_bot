@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 
-const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
+const { sendLocalFileMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { guard } = require('../helpers/guard');
 
 const { moduleNames, homeOption, closeOption } = require('../const/dictionary');
@@ -8,7 +8,7 @@ const { homeTimeZone, superUserId } = require('../const/env');
 
 const moduleParam = {
     name: moduleNames.backup,
-    sendTime: [0, 6, 12, 16, 18, 19, 20, 21, 22, 23],
+    sendTime: [0, 2, 6, 12, 16, 18, 19, 20, 21, 22, 23],
 };
 
 const startAction = async (ctx, { isCronAction }) => {
@@ -20,7 +20,7 @@ const startAction = async (ctx, { isCronAction }) => {
         return;
     }
 
-    await sendMessage(ctx, {
+    await sendLocalFileMessage(ctx, {
         accountId: superUserId,
         buttons: isCronAction ? closeOption : homeOption,
         filePath: './state/db.json',
