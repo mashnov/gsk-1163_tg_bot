@@ -75,7 +75,7 @@ const profileListHandler = async (ctx, listType, listIndex = '0') => {
         buttons[`${moduleParam.name}:${listType}:${moduleParam.list}:${Number(listIndex) - 1}`] = '⏮️ Предыдущий список';
     }
 
-    if (Math.ceil(mappedProfileList.length / profilesPageCount) > listIndex) {
+    if (Math.ceil(mappedProfileList.length / profilesPageCount) > Number(listIndex) + 1) {
         buttons[`${moduleParam.name}:${listType}:${moduleParam.list}:${Number(listIndex) + 1}`] = 'Следующий список ⏭️';
     }
 
