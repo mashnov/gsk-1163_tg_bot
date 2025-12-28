@@ -2,6 +2,7 @@ const { weatherApi, homeLongitude, homeLatitude, homeTimeZone } = require('../co
 
 const weatherParam = {
     current: ['temperature_2m', 'relative_humidity_2m', 'weather_code', 'cloud_cover', 'wind_speed_10m',].join(','),
+    hourly: ['precipitation', 'precipitation_probability'].join(','),
     longitude: homeLongitude,
     latitude: homeLatitude,
     timezone: homeTimeZone,

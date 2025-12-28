@@ -27,18 +27,21 @@ const getWeatherMessage = async (ctx, { needRemove, needButtons, isCronAction })
     const serviceData = await fetchWeatherData();
 
     const currentWeather = serviceData?.current ?? {}
-    const currentWeatherUnits = serviceData?.current_units ?? {}
+    const hourlyWeather = serviceData?.hourly ?? {}
 
     const currentWeatherCode = weatherCodeMap[currentWeather?.weather_code];
     const windSpeed = windUnitTransformer(currentWeather?.wind_speed_10m);
 
     let messageText =
-        '🌤️ Прогноз погоды' +
-        `\n\n${currentWeatherCode.icon} Сейчас: ${currentWeatherCode.text}` +
-        `\n🌡 Температура на улице: ${currentWeather?.temperature_2m ?? '-'}${currentWeatherUnits?.temperature_2m}` +
-        `\n💧 Относительная влажность: ${currentWeather?.relative_humidity_2m ?? '-'}${currentWeatherUnits?.relative_humidity_2m}` +
-        `\n💨 Скорость ветра: ${windSpeed}м/с` +
-        `\n☁️ Облачность: ${currentWeather?.cloud_cover ?? '-'}${currentWeatherUnits?.cloud_cover}`;
+        'Сейчас' +
+        `\n${currentWeatherCode.icon} ${currentWeatherCode.text}` +
+        `\n🌡 Температура воздуха: ${currentWeather?.temperature_2m ?? '-'} °С` +
+        `\n💧 Влажность воздуха: ${currentWeather?.relative_humidity_2m ?? '-'} %` +
+        `\n☁️ Облачность: ${currentWeather?.cloud_cover ?? '-'} %` +
+        `\n💨 Скорость ветра: ${windSpeed ?? '-'} м/с` +
+        '\n\nБлижайший час:' +
+        `\n☔️ Количество осадков: ${hourlyWeather?.precipitation?.[0] ?? '-'} мм` +
+        `\n🌂 Вероятность осадков: ${hourlyWeather?.precipitation_probability?.[0] ?? '-'} %`;
 
     if (!isPrivateChat) {
         messageText += '\n\nПрогноз публикуется автоматически в 08:00, 14:00 и 20:00 ежедневно';
