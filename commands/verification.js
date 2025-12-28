@@ -208,7 +208,7 @@ const sendAdminVerificationNotification = async (ctx, userStatus, accountId, res
     for (const adminId of adminFilteredList) {
         const residentDetailsText =
             `${residentUserLink}` +
-            `\n\nФамилия и имя ${residentData.residentName}` +
+            `\n\nФИО: ${residentData.residentName}` +
             `\nНомер телефона: ${residentData.phoneNumber}` +
             `\nНомер квартиры: ${residentData.roomNumber}`;
 
