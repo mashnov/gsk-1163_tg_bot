@@ -206,13 +206,19 @@ const sendAdminVerificationNotification = async (ctx, userStatus, accountId, res
     const residentUserLink = getUserNameLink(residentLinkData);
 
     for (const adminId of adminFilteredList) {
+        const residentDetailsText =
+            `${residentUserLink}` +
+            `\n\nФамилия и имя ${residentData.residentName}` +
+            `\nНомер телефона: ${residentData.phoneNumber}` +
+            `\nНомер квартиры: ${residentData.roomNumber}`;
+
         const messageText = {
-            [userStatusList.chairman]: `${adminUserLink} выдал права председателя ${residentUserLink}.`,
-            [userStatusList.accountant]: `${adminUserLink} выдал права бухгалтера ${residentUserLink}.`,
-            [userStatusList.admin]: `${adminUserLink} выдал права администратора ${residentUserLink}.`,
-            [userStatusList.resident]: `${adminUserLink} одобрил запрос верификации ${residentUserLink}.`,
-            [userStatusList.restricted]: `${adminUserLink} ограничил ${residentUserLink}.`,
-            [userStatusList.blocked]: `${adminUserLink} заблокировал ${residentUserLink}.`,
+            [userStatusList.chairman]: `${adminUserLink} выдал права председателя ${residentDetailsText}`,
+            [userStatusList.accountant]: `${adminUserLink} выдал права бухгалтера ${residentDetailsText}`,
+            [userStatusList.admin]: `${adminUserLink} выдал права администратора ${residentDetailsText}`,
+            [userStatusList.resident]: `${adminUserLink} одобрил запрос верификации ${residentDetailsText}`,
+            [userStatusList.restricted]: `${adminUserLink} ограничил ${residentDetailsText}`,
+            [userStatusList.blocked]: `${adminUserLink} заблокировал ${residentDetailsText}`,
         };
 
         await sendMessage(ctx, {

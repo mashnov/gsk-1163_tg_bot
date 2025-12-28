@@ -5,13 +5,6 @@ const { homeChatId } = require('../const/env');
 const { userStatusList } = require("../const/db");
 
 const messageHandler = async (ctx, next) => {
-    console.log({
-        homeChatId,
-        chatId: ctx.chat?.id,
-        isBot: ctx.from?.is_bot,
-        isCommand: ctx.message.text.startsWith('/'),
-    })
-
     if (ctx.from?.is_bot) {
         return next();
     }
@@ -34,7 +27,7 @@ const messageHandler = async (ctx, next) => {
     await setMessageReaction(ctx, {
         chatId: ctx.chat.id,
         messageId: ctx.message.message_id,
-        emoji: '⚠️',
+        emoji: '👀',
     });
 
     return next();
