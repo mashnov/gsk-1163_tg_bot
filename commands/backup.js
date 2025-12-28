@@ -25,8 +25,11 @@ const startAction = async (ctx, { isCronAction }) => {
         buttons: isCronAction ? closeOption : homeOption,
         filePath: './state/db.json',
     });
-    await removeMessage(ctx);
-    await commandAnswer(ctx);
+
+    if (!isCronAction) {
+        await removeMessage(ctx);
+        await commandAnswer(ctx);
+    }
 };
 
 const cronAction = (bot) => {

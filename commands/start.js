@@ -17,7 +17,7 @@ const initAction = async (ctx) => {
     }
 
     const userData = await getUserData(ctx.from.id);
-    const isSuperAdmin = ctx.from.id === Number(superUserId);
+    const isSuperAdmin = ctx.from.id === superUserId;
     const isUnverified = userData?.userStatus === userStatusList.undefined || !userData?.userStatus;
     const isPending = userData?.userStatus === userStatusList.pending;
     const isBlocked = [userStatusList.blocked, userStatusList.restricted].includes(userData?.userStatus);

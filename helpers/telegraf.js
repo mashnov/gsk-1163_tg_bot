@@ -67,6 +67,15 @@ const removeMessage = async (ctx, { chatId, messageId } = {}) => {
     }
 };
 
+const setMessageReaction = async (ctx, { chatId, messageId, emoji = '👀' } = {}) => {
+    await preventBotBlock();
+    try {
+        return await ctx.telegram.setMessageReaction(chatId, messageId, [{ type: 'emoji', emoji }]);
+    } catch (error) {
+        console.error(error.message);
+    }
+};
+
 const makeAdmin = async (ctx, { chatId, userId } = {}) => {
     try {
         await ctx.telegram.promoteChatMember(chatId, userId, {
@@ -145,6 +154,7 @@ module.exports = {
     commandAnswer,
     sendMessage,
     removeMessage,
+    setMessageReaction,
     makeAdmin,
     demoteUser,
     restrictUser,

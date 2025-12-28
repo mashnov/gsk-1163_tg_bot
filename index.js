@@ -14,6 +14,7 @@ const profilesCommand = require('./commands/profiles');
 const backupCommand = require('./commands/backup');
 const verificationCommand = require('./commands/verification');
 const unblockCommand = require('./commands/unblock');
+const reactionsCommand = require('./commands/reactions');
 
 const { botToken } = require('./const/env');
 
@@ -34,6 +35,7 @@ const createBot = () => {
     backupCommand(bot);
     verificationCommand(bot);
     unblockCommand(bot);
+    reactionsCommand(bot);
 
     return bot;
 }
