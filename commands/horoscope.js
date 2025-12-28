@@ -1,19 +1,13 @@
-const cron = require('node-cron');
-
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { fetchHoroscopeData } = require('../helpers/horoscope');
 const { guard } = require('../helpers/guard');
 
-const { homeOption, closeOption, moduleNames} = require('../const/dictionary');
-const { homeChatId, homeTimeZone } = require('../const/env');
+const { homeOption, moduleNames} = require('../const/dictionary');
 const { horoscopeTitleMapper } = require('../const/horoscope');
 
 const moduleParam = {
     name: moduleNames.horoscope,
-    keywords: ['гороскоп', 'Гороскоп'],
     item: 'item',
-    startH: '8',
-    startM: '30',
 }
 
 const initAction = async (ctx) => {
@@ -55,8 +49,8 @@ const initAction = async (ctx) => {
     await commandAnswer(ctx);
 };
 
-const getHoroscopeMessage = async (ctx, { needRemove, needButtons, horoName, isCronAction } = {}) => {
-    const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true });
+const getHoroscopeMessage = async (ctx, { horoName } = {}) => {
+    const isGuardPassed = await guard(ctx, { unBlocked: true, privateChat: true  });
 
     if (!isGuardPassed) {
         await removeMessage(ctx);
@@ -66,9 +60,8 @@ const getHoroscopeMessage = async (ctx, { needRemove, needButtons, horoName, isC
 
     const response = await fetchHoroscopeData();
 
-    const isPrivateChat = isCronAction ? false : ctx.chat?.type === 'private';
     const horoList = Object.keys(horoscopeTitleMapper);
-    const horoFilteredList = !isPrivateChat ? horoList : horoList.filter(horoItem => horoItem === horoName);
+    const horoFilteredList = horoList.filter(horoItem => horoItem === horoName);
 
     for (const horoItem of horoFilteredList) {
         const horoTitle = horoscopeTitleMapper[horoItem];
@@ -76,18 +69,12 @@ const getHoroscopeMessage = async (ctx, { needRemove, needButtons, horoName, isC
         const messageText = horoTitle + '\n\n' + horoText;
 
         await sendMessage(ctx, {
-            accountId: isPrivateChat ? undefined : homeChatId,
             text: messageText,
-            buttons: {
-                ...(isPrivateChat ? { [moduleParam.name] : '⬅️ Назад' } : {}),
-                ...(!isPrivateChat && needButtons ? closeOption : {}),
-            },
+            buttons: { [moduleParam.name] : '⬅️ Назад' },
         });
     }
 
-    if (needRemove) {
-        await removeMessage(ctx);
-    }
+    await removeMessage(ctx);
     await commandAnswer(ctx);
 };
 
@@ -96,22 +83,13 @@ const callbackHandler = async (ctx, next) => {
     const [action, actionName, horoName] = data.split(':');
 
     if (action === moduleParam.name && actionName === moduleParam.item) {
-        await getHoroscopeMessage(ctx, { needRemove: true, needAnswer: true, horoName });
+        await getHoroscopeMessage(ctx, { horoName });
     }
 
     return next();
 };
 
-const cronAction = (bot) => {
-    cron.schedule(
-        `${moduleParam.startM} ${moduleParam.startH} * * *`,
-        async () => getHoroscopeMessage(bot, { isCronAction: true }),
-        { timezone: homeTimeZone },
-    );
-}
-
 module.exports = (bot) => {
-    cronAction(bot);
     bot.command(moduleParam.name, (ctx) => initAction(ctx));
     bot.action(moduleParam.name, (ctx) => initAction(ctx));
     bot.on('callback_query', (ctx, next) => callbackHandler(ctx, next));

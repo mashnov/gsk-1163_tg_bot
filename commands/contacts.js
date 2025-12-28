@@ -2,7 +2,7 @@ const { getUserData } = require('../helpers/db');
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 
 const { userStatusList } = require('../const/db');
-const { backOption, closeOption, moduleNames } = require('../const/dictionary');
+const { closeOption, moduleNames, homeOption} = require('../const/dictionary');
 
 const moduleParam = {
     name: moduleNames.contact,
@@ -39,7 +39,11 @@ const initAction = async (ctx) => {
 
     await sendMessage(ctx, {
         text: messagesIsAllowed ? messageText + verifiedMessageText : messageText,
-        buttons: !isPrivateChat ? { ...closeOption } : { ...buttons, ...backOption },
+        buttons: {
+            ...(isPrivateChat ? buttons : {}),
+            ...(isPrivateChat ? homeOption : {}),
+            ...(!isPrivateChat ? closeOption : {}),
+        },
     });
     await removeMessage(ctx);
     await commandAnswer(ctx);

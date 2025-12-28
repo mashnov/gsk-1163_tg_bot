@@ -128,7 +128,6 @@ const callbackHandler = async (ctx, next) => {
     const [action, params, actionName, listIndex] = data.split(':');
 
     if (action === moduleParam.name && actionName === moduleParam.list) {
-        console.log({ listIndex });
         await profileListHandler(ctx, params, listIndex);
     }
 

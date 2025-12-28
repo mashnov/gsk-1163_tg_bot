@@ -3,7 +3,7 @@ const { getUserName } = require('../helpers/getters');
 const { getUserData } = require('../helpers/db');
 const { guard } = require('../helpers/guard');
 
-const { botUsername } = require('../const/env');
+const { botUsername, superUserId } = require('../const/env');
 const { moduleNames } = require('../const/dictionary');
 const { userStatusList } = require('../const/db');
 
@@ -17,6 +17,7 @@ const initAction = async (ctx) => {
     }
 
     const userData = await getUserData(ctx.from.id);
+    const isSuperAdmin = ctx.from.id === Number(superUserId);
     const isUnverified = userData?.userStatus === userStatusList.undefined || !userData?.userStatus;
     const isPending = userData?.userStatus === userStatusList.pending;
     const isBlocked = [userStatusList.blocked, userStatusList.restricted].includes(userData?.userStatus);
@@ -50,6 +51,9 @@ const initAction = async (ctx) => {
 
     if (isPrivateChat && isAdmin) {
         buttons[moduleNames.profiles] = '🪪 Управление пользователями';
+    }
+
+    if (isPrivateChat && isSuperAdmin) {
         buttons[moduleNames.backup] = '💾 Резервное копирование';
     }
 
