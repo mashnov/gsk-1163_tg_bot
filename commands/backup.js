@@ -12,7 +12,7 @@ const moduleParam = {
 };
 
 const startAction = async (ctx, { isCronAction }) => {
-    const isGuardPassed = await guard(ctx, { privateChat: true, superUser: true });
+    const isGuardPassed = isCronAction || await guard(ctx, { privateChat: true, superUser: true });
 
     if (!isGuardPassed) {
         await removeMessage(ctx);
@@ -20,11 +20,8 @@ const startAction = async (ctx, { isCronAction }) => {
         return;
     }
 
-    const messageText = '💾 Резервная копия готова!';
-
     await sendMessage(ctx, {
         accountId: superUserId,
-        text: messageText,
         buttons: isCronAction ? closeOption : homeOption,
         filePath: './state/db.json',
     });

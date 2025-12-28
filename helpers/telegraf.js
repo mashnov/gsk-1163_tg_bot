@@ -20,7 +20,7 @@ const preventBotBlock = async () => {
     await sleep(250);
 };
 
-const sendMessage = async (ctx, { accountId = ctx.chat.id, text, filePath, buttons = homeOption, attachment, silent }) => {
+const sendMessage = async (ctx, { accountId = ctx.chat.id, text = '', filePath, buttons = homeOption, attachment, silent }) => {
     await preventBotBlock();
     const messageButtons = getButtons(buttons);
     const params = {
