@@ -12,8 +12,9 @@ const moduleNames = {
     verification: 'verification',
     complaint: 'complaint',
     anonymous: 'anonymous',
-    unblock: 'unblock',
     backup: 'backup',
+    export: 'export',
+    unblock: 'unblock',
     weather: 'weather',
     horoscope: 'horoscope',
 };

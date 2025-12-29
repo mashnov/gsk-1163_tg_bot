@@ -12,6 +12,7 @@ const anonymousCommand = require('./commands/anonymous');
 const complaintCommand = require('./commands/complaint');
 const profilesCommand = require('./commands/profiles');
 const backupCommand = require('./commands/backup');
+const exportCommand = require('./commands/export');
 const verificationCommand = require('./commands/verification');
 const unblockCommand = require('./commands/unblock');
 const reactionsCommand = require('./commands/reactions');
@@ -33,6 +34,7 @@ const createBot = () => {
     complaintCommand(bot);
     profilesCommand(bot);
     backupCommand(bot);
+    exportCommand(bot);
     verificationCommand(bot);
     unblockCommand(bot);
     reactionsCommand(bot);

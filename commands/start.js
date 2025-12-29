@@ -51,6 +51,7 @@ const initAction = async (ctx) => {
 
     if (isPrivateChat && isAdmin) {
         buttons[moduleNames.profiles] = '🪪 Управление пользователями';
+        buttons[moduleNames.export] = '📤 Экспорт пользователей';
     }
 
     if (isPrivateChat && isSuperAdmin) {

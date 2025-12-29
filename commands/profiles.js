@@ -1,8 +1,7 @@
 const { getUserName, getUserNameLink, getFormattedDate } = require('../helpers/getters');
 const { getUserData, getUserIndex, getUserListByIndex } = require('../helpers/db');
-const { sendMessage, sendLocalFileMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
+const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { getPaginatedItems } = require('../helpers/array');
-const { getCsvFromBd } = require('../helpers/profiles');
 const { guard } = require('../helpers/guard');
 
 const { profilesPageCount } = require('../const/env');
@@ -13,12 +12,11 @@ const moduleParam = {
     name: moduleNames.profiles,
     verification: moduleNames.verification,
     list: 'list',
-    export: 'export',
     review: 'review',
 };
 
 const startAction = async (ctx) => {
-    const isGuardPassed = await guard(ctx, { privateChat: true, verify: true, admin: true });
+    const isGuardPassed = await guard(ctx, { privateChat: true, admin: true });
 
     if (!isGuardPassed) {
         await removeMessage(ctx);
@@ -37,7 +35,6 @@ const startAction = async (ctx) => {
         [`${moduleParam.name}:${userStatusList.pending}:${moduleParam.list}`]: '⚪️️ Ожидают проверки',
         [`${moduleParam.name}:${userStatusList.restricted}:${moduleParam.list}`]: '🟠 Ограниченные',
         [`${moduleParam.name}:${userStatusList.blocked}:${moduleParam.list}`]: '⛔ Заблокированные',
-        [`${moduleParam.name}:${moduleParam.export}`]: '📤 Экспорт',
     };
 
     const messageText =
@@ -126,16 +123,6 @@ const profileReviewHandler = async (ctx, accountId) => {
     await commandAnswer(ctx);
 };
 
-const profileExportHandler = async (ctx) => {
-    await sendLocalFileMessage(ctx, {
-        fileContent: await getCsvFromBd(),
-        buttons: homeOption,
-    });
-
-    await removeMessage(ctx);
-    await commandAnswer(ctx, 'Файл подготовлен');
-};
-
 const callbackHandler = async (ctx, next) => {
     const data = ctx.callbackQuery.data;
     const [action, params, actionName, listIndex] = data.split(':');
@@ -146,10 +133,6 @@ const callbackHandler = async (ctx, next) => {
 
     if (action === moduleParam.name && actionName === moduleParam.review) {
         await profileReviewHandler(ctx, params);
-    }
-
-    if (action === moduleParam.name && params === moduleParam.export) {
-        await profileExportHandler(ctx);
     }
 
     return next();
