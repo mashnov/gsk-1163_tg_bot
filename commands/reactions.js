@@ -20,15 +20,13 @@ const messageHandler = async (ctx, next) => {
     const userData = await getUserData(ctx.from.id);
     const isUnverified = userData?.userStatus === userStatusList.undefined || !userData?.userStatus;
 
-    if (!isUnverified) {
-        return next();
+    if (isUnverified) {
+        await setMessageReaction(ctx, {
+            chatId: ctx.chat.id,
+            messageId: ctx.message.message_id,
+            emoji: '👀',
+        });
     }
-
-    await setMessageReaction(ctx, {
-        chatId: ctx.chat.id,
-        messageId: ctx.message.message_id,
-        emoji: '👀',
-    });
 
     return next();
 };
