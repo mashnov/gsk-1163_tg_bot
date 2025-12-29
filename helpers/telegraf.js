@@ -45,10 +45,10 @@ const sendMessage = async (ctx, { accountId = ctx.chat.id, text = '', buttons = 
     }
 };
 
-const sendLocalFileMessage = async (ctx, { accountId, text, buttons, filePath, silent }) => {
+const sendLocalFileMessage = async (ctx, { accountId, text, buttons, filePath, fileContent, silent }) => {
     const attachment = {
         type: 'document',
-        fileId: Input.fromLocalFile(filePath),
+        fileId: fileContent ? Input.fromBuffer(Buffer.from(fileContent, "utf8"), "export.csv") : Input.fromLocalFile(filePath),
     };
     return await sendMessage(ctx, { accountId, text, buttons, attachment, silent });
 };

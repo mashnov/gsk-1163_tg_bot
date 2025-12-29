@@ -28,7 +28,7 @@ const startAction = async (ctx, { isCronAction }) => {
 
     if (!isCronAction) {
         await removeMessage(ctx);
-        await commandAnswer(ctx);
+        await commandAnswer(ctx, 'Файл подготовлен');
     }
 };
 
