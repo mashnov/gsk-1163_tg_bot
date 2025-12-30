@@ -16,7 +16,7 @@ const initAction = async (ctx) => {
         return;
     }
 
-    const userData = await getUserData(ctx.from.id);
+    const userData = await getUserData({ from: ctx.from });
     const isSuperAdmin = ctx.from.id === superUserId;
     const isUnverified = userData?.userStatus === userStatusList.undefined || !userData?.userStatus;
     const isPending = userData?.userStatus === userStatusList.pending;

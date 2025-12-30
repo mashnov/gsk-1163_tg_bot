@@ -38,7 +38,7 @@ const startAction = async (ctx) => {
         return;
     }
 
-    const userData = await getUserData(ctx.from.id);
+    const userData = await getUserData({ from: ctx.from });
     const isUnverified = userData?.userStatus === userStatusList.undefined || !userData?.userStatus;
     const isPending = userData?.userStatus === userStatusList.pending;
 
@@ -275,7 +275,7 @@ const sendResidentVerificationNotification = async (ctx, userStatus, accountId) 
 };
 
 const verificationHandler = async (ctx, userStatus, accountId) => {
-    const residentData = await getUserData(accountId);
+    const residentData = await getUserData({ id: accountId });
     await removeResidentVerificationStatus(ctx, userStatus, accountId, residentData);
     await setResidentVerificationStatus(ctx, userStatus, accountId);
     await sendAdminVerificationNotification(ctx, userStatus, accountId, residentData);

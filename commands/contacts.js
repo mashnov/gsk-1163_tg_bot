@@ -10,7 +10,7 @@ const moduleParam = {
 }
 
 const initAction = async (ctx) => {
-    const userData = await getUserData(ctx.from.id);
+    const userData = await getUserData({ from: ctx.from });
     const isResident = userData?.userStatus === userStatusList.resident;
     const isAdmin = [userStatusList.admin, userStatusList.accountant, userStatusList.chairman].includes(userData?.userStatus);
     const isPrivateChat = ctx.chat?.type === 'private';

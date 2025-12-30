@@ -17,6 +17,7 @@ const userStatusList = {
     pending: 'pending',
     restricted: 'restricted',
     blocked: 'blocked',
+    unverified: 'unverified',
     undefined: 'undefined'
 };
 
@@ -28,6 +29,7 @@ const userStatusText = {
     pending: 'Ожидает проверки',
     restricted: 'Ограничен',
     blocked: 'Заблокирован',
+    unverified: 'Не верифицирован',
     undefined: 'Не верифицирован',
 };
 

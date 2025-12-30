@@ -24,7 +24,7 @@ const startAction = async (ctx) => {
         return;
     }
 
-    const userData = await getUserData(ctx.from.id);
+    const userData = await getUserData({ from: ctx.from });
     const userStatus = userData?.userStatus;
 
     const buttons = {
@@ -32,6 +32,7 @@ const startAction = async (ctx) => {
         [`${moduleParam.name}:${userStatusList.accountant}:${moduleParam.list}`]: `🟡 ${ userStatusText.accountant }`,
         [`${moduleParam.name}:${userStatusList.admin}:${moduleParam.list}`]: `🟡 ${ userStatusText.admin }`,
         [`${moduleParam.name}:${userStatusList.resident}:${moduleParam.list}`]: `🟢 ${ userStatusText.resident }`,
+        [`${moduleParam.name}:${userStatusList.unverified}:${moduleParam.list}`]: `❔ ${ userStatusText.unverified }`,
         [`${moduleParam.name}:${userStatusList.pending}:${moduleParam.list}`]: '⚪️️ Ожидают проверки',
         [`${moduleParam.name}:${userStatusList.restricted}:${moduleParam.list}`]: '🟠 Ограниченные',
         [`${moduleParam.name}:${userStatusList.blocked}:${moduleParam.list}`]: '⛔ Заблокированные',
@@ -93,17 +94,19 @@ const profileListHandler = async (ctx, listType, listIndex = '0') => {
 };
 
 const profileReviewHandler = async (ctx, accountId) => {
-    const userData = await getUserData(accountId);
+    const userData = await getUserData({ id: accountId });
     const userLinkData = { id: accountId, first_name: userData.userName };
     const userLink = getUserNameLink(userLinkData);
 
     const messageText =
-        `Детали профиля ${userData.residentName}\n\n` +
+        `Детали профиля ${userData.residentName ?? '-'}\n\n` +
         `Телеграмм: ${ userLink }\n` +
-        `Номер телефона: ${userData.phoneNumber}\n` +
-        `Номер квартиры: ${userData.roomNumber}\n\n` +
+        `Номер телефона: ${userData.phoneNumber ?? '-'}\n` +
+        `Номер квартиры: ${userData.roomNumber ?? '-'}\n\n` +
         `Профиль зарегистрирован: ${ getFormattedDate(userData.createdAt) } \n` +
         `Профиль обновлен: ${ getFormattedDate(userData.updatedAt) }`;
+
+    const backButtonOption = { [moduleParam.name]: '⬅️ Назад', };
 
     const messageButtons = {
         [`${moduleParam.verification}:${userStatusList.chairman}:${accountId}`]: `🟡 ${userStatusText.chairman}`,
@@ -112,12 +115,14 @@ const profileReviewHandler = async (ctx, accountId) => {
         [`${moduleParam.verification}:${userStatusList.resident}:${accountId}`]: `🟢 ${userStatusText.resident}`,
         [`${moduleParam.verification}:${userStatusList.restricted}:${accountId}`]: '🟠 Ограничить',
         [`${moduleParam.verification}:${userStatusList.blocked}:${accountId}`]: '🔴 Заблокировать',
-        [moduleParam.name]: '⬅️ Назад',
+        ...backButtonOption,
     };
+
+    const isUnverified = userData?.userStatus === userStatusList.unverified;
 
     await sendMessage(ctx, {
         text: messageText,
-        buttons: messageButtons,
+        buttons: isUnverified ? messageButtons : backButtonOption,
     });
     await removeMessage(ctx);
     await commandAnswer(ctx);

@@ -17,7 +17,7 @@ const messageHandler = async (ctx, next) => {
         return next();
     }
 
-    const userData = await getUserData(ctx.from.id);
+    const userData = await getUserData({ from: ctx.from });
     const isUnverified = userData?.userStatus === userStatusList.undefined || !userData?.userStatus;
 
     if (isUnverified) {

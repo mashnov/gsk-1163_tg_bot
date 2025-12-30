@@ -21,7 +21,7 @@ const getCsvFromBd = async () => {
         const userIdList = await getUserIndex(listKey);
 
         for (const accountId of userIdList) {
-            const userData = await getUserData(accountId)
+            const userData = await getUserData({ id: accountId });
             acc.push({
                 room: userData.roomNumber,
                 name: userData.residentName,

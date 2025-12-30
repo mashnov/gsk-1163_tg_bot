@@ -51,7 +51,7 @@ const submitAction = async (ctx) => {
     await sendMessage(ctx, { text: senderText });
 
     const session = getSession(ctx.from.id);
-    const userData = await getUserData(ctx.from.id);
+    const userData = await getUserData({ from: ctx.from });
 
     const recipientHeader = '〽️ Новые показания\n\n';
     const recipientSender = `Отправитель: ${ getUserNameLink(ctx.from) }\n\n`;

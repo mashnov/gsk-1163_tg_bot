@@ -1,5 +1,7 @@
 const { db } = require('../state/db');
-const { emptyUser } = require('../const/db.js');
+const { emptyUser, userStatusList } = require('../const/db.js');
+
+const { getUserName } = require('../helpers/getters');
 
 const getDbData = async (id) => {
     if (!id) {
@@ -18,7 +20,7 @@ const setDbData = async (id, data) => {
 };
 
 // USER DATA
-const createUserData = async (accountId) => {
+const createUserData = async (accountId, userName) => {
     if (!accountId) {
         return;
     }
@@ -32,17 +34,22 @@ const createUserData = async (accountId) => {
     const createdAt = new Date().toISOString();
     const userData = {
         ...emptyUser,
+        userStatus: userStatusList.unverified,
         accountId: accountId,
         createdAt: createdAt,
         updatedAt: createdAt,
+        userName,
     };
 
     await setDbData(accountId, userData);
-    return await getUserData(accountId);
+    await setUserIndex(accountId, { userStatus: userStatusList.unverified });
+    return await getUserData({ id: accountId });
 };
 
-const getUserData = async (accountId) => {
-    return await createUserData(accountId);
+const getUserData = async ({ id, from }) => {
+    const accountId = from?.id ?? id;
+    const userName = getUserName(from || { id });
+    return await createUserData(accountId, userName);
 };
 
 const setUserData = async (accountId, patchData) => {
@@ -50,7 +57,7 @@ const setUserData = async (accountId, patchData) => {
         return;
     }
 
-    const originalData = { ...await getUserData(accountId) };
+    const originalData = { ...await getUserData({ id: accountId }) };
 
     const userData = {
         ...originalData,

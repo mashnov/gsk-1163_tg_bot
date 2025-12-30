@@ -53,7 +53,7 @@ const submitAction = async (ctx) => {
 
     const accountId = ctx.from.id;
     const session = getSession(accountId);
-    const userData = await getUserData(accountId);
+    const userData = await getUserData({ id: accountId });
 
     const recipientHeader = '🫥 Новый запрос разблокировки\n\n';
     const recipientSender = `Отправитель: ${ getUserNameLink(ctx.from) }\n\n`;
