@@ -39,7 +39,7 @@ const startAction = async (ctx) => {
     }
 
     const userData = await getUserData({ from: ctx.from });
-    const isUnverified = userData?.userStatus === userStatusList.undefined || !userData?.userStatus;
+    const isUnverified = userData?.userStatus === userStatusList.unverified || !userData?.userStatus;
     const isPending = userData?.userStatus === userStatusList.pending;
 
     const messageText =

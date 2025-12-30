@@ -21,7 +21,7 @@ const guard = async (ctx, { privateChat, publicChat, verify, admin, blocked, unB
     }
 
     const userData = await getUserData({ from: ctx.from });
-    const isUnverified = userData?.userStatus === userStatusList.undefined || !userData?.userStatus;
+    const isUnverified = userData?.userStatus === userStatusList.unverified || !userData?.userStatus;
     const isBlocked = [userStatusList.blocked, userStatusList.restricted].includes(userData?.userStatus);
     const isAdmin = [userStatusList.admin, userStatusList.accountant, userStatusList.chairman].includes(userData?.userStatus);
 

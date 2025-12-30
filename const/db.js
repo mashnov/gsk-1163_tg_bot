@@ -18,7 +18,6 @@ const userStatusList = {
     restricted: 'restricted',
     blocked: 'blocked',
     unverified: 'unverified',
-    undefined: 'undefined'
 };
 
 const userStatusText = {
@@ -30,7 +29,6 @@ const userStatusText = {
     restricted: 'Ограничен',
     blocked: 'Заблокирован',
     unverified: 'Не верифицирован',
-    undefined: 'Не верифицирован',
 };
 
 module.exports = {

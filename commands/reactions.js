@@ -18,7 +18,7 @@ const messageHandler = async (ctx, next) => {
     }
 
     const userData = await getUserData({ from: ctx.from });
-    const isUnverified = userData?.userStatus === userStatusList.undefined || !userData?.userStatus;
+    const isUnverified = userData?.userStatus === userStatusList.unverified || !userData?.userStatus;
 
     if (isUnverified) {
         await setMessageReaction(ctx, {
