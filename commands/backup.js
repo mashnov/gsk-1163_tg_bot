@@ -8,7 +8,7 @@ const { homeTimeZone, superUserId } = require('../const/env');
 
 const moduleParam = {
     name: moduleNames.backup,
-    sendTime: [0, 2, 6, 12, 16, 18, 19, 20, 21, 22, 23],
+    sendTime: [23],
 };
 
 const startAction = async (ctx, { isCronAction }) => {
