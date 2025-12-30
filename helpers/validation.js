@@ -8,7 +8,7 @@ const isValidMessage = (message) => {
 
 const isValidText = (text, { min = 0 }) => text.trim().split(/\s+/).length >= min;
 
-const isValidPhoneNumber = (text) => text.trim().length >= 7;
+const isValidPhoneNumber = (text) => [11,12].includes(text.trim().length);
 
 const isValidNumber = (text, { min = -Infinity, max = Infinity }, isInteger = false) => {
     const mappedString = ['-'].includes(text) ? '0' : getNormalizeNumber(text);
