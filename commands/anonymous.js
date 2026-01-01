@@ -57,7 +57,6 @@ const submitAction = async (ctx) => {
     const recipientText = `Сообщение: ${ session.message }`;
     const recipientMessage = `${recipientHeader}${recipientSender}${recipientText}`;
 
-
     const chairmanIdList = getArrayFallback(await getUserIndex(userStatusList.chairman), [superUserId]);
     const accountantIdList = getArrayFallback(await getUserIndex(userStatusList.accountant), chairmanIdList);
     const adminIdList = getArrayFallback(await getUserIndex(userStatusList.admin), accountantIdList);

@@ -13,7 +13,7 @@ const getCsvFile = (rowList) => {
 };
 
 const getCsvFromBd = async () => {
-    const userList = Object.keys(userStatusList);
+    const userList = Object.keys(userStatusList).filter(status => status !== userStatusList.unverified);
 
     const rowList = await userList.reduce(async (accPromise, listKey) => {
         const acc = await accPromise;
