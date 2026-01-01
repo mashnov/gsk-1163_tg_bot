@@ -18,7 +18,7 @@ const getSummaryMessage = (template, values) => {
 
 const getUserName = (data) => {
     const { username, first_name, last_name, id } = data;
-    const profileName = `${ first_name || '' } ${ last_name || '' }`;
+    const profileName = (`${first_name || ''} ${last_name || ''}`).trim();
 
     if (first_name || last_name) {
         return profileName;
@@ -31,18 +31,18 @@ const getUserName = (data) => {
 
 const getUserNameLink = (data) => {
     const { username, first_name, last_name, id } = data;
-    const profileName = `${ first_name || ''} ${ last_name || '' }`;
+    const profileName = (`${first_name || ''} ${last_name || '' }`).trim();
     const usernameHref = `https://t.me/${username}`;
     const accountIdHref = `tg://user?id=${id}`;
 
     if (username && (first_name || last_name)) {
-        return `<a href="${ usernameHref }">${ profileName }</a>`;
+        return `<a href="${usernameHref}">${profileName}</a>`;
     } else if (username) {
-        return `<a href="${ usernameHref }">${ username }</a>`;
+        return `<a href="${usernameHref}">${username}</a>`;
     } else if (first_name || last_name) {
-        return `<a href="${ accountIdHref }">${ profileName }</a>`;
+        return `<a href="${accountIdHref}">${profileName}</a>`;
     } else if (id) {
-        return `<a href="${ accountIdHref }">${ id }</a>`;
+        return `<a href="${accountIdHref}">${id}</a>`;
     }
 
     return 'неизвестно';

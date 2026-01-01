@@ -29,20 +29,20 @@ const startAction = async (ctx) => {
     const userStatus = userData?.userStatus;
 
     const buttons = {
-        [`${moduleParam.name}:${userStatusList.chairman}:${moduleParam.list}`]: `🟡 ${ userStatusText.chairman }`,
-        [`${moduleParam.name}:${userStatusList.accountant}:${moduleParam.list}`]: `🟡 ${ userStatusText.accountant }`,
-        [`${moduleParam.name}:${userStatusList.admin}:${moduleParam.list}`]: `🟡 ${ userStatusText.admin }`,
-        [`${moduleParam.name}:${userStatusList.resident}:${moduleParam.list}`]: `🟢 ${ userStatusText.resident }`,
+        [`${moduleParam.name}:${userStatusList.chairman}:${moduleParam.list}`]: `🟡 ${userStatusText.chairman}`,
+        [`${moduleParam.name}:${userStatusList.accountant}:${moduleParam.list}`]: `🟡 ${userStatusText.accountant}`,
+        [`${moduleParam.name}:${userStatusList.admin}:${moduleParam.list}`]: `🟡 ${userStatusText.admin}`,
+        [`${moduleParam.name}:${userStatusList.resident}:${moduleParam.list}`]: `🟢 ${userStatusText.resident}`,
         [`${moduleParam.name}:${userStatusList.pending}:${moduleParam.list}`]: '⚪️️ Ожидают проверки',
         [`${moduleParam.name}:${userStatusList.restricted}:${moduleParam.list}`]: '🟠 Ограниченные',
         [`${moduleParam.name}:${userStatusList.blocked}:${moduleParam.list}`]: '⛔ Заблокированные',
-        [`${moduleParam.name}:${userStatusList.unverified}:${moduleParam.list}`]: `❔ ${ userStatusText.unverified }`,
+        [`${moduleParam.name}:${userStatusList.unverified}:${moduleParam.list}`]: `❔ ${userStatusText.unverified}`,
     };
 
     const messageText =
         `🪪 Администрирование \n\n` +
-        `Имя профиля: ${ getUserName(ctx.from) }\n` +
-        `Статус: ${ userStatusText[userStatus] }`;
+        `Имя профиля: ${getUserName(ctx.from)}\n` +
+        `Статус: ${userStatusText[userStatus]}`;
 
     await sendMessage(ctx, {
         text: messageText,
@@ -64,7 +64,7 @@ const profileListHandler = async (ctx, listType, listIndex = '0') => {
 
     const messageText =
         `🪪 Администрирование` +
-        `\n\nСтатус: ${ userStatusText[listType] }` +
+        `\n\nСтатус: ${userStatusText[listType]}` +
         `\nКоличество профилей: ${mappedProfileList.length}`;
 
     const buttons = {};
@@ -103,11 +103,11 @@ const profileReviewHandler = async (ctx, accountId) => {
 
     const messageText =
         `Детали профиля ${userData.residentName ?? '-'}\n\n` +
-        `Телеграмм: ${ userLink }\n` +
+        `Телеграмм: ${userLink}\n` +
         `Номер телефона: ${userData.phoneNumber ?? '-'}\n` +
         `Номер квартиры: ${userData.roomNumber ?? '-'}\n\n` +
-        `Профиль зарегистрирован: ${ getFormattedDate(userData.createdAt) } \n` +
-        `Профиль обновлен: ${ getFormattedDate(userData.updatedAt) }`;
+        `Профиль зарегистрирован: ${getFormattedDate(userData.createdAt)} \n` +
+        `Профиль обновлен: ${getFormattedDate(userData.updatedAt)}`;
 
     const isUnverified = userData?.userStatus === userStatusList.unverified;
 

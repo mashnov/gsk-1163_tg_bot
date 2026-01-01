@@ -5,9 +5,9 @@ const { horoscopeApi } = require('../const/env');
 const parseXml = async (xmlData) => {
     const parser = new XMLParser({
         ignoreAttributes: false,
-        attributeNamePrefix: "@_",
-        cdataPropName: "#cdata",
-        textNodeName: "#text",
+        attributeNamePrefix: '@_',
+        cdataPropName: '#cdata',
+        textNodeName: '#text',
     });
 
     return parser.parse(xmlData);

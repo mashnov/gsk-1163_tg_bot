@@ -1,9 +1,9 @@
 const { getKeyboard } = require('../helpers/getters');
 const { removeMessage, commandAnswer} = require('../helpers/telegraf');
+const {guard} = require('../helpers/guard');
 
 const { messageParams } = require('../const/dictionary');
 const { botUsername } = require('../const/env');
-const {guard} = require("../helpers/guard");
 
 const moduleParam = {
     keywords: ['домовенок', 'Домовенок', 'бот', 'Бот'],

@@ -2,7 +2,7 @@ const { getCsvFromBd } = require('../helpers/export');
 const { sendLocalFileMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { guard } = require('../helpers/guard');
 
-const {homeOption, moduleNames} = require("../const/dictionary");
+const { homeOption, moduleNames } = require('../const/dictionary');
 
 const moduleParam = {
     name: moduleNames.export,

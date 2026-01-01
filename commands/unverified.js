@@ -22,7 +22,7 @@ const messageHandler = async (ctx, next) => {
         return next();
     }
 
-    if ((ctx.message?.text ?? ctx.message?.caption ?? "").startsWith('/')) {
+    if ((ctx.message?.text ?? ctx.message?.caption ?? '').startsWith('/')) {
         return next();
     }
 

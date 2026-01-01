@@ -44,10 +44,10 @@ const startAction = async (ctx) => {
 
     const messageText =
         `🪪 Верификация\n\n` +
-        `Ваш статус: ${ userStatusText[userData?.userStatus] }`;
+        `Ваш статус: ${userStatusText[userData?.userStatus]}`;
 
-    const userCreatedText = `\n\nДата регистрации профиля: ${ getFormattedDate(userData?.createdAt) }`;
-    const userUpdateText = `\nПоследнее обновление профиля: ${ getFormattedDate(userData?.updatedAt) }`;
+    const userCreatedText = `\n\nДата регистрации профиля: ${getFormattedDate(userData?.createdAt)}`;
+    const userUpdateText = `\nПоследнее обновление профиля: ${getFormattedDate(userData?.updatedAt)}`;
 
     const buttons = {};
 
@@ -97,10 +97,10 @@ const sendAdminVerificationRequest = async (ctx, session) => {
     const accountId = ctx.from.id;
 
     const recipientHeader = '🪪 Новый запрос авторизации\n\n';
-    const recipientResidentText = `Отправитель: ${ getUserNameLink(ctx.from) }\n`;
-    const recipientOwnerText = `Собственник по документам: ${ getRoomOwner(session.room) }\n\n`;
+    const recipientResidentText = `Отправитель: ${getUserNameLink(ctx.from)}\n`;
+    const recipientOwnerText = `Собственник по документам: ${getRoomOwner(session.room)}\n\n`;
     const recipientText = getSummaryMessage(stepList[session.stepIndex]?.summary, session);
-    const recipientMessage = `${ recipientHeader }${ recipientResidentText }${ recipientOwnerText }${ recipientText }`;
+    const recipientMessage = `${recipientHeader}${recipientResidentText}${recipientOwnerText}${recipientText}`;
 
     const chairmanIdList = getArrayFallback(await getUserIndex(userStatusList.chairman), [superUserId]);
     const accountantIdList = getArrayFallback(await getUserIndex(userStatusList.accountant), chairmanIdList);

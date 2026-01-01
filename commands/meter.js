@@ -54,9 +54,9 @@ const submitAction = async (ctx) => {
     const userData = await getUserData({ from: ctx.from });
 
     const recipientHeader = '〽️ Новые показания\n\n';
-    const recipientSender = `Отправитель: ${ getUserNameLink(ctx.from) }\n\n`;
-    const recipientResidentText = `Имя отправителя: ${ userData?.residentName }\n`;
-    const recipientPhoneText = `Номер телефона: ${ userData?.phoneNumber }\n`;
+    const recipientSender = `Отправитель: ${getUserNameLink(ctx.from)}\n\n`;
+    const recipientResidentText = `Имя отправителя: ${userData?.residentName}\n`;
+    const recipientPhoneText = `Номер телефона: ${userData?.phoneNumber}\n`;
     const recipientText = getSummaryMessage(stepList[session.stepIndex]?.summary, session);
     const recipientMessage = `${recipientHeader}${recipientSender}${recipientResidentText}${recipientPhoneText}${recipientText}`;
 

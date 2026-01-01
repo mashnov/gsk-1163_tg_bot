@@ -56,10 +56,10 @@ const submitAction = async (ctx) => {
     const userData = await getUserData({ id: accountId });
 
     const recipientHeader = '🫥 Новый запрос разблокировки\n\n';
-    const recipientSender = `Отправитель: ${ getUserNameLink(ctx.from) }\n\n`;
-    const recipientRoomNumber = `Номер квартиры в БД: ${ userData?.roomNumber }\n`;
-    const recipientProfileName = `Имя отправителя в БД: ${ userData?.residentName }\n`;
-    const recipientPhoneNumber = `Номер телефона в БД: ${ userData?.phoneNumber }\n\n`;
+    const recipientSender = `Отправитель: ${getUserNameLink(ctx.from)}\n\n`;
+    const recipientRoomNumber = `Номер квартиры в БД: ${userData?.roomNumber}\n`;
+    const recipientProfileName = `Имя отправителя в БД: ${userData?.residentName}\n`;
+    const recipientPhoneNumber = `Номер телефона в БД: ${userData?.phoneNumber}\n\n`;
     const recipientText = getSummaryMessage(stepList[session.stepIndex]?.summary, session);
     const recipientMessage = `${recipientHeader}${recipientSender}${recipientProfileName}${recipientPhoneNumber}${recipientRoomNumber}${recipientText}`;
 

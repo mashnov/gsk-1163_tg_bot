@@ -59,8 +59,8 @@ const submitAction = async (ctx) => {
     const authorUserLink = getUserNameLink(authorAccount);
 
     const recipientHeader = '‼️ Новая жалоба на сообщение\n\n';
-    const recipientSender = `Отправитель: ${ senderUserLink }\n`;
-    const recipientAuthor = `Автор: ${ authorUserLink }\n\n`;
+    const recipientSender = `Отправитель: ${senderUserLink}\n`;
+    const recipientAuthor = `Автор: ${authorUserLink}\n\n`;
     const recipientText = `Текст сообщения: ${session.messageOrigin.text}`;
     const recipientMessage = `${recipientHeader}${recipientSender}${recipientAuthor}${recipientText}`;
 

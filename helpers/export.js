@@ -8,7 +8,7 @@ const getCsvFile = (rowList) => {
     return stringify(rowList, {
         header: true,
         bom: true,
-        delimiter: ";",
+        delimiter: ';',
     });
 };
 

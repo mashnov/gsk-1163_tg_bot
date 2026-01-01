@@ -53,8 +53,8 @@ const submitAction = async (ctx) => {
     const session = getSession(ctx.from.id);
 
     const recipientHeader = '🎭 Новое анонимное сообщение\n\n';
-    const recipientSender = `Отправитель: ${ getUserNameLink(ctx.from) }\n\n`;
-    const recipientText = `Сообщение: ${ session.message }`;
+    const recipientSender = `Отправитель: ${getUserNameLink(ctx.from)}\n\n`;
+    const recipientText = `Сообщение: ${session.message}`;
     const recipientMessage = `${recipientHeader}${recipientSender}${recipientText}`;
 
     const chairmanIdList = getArrayFallback(await getUserIndex(userStatusList.chairman), [superUserId]);
