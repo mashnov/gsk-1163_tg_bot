@@ -38,7 +38,7 @@ const cronAction = (bot) => {
         async () => startAction(bot, { isCronAction: true }),
         { timezone: homeTimeZone },
     );
-}
+};
 
 module.exports = (bot) => {
     cronAction(bot);

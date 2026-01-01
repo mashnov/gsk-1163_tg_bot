@@ -27,7 +27,6 @@ const initAction = async (ctx) => {
 
     const buttons = {
         [moduleNames.rules]: '📚 Правила',
-        [moduleNames.contact]: '📖 Контакты',
     };
 
     if (isPrivateChat && (isUnverified || isPending)) {
@@ -38,12 +37,10 @@ const initAction = async (ctx) => {
         buttons[moduleNames.unblock] = '🫥 Разблокировка';
     }
 
-    if (!isBlocked && !isPending) {
+    if (isPrivateChat && (isResident || isAdmin)) {
+        buttons[moduleNames.contact] = '📖 Контакты';
         buttons[moduleNames.weather] = '🌤️ Прогноз погоды';
         buttons[moduleNames.horoscope] = '💫 Личный Гороскоп';
-    }
-
-    if (isPrivateChat && (isResident || isAdmin)) {
         buttons[moduleNames.meter] = '〽️ Показания счетчиков';
         buttons[moduleNames.anonymous] = '🎭 Анонимное сообщение';
         buttons[moduleNames.complaint] = '‼️ Пожаловаться на сообщение';
