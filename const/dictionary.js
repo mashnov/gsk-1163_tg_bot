@@ -15,6 +15,7 @@ const moduleNames = {
     backup: 'backup',
     export: 'export',
     unblock: 'unblock',
+    unverified: 'unverified',
     weather: 'weather',
     horoscope: 'horoscope',
 };
