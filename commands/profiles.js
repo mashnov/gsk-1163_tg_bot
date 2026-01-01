@@ -10,6 +10,7 @@ const { homeOption, moduleNames } = require('../const/dictionary');
 
 const moduleParam = {
     name: moduleNames.profiles,
+    unverified: moduleNames.unverified,
     verification: moduleNames.verification,
     list: 'list',
     review: 'review',
@@ -113,6 +114,7 @@ const profileReviewHandler = async (ctx, accountId) => {
     const backButtonOption = { [moduleParam.name]: '⬅️ Назад', };
 
     const unverifiedOptions = {
+        [`${moduleParam.unverified}:notification:${accountId}`]: '🪪 Запросить авторизацию',
         [`${moduleParam.verification}:${userStatusList.blocked}:${accountId}`]: '🔴 Заблокировать',
         ...backButtonOption,
     };
