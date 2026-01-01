@@ -15,7 +15,7 @@ const backupCommand = require('./commands/backup');
 const exportCommand = require('./commands/export');
 const verificationCommand = require('./commands/verification');
 const unblockCommand = require('./commands/unblock');
-const reactionsCommand = require('./commands/reactions');
+const unverifiedCommand = require('./commands/unverified');
 
 const { botToken } = require('./const/env');
 
@@ -37,7 +37,7 @@ const createBot = () => {
     exportCommand(bot);
     verificationCommand(bot);
     unblockCommand(bot);
-    reactionsCommand(bot);
+    unverifiedCommand(bot);
 
     return bot;
 }
