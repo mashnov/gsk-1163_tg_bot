@@ -70,9 +70,12 @@ const profileListHandler = async (ctx, listType, listIndex = '0') => {
     const buttons = {};
 
     for (const userData of paginatedList) {
-        const value = `${moduleParam.name}:${userData.accountId}:${moduleParam.review}`;
-        const isUnverified = listType === userStatusList.unverified;
-        buttons[value] = isUnverified ? `${userData.accountId}` : `КВ ${userData.roomNumber} - ${userData.residentName}`;
+        const { accountId, userName, roomNumber, residentName } = userData;
+
+        const value = `${moduleParam.name}:${accountId}:${moduleParam.review}`;
+        const name = residentName ?? userName ?? accountId;
+
+        buttons[value] = roomNumber ? `КВ ${roomNumber} - ${name}` : name;
     }
 
     if (Number(listIndex) !== 0) {
