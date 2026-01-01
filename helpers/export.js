@@ -13,7 +13,7 @@ const getCsvFile = (rowList) => {
 };
 
 const getCsvFromBd = async () => {
-    const userList = Object.keys(userStatusList).filter(status => status !== userStatusList.unverified);
+    const userList = Object.keys(userStatusList);
 
     const rowList = await userList.reduce(async (accPromise, listKey) => {
         const acc = await accPromise;
@@ -22,12 +22,15 @@ const getCsvFromBd = async () => {
 
         for (const accountId of userIdList) {
             const userData = await getUserData({ id: accountId });
-            acc.push({
-                room: userData.roomNumber,
-                name: userData.residentName,
-                phone: userData.phoneNumber,
-                role,
-            });
+
+            if (userData.roomNumber) {
+                acc.push({
+                    room: userData.roomNumber,
+                    name: userData.residentName,
+                    phone: userData.phoneNumber,
+                    role,
+                });
+            }
         }
 
         return acc;
