@@ -11,7 +11,7 @@ const horoscopeTitleMapper = {
     capricorn: '♑ Козерог',
     aquarius: '♒ Водолей',
     pisces: '♓ Рыбы',
-}
+};
 
 module.exports = {
     horoscopeTitleMapper,

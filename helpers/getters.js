@@ -87,7 +87,7 @@ const getNormalizeNumber = (text) => {
 };
 
 const getFormattedDate = (string) => {
-    const date = new Date(string);
+    const date = new Date(string || new Date);
     const options = {
         year: 'numeric',
         month: '2-digit',
@@ -96,6 +96,15 @@ const getFormattedDate = (string) => {
         minute: '2-digit',
     };
     return date.toLocaleString('ru-RU', options);
+};
+
+const getFormattedAmount = (value) => {
+    return new Intl.NumberFormat("ru-RU", {
+        style: "currency",
+        currency: "RUB",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(value);
 };
 
 const getRoomOwner = (room) => {
@@ -113,5 +122,6 @@ module.exports = {
     getMessageText,
     getNormalizeNumber,
     getFormattedDate,
+    getFormattedAmount,
     getRoomOwner,
 };

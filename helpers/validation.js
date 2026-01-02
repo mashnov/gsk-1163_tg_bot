@@ -10,6 +10,11 @@ const isValidText = (text, { min = 0 }) => text.trim().split(/\s+/).length >= mi
 
 const isValidPhoneNumber = (text) => [11,12].includes(text.trim().length);
 
+const isValidDocument = (message, { extension }) => {
+    const document = message?.document;
+    return document?.file_name?.endsWith(extension);
+};
+
 const isValidNumber = (text, { min = -Infinity, max = Infinity }, isInteger = false) => {
     const mappedString = ['-'].includes(text) ? '0' : getNormalizeNumber(text);
     const number = Number(mappedString);
@@ -37,6 +42,8 @@ const validateMessage = (message, stepValidation) => {
             return isValidNumber(text, stepValidation);
         case 'phone':
             return isValidPhoneNumber(text);
+        case 'document':
+            return isValidDocument(message, stepValidation);
         case 'forward':
             return isValidForwardMessage(message);
         default:

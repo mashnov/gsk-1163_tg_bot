@@ -147,7 +147,6 @@ const submitAction = async (ctx) => {
     await commandAnswer(ctx, 'Запрос успешно отправлен!');
 };
 
-
 const removeAdminVerificationMessages = async (ctx, accountId) => {
     const verificationMessages = await getVerificationIndexItem(accountId);
 

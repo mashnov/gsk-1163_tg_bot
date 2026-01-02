@@ -7,7 +7,7 @@ const emptyUser = {
     userStatus: undefined,
     createdAt: undefined,
     updatedAt: undefined,
-}
+};
 
 const userStatusList = {
     chairman: 'chairman',

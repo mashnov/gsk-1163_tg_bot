@@ -65,11 +65,16 @@ function startStepper({ actionName, stepList, cancelActions = homeOption, submit
         const validationRules = stepList[session.stepIndex]?.validation;
         const isMessageStep = validationRules.dataType === 'message';
         const isForwardStep = validationRules.dataType === 'forward';
+        const isDocumentStep = validationRules.dataType === 'document';
         const stepIsValid = validateMessage(ctx.message, validationRules);
 
         if (stepIsValid && isMessageStep) {
             session.attachment = getMessageAttachment(ctx.message);
             session.messageOrigin = ctx.message;
+        }
+
+        if (stepIsValid && isDocumentStep) {
+            session.document = ctx.message?.document
         }
 
         if (stepIsValid && isForwardStep) {

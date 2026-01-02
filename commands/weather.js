@@ -33,18 +33,16 @@ const getWeatherMessage = async (ctx, { needRemove, needButtons, isCronAction })
     const windSpeed = windUnitTransformer(currentWeather?.wind_speed_10m);
 
     let messageText =
-        'Сейчас' +
         `\n${currentWeatherCode.icon} ${currentWeatherCode.text}` +
         `\n🌡 Температура воздуха: ${currentWeather?.temperature_2m ?? '-'} °С` +
         `\n💧 Влажность воздуха: ${currentWeather?.relative_humidity_2m ?? '-'} %` +
         `\n☁️ Облачность: ${currentWeather?.cloud_cover ?? '-'} %` +
         `\n💨 Скорость ветра: ${windSpeed ?? '-'} м/с` +
-        '\n\nБлижайший час:' +
         `\n☔️ Количество осадков: ${hourlyWeather?.precipitation?.[0] ?? '-'} мм` +
         `\n🌂 Вероятность осадков: ${hourlyWeather?.precipitation_probability?.[0] ?? '-'} %`;
 
     if (!isPrivateChat) {
-        messageText += '\n\nПрогноз публикуется автоматически в 08:00, 14:00 и 20:00 ежедневно';
+        messageText += '\n\n<blockquote>Прогноз публикуется автоматически в 08:00, 14:00 и 20:00 ежедневно</blockquote>';
     }
 
     await sendMessage(ctx, {

@@ -1,6 +1,6 @@
 const { Input } = require('telegraf');
 
-const { getButtons } = require('../helpers/getters');
+const { getButtons, getFormattedDate } = require('../helpers/getters');
 const { sleep } = require('../helpers/sleep');
 
 const { homeOption, messageParams } = require('../const/dictionary');
@@ -12,7 +12,12 @@ const commandAnswer = async (ctx, messageText = '') => {
     try {
         await ctx.answerCbQuery(messageText);
     } catch (error) {
-        console.error(error.message);
+        console.error({
+            method: 'commandAnswer',
+            date: getFormattedDate(),
+            text: messageText,
+            error: error.message,
+        });
     }
 };
 
@@ -41,7 +46,12 @@ const sendMessage = async (ctx, { accountId = ctx.chat.id, text = '', buttons = 
         const message = await ctx.telegram[methods[attachment?.type]](accountId, attachment?.fileId || text, params);
         return message.message_id;
     } catch (error) {
-        console.error(error.message);
+        console.error({
+            method: 'sendMessage',
+            date: getFormattedDate(),
+            text: text,
+            error: error.message,
+        });
     }
 };
 
@@ -58,7 +68,12 @@ const setMessageReaction = async (ctx, { chatId, messageId, emoji = '👀' } = {
     try {
         return await ctx.telegram.setMessageReaction(chatId, messageId, [{ type: 'emoji', emoji }]);
     } catch (error) {
-        console.error(error.message);
+        console.error({
+            method: 'setMessageReaction',
+            date: getFormattedDate(),
+            text: emoji,
+            error: error.message,
+        });
     }
 };
 
@@ -71,7 +86,23 @@ const removeMessage = async (ctx, { chatId, messageId } = {}) => {
             return await ctx.deleteMessage(messageId);
         }
     } catch (error) {
-        console.error(error.message);
+        console.error({
+            method: 'removeMessage',
+            date: getFormattedDate(),
+            error: error.message,
+        });
+    }
+};
+
+const getFile = async (ctx, fileId) => {
+    try {
+        return await ctx.telegram.getFile(fileId);
+    } catch (error) {
+        console.error({
+            method: 'getFile',
+            date: getFormattedDate(),
+            error: error.message,
+        });
     }
 };
 
@@ -83,7 +114,12 @@ const makeAdmin = async (ctx, { chatId, userId } = {}) => {
             can_pin_messages: true,
         })
     } catch (error) {
-        console.error(error.message);
+        console.error({
+            method: 'makeAdmin',
+            date: getFormattedDate(),
+            userId,
+            error: error.message,
+        });
     }
 };
 
@@ -95,7 +131,12 @@ const demoteUser = async (ctx, { chatId, userId } = {}) => {
             can_pin_messages: false,
         });
     } catch (error) {
-        console.error(error.message);
+        console.error({
+            method: 'demoteUser',
+            date: getFormattedDate(),
+            userId,
+            error: error.message,
+        });
     }
 };
 
@@ -112,7 +153,12 @@ const restrictUser = async (ctx, { chatId, userId } = {}) => {
             },
         });
     } catch (error) {
-        console.error(error.message);
+        console.error({
+            method: 'restrictUser',
+            date: getFormattedDate(),
+            userId,
+            error: error.message,
+        });
     }
 };
 
@@ -129,7 +175,12 @@ const unRestrictUser = async (ctx, { chatId, userId } = {}) => {
             }
         });
     } catch (error) {
-        console.error(error.message);
+        console.error({
+            method: 'unRestrictUser',
+            date: getFormattedDate(),
+            userId,
+            error: error.message,
+        });
     }
 };
 
@@ -137,7 +188,12 @@ const banUserById = async (ctx, { chatId, userId } = {}) => {
     try {
         await ctx.telegram.banChatMember(chatId, userId)
     } catch (error) {
-        console.error(error.message);
+        console.error({
+            method: 'banUserById',
+            date: getFormattedDate(),
+            userId,
+            error: error.message,
+        });
     }
 };
 
@@ -145,7 +201,12 @@ const unBanUserById = async (ctx, { chatId, userId } = {}) => {
     try {
         await ctx.telegram.unbanChatMember(chatId, userId)
     } catch (error) {
-        console.error(error.message);
+        console.error({
+            method: 'unBanUserById',
+            date: getFormattedDate(),
+            userId,
+            error: error.message,
+        });
     }
 };
 
@@ -155,6 +216,7 @@ module.exports = {
     sendLocalFileMessage,
     setMessageReaction,
     removeMessage,
+    getFile,
     makeAdmin,
     demoteUser,
     restrictUser,

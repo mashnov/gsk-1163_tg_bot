@@ -10,6 +10,12 @@ const homeLongitude = process.env.HOME_WEATHER_LON;
 const weatherApi = process.env.HOME_WEATHER_API;
 const horoscopeApi = process.env.HOROSCOPE_API;
 const profilesPageCount = Number(process.env.PROFILES_PAGE_COUNT);
+const debtorsTotalRow = Number(process.env.DEBTORS_TOTAL_ROW);
+const debtorsTotalCell = Number(process.env.DEBTORS_TOTAL_CELL);
+const debtorsRoomNumberStartRow = Number(process.env.DEBTORS_ROOM_NUMBER_START_ROW);
+const debtorsRoomNumberCell = Number(process.env.DEBTORS_ROOM_NUMBER_CELL);
+const debtorsAmountCell = Number(process.env.DEBTORS_AMOUNT_CELL);
+const debtorsAmountMin = Number(process.env.DEBTORS_AMOUNT_MIN);
 
 module.exports = {
     botToken,
@@ -22,4 +28,10 @@ module.exports = {
     profilesPageCount,
     weatherApi,
     horoscopeApi,
+    debtorsTotalRow,
+    debtorsTotalCell,
+    debtorsRoomNumberStartRow,
+    debtorsRoomNumberCell,
+    debtorsAmountCell,
+    debtorsAmountMin,
 };
