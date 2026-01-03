@@ -49,7 +49,8 @@ const sendMessage = async (ctx, { accountId = ctx.chat.id, text = '', buttons = 
         console.error({
             method: 'sendMessage',
             date: getFormattedDate(),
-            text: text,
+            text,
+            accountId,
             error: error.message,
         });
     }
