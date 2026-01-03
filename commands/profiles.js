@@ -72,7 +72,7 @@ const profileListHandler = async (ctx, listType, listIndex = '0') => {
     for (const userData of paginatedList) {
         const { accountId, userName, roomNumber, residentName } = userData;
 
-        const value = `${moduleParam.name}:${accountId}:${moduleParam.review}`;
+        const value = `${moduleParam.name}:${accountId}:${moduleParam.review}:${listType}_${listIndex}`;
         const name = residentName ?? userName ?? accountId;
 
         buttons[value] = roomNumber ? `КВ ${roomNumber} - ${name}` : name;
@@ -99,7 +99,7 @@ const profileListHandler = async (ctx, listType, listIndex = '0') => {
     await commandAnswer(ctx);
 };
 
-const profileReviewHandler = async (ctx, accountId) => {
+const profileReviewHandler = async (ctx, accountId, backParams) => {
     const userData = await getUserData({ id: accountId });
     const userLinkData = { id: accountId, first_name: userData.userName };
     const userLink = getUserNameLink(userLinkData);
@@ -114,7 +114,9 @@ const profileReviewHandler = async (ctx, accountId) => {
 
     const isUnverified = userData?.userStatus === userStatusList.unverified;
 
-    const backButtonOption = { [moduleParam.name]: '⬅️ Назад', };
+    const backButtonOption = {
+        [`${moduleParam.name}:${backParams.split('_')[0]}:${moduleParam.list}:${backParams.split('_')[1]}`]: '⬅️ Назад'
+    };
 
     const unverifiedOptions = {
         [`${moduleParam.unverified}:notification:${accountId}`]: '🪪 Запросить авторизацию',
@@ -149,7 +151,7 @@ const callbackHandler = async (ctx, next) => {
     }
 
     if (action === moduleParam.name && actionName === moduleParam.review) {
-        await profileReviewHandler(ctx, params);
+        await profileReviewHandler(ctx, params, listIndex);
     }
 
     return next();
