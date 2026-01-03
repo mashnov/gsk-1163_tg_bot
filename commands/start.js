@@ -41,6 +41,7 @@ const initAction = async (ctx) => {
         buttons[moduleNames.contact] = '📖 Контакты';
         buttons[moduleNames.weather] = '🌤️ Прогноз погоды';
         buttons[moduleNames.horoscope] = '💫 Личный Гороскоп';
+        buttons[moduleNames.debtors] = '🏦 Список должников';
         buttons[moduleNames.meter] = '〽️ Показания счетчиков';
         buttons[moduleNames.messages] = '💬 Написать сообщение';
         buttons[moduleNames.anonymous] = '🎭 Анонимное сообщение';
@@ -50,7 +51,6 @@ const initAction = async (ctx) => {
     if (isPrivateChat && isAdmin) {
         buttons[moduleNames.profiles] = '🪪 Управление пользователями';
         buttons[moduleNames.export] = '📤 Экспорт пользователей';
-        buttons[moduleNames.debtors] = '🏦 Список должников';
     }
 
     if (isPrivateChat && isSuperAdmin) {
