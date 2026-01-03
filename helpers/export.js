@@ -4,11 +4,12 @@ const { getUserIndex, getUserData } = require('../helpers/db');
 
 const { userStatusList, userStatusText } = require('../const/db');
 
-const getCsvFile = (rowList) => {
+const getCsvFile = (rowList, columns) => {
     return stringify(rowList, {
         header: true,
         bom: true,
         delimiter: ';',
+        columns,
     });
 };
 
@@ -38,7 +39,14 @@ const getCsvFromBd = async () => {
 
     const sortedList = rowList.sort((a, b) => Number(a.room) - Number(b.room));
 
-    return getCsvFile(sortedList);
+    const headers = {
+        room: 'Квартира',
+        name: 'ФИО',
+        phone: 'Телефон',
+        role: 'Статус',
+    };
+
+    return getCsvFile(sortedList, headers);
 };
 
 module.exports = {
