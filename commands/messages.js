@@ -21,6 +21,7 @@ let stepper = undefined;
 const initStepper = async () => {
     const chairmanIdList = await getUserIndex(userStatusList.chairman);
     const accountantIdList = await getUserIndex(userStatusList.accountant);
+    const janitorIdList = await getUserIndex(userStatusList.janitor);
     const adminIdList = getArrayFallback(await getUserIndex(userStatusList.admin), [superUserId]);
 
     const submitActions = {};
@@ -31,6 +32,10 @@ const initStepper = async () => {
 
     if (accountantIdList.length) {
         submitActions[`${moduleParam.name}:${moduleParam.submit}:${userStatusList.accountant}`] = 'Отправить бухгалтеру';
+    }
+
+    if (janitorIdList.length) {
+        submitActions[`${moduleParam.name}:${moduleParam.submit}:${userStatusList.janitor}`] = 'Отправить дворнику';
     }
 
     if (adminIdList.length) {

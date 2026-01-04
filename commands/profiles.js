@@ -29,14 +29,15 @@ const startAction = async (ctx) => {
     const userStatus = userData?.userStatus;
 
     const buttons = {
-        [`${moduleParam.name}:${userStatusList.chairman}:${moduleParam.list}`]: `🟡 ${userStatusText.chairman}`,
-        [`${moduleParam.name}:${userStatusList.accountant}:${moduleParam.list}`]: `🟡 ${userStatusText.accountant}`,
-        [`${moduleParam.name}:${userStatusList.admin}:${moduleParam.list}`]: `🟡 ${userStatusText.admin}`,
-        [`${moduleParam.name}:${userStatusList.resident}:${moduleParam.list}`]: `🟢 ${userStatusText.resident}`,
-        [`${moduleParam.name}:${userStatusList.pending}:${moduleParam.list}`]: '⚪️️ Ожидают проверки',
-        [`${moduleParam.name}:${userStatusList.restricted}:${moduleParam.list}`]: '🟠 Ограниченные',
-        [`${moduleParam.name}:${userStatusList.blocked}:${moduleParam.list}`]: '⛔ Заблокированные',
-        [`${moduleParam.name}:${userStatusList.unverified}:${moduleParam.list}`]: `❔ ${userStatusText.unverified}`,
+        [`${moduleParam.name}:${userStatusList.chairman}:${moduleParam.list}`]: `${userStatusText.chairman}`,
+        [`${moduleParam.name}:${userStatusList.accountant}:${moduleParam.list}`]: `${userStatusText.accountant}`,
+        [`${moduleParam.name}:${userStatusList.janitor}:${moduleParam.list}`]: `${userStatusText.janitor}`,
+        [`${moduleParam.name}:${userStatusList.admin}:${moduleParam.list}`]: `${userStatusText.admin}`,
+        [`${moduleParam.name}:${userStatusList.resident}:${moduleParam.list}`]: `${userStatusText.resident}`,
+        [`${moduleParam.name}:${userStatusList.pending}:${moduleParam.list}`]: 'Ожидают проверки',
+        [`${moduleParam.name}:${userStatusList.restricted}:${moduleParam.list}`]: 'Ограниченные',
+        [`${moduleParam.name}:${userStatusList.blocked}:${moduleParam.list}`]: 'Заблокированные',
+        [`${moduleParam.name}:${userStatusList.unverified}:${moduleParam.list}`]: `${userStatusText.unverified}`,
     };
 
     const messageText =
@@ -127,6 +128,7 @@ const profileReviewHandler = async (ctx, accountId, backParams) => {
     const verifiedOptions = {
         [`${moduleParam.verification}:${userStatusList.chairman}:${accountId}`]: `🟡 ${userStatusText.chairman}`,
         [`${moduleParam.verification}:${userStatusList.accountant}:${accountId}`]: `🟡 ${userStatusText.accountant}`,
+        [`${moduleParam.verification}:${userStatusList.janitor}:${accountId}`]: `🟡 ${userStatusText.janitor}`,
         [`${moduleParam.verification}:${userStatusList.admin}:${accountId}`]: `🟡 ${userStatusText.admin}`,
         [`${moduleParam.verification}:${userStatusList.resident}:${accountId}`]: `🟢 ${userStatusText.resident}`,
         [`${moduleParam.verification}:${userStatusList.restricted}:${accountId}`]: '🟠 Ограничить',
