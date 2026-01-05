@@ -6,7 +6,7 @@ const { closeOption, moduleNames, homeOption} = require('../const/dictionary');
 
 const moduleParam = {
     name: moduleNames.contact,
-    keywords: ['контакты', 'Контакты'],
+    keywords: ['контакты'],
 }
 
 const initAction = async (ctx) => {
@@ -51,7 +51,7 @@ const initAction = async (ctx) => {
 };
 
 module.exports = (bot) => {
+    bot.hears(moduleParam.keywords, (ctx) => initAction(ctx));
     bot.command(moduleParam.name, (ctx) => initAction(ctx));
     bot.action(moduleParam.name, (ctx) => initAction(ctx));
-    bot.hears(moduleParam.keywords, (ctx) => initAction(ctx));
 };

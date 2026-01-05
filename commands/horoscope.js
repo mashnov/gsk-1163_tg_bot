@@ -1,12 +1,17 @@
+const cron = require('node-cron');
+
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { fetchHoroscopeData } = require('../helpers/horoscope');
 const { guard } = require('../helpers/guard');
 
-const { homeOption, moduleNames} = require('../const/dictionary');
+const { homeOption, moduleNames, closeOption} = require('../const/dictionary');
+const { homeChatId, homeTimeZone } = require('../const/env');
 const { horoscopeTitleMapper } = require('../const/horoscope');
 
 const moduleParam = {
     name: moduleNames.horoscope,
+    keywords: [/гороскоп/i],
+    sendTime: [6],
     item: 'item',
 }
 
@@ -49,8 +54,8 @@ const initAction = async (ctx) => {
     await commandAnswer(ctx);
 };
 
-const getHoroscopeMessage = async (ctx, { horoName } = {}) => {
-    const isGuardPassed = await guard(ctx, { unBlocked: true, privateChat: true  });
+const getHoroscopeMessage = async (ctx, { isCronAction, horoName } = {}) => {
+    const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true });
 
     if (!isGuardPassed) {
         await removeMessage(ctx);
@@ -59,22 +64,37 @@ const getHoroscopeMessage = async (ctx, { horoName } = {}) => {
     }
 
     const response = await fetchHoroscopeData();
+    const isPrivateChat = ctx.chat?.type === 'private';
 
     const horoList = Object.keys(horoscopeTitleMapper);
-    const horoFilteredList = horoList.filter(horoItem => horoItem === horoName);
+    const horoFilteredList = horoList.filter(horoItem => horoItem === horoName || !horoName);
+
+    let messageText = '';
 
     for (const horoItem of horoFilteredList) {
         const horoTitle = horoscopeTitleMapper[horoItem];
         const horoText = response?.horo?.[horoItem]?.today;
-        const messageText = horoTitle + '\n\n' + horoText;
-
-        await sendMessage(ctx, {
-            text: messageText,
-            buttons: { [moduleParam.name] : '⬅️ Назад' },
-        });
+        messageText += `\n\n${horoTitle}`;
+        messageText += `\n\n${horoText}`;
     }
 
-    await removeMessage(ctx);
+    if (!isPrivateChat && isCronAction) {
+        messageText += '\n\n<blockquote>Информация публикуется автоматически в 06:00 ежедневно</blockquote>';
+    }
+
+    await sendMessage(ctx, {
+        text: messageText,
+        accountId: isPrivateChat ? undefined : homeChatId,
+        buttons: {
+            ...(isPrivateChat ? { [moduleParam.name]: '⬅️ Назад' } : {}),
+            ...(isPrivateChat ? homeOption : {}),
+            ...(!isPrivateChat && !isCronAction ? closeOption : {}),
+        },
+    });
+
+    if (!isCronAction) {
+        await removeMessage(ctx);
+    }
     await commandAnswer(ctx);
 };
 
@@ -89,7 +109,29 @@ const callbackHandler = async (ctx, next) => {
     return next();
 };
 
+const cronAction = (bot) => {
+    cron.schedule(
+        `0 ${moduleParam.sendTime} * * *`,
+        async () => getHoroscopeMessage(bot, { isCronAction: true }),
+        { timezone: homeTimeZone },
+    );
+};
+
+const hearsHandler = async (ctx) => {
+    const isGuardPassed = await guard(ctx, { publicChat: true });
+
+    if (!isGuardPassed) {
+        await removeMessage(ctx);
+        await commandAnswer(ctx);
+        return;
+    }
+
+    await getHoroscopeMessage(ctx);
+};
+
 module.exports = (bot) => {
+    cronAction(bot);
+    bot.hears(moduleParam.keywords, (ctx) => hearsHandler(ctx));
     bot.command(moduleParam.name, (ctx) => initAction(ctx));
     bot.action(moduleParam.name, (ctx) => initAction(ctx));
     bot.on('callback_query', (ctx, next) => callbackHandler(ctx, next));

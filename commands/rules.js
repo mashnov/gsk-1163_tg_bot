@@ -3,7 +3,7 @@ const { homeOption, closeOption, moduleNames } = require('../const/dictionary');
 
 const moduleParam = {
     name: moduleNames.rules,
-    keywords: ['правила', 'Правила'],
+    keywords: ['правила'],
     chat: 'chat',
     silent: 'silent',
     dog: 'dog',
@@ -132,8 +132,8 @@ const callbackHandler = async (ctx, next) => {
 };
 
 module.exports = (bot) => {
+    bot.hears(moduleParam.keywords, (ctx) => initAction(ctx));
     bot.command(moduleParam.name, (ctx) => initAction(ctx));
     bot.action(moduleParam.name, (ctx) => initAction(ctx));
-    bot.hears(moduleParam.keywords, (ctx) => initAction(ctx));
     bot.on('callback_query', (ctx, next) => callbackHandler(ctx, next));
 };

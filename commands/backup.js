@@ -11,7 +11,7 @@ const moduleParam = {
     sendTime: [23],
 };
 
-const startAction = async (ctx, { isCronAction }) => {
+const startAction = async (ctx, { isCronAction } = {}) => {
     const isGuardPassed = isCronAction || await guard(ctx, { privateChat: true, superUser: true });
 
     if (!isGuardPassed) {

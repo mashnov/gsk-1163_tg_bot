@@ -6,11 +6,11 @@ const { messageParams } = require('../const/dictionary');
 const { botUsername } = require('../const/env');
 
 const moduleParam = {
-    keywords: ['домовенок', 'Домовенок', 'бот', 'Бот'],
+    keywords: ['домовенок', 'меню', 'бот'],
     buttons: [],
 };
 
-const createNavigation = async (ctx, { needRemove, next }) => {
+const createNavigation = async (ctx, { needRemove, next } = {}) => {
     const isPrivateChat = ctx.chat?.type === 'private';
 
     if (isPrivateChat) {
@@ -45,6 +45,6 @@ const hearsHandler = async (ctx) => {
 }
 
 module.exports = (bot) => {
-    bot.start((ctx, next) => createNavigation(ctx, { next }));
     bot.hears(moduleParam.keywords, (ctx) => hearsHandler(ctx));
+    bot.start((ctx, next) => createNavigation(ctx, { next }));
 };

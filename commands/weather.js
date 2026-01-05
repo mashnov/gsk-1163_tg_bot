@@ -10,11 +10,11 @@ const { homeChatId, homeTimeZone } = require('../const/env');
 
 const moduleParam = {
     name: moduleNames.weather,
-    keywords: ['погода', 'Погода'],
-    sendTime: [8, 14, 20],
+    keywords: [/погода/i],
+    sendTime: [8, 16],
 }
 
-const getWeatherMessage = async (ctx, { needRemove, needButtons, isCronAction }) => {
+const getWeatherMessage = async (ctx, { isCronAction } = {}) => {
     const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true });
 
     if (!isGuardPassed) {
@@ -41,20 +41,31 @@ const getWeatherMessage = async (ctx, { needRemove, needButtons, isCronAction })
         `\n☔️ Количество осадков: ${hourlyWeather?.precipitation?.[0] ?? '-'} мм` +
         `\n🌂 Вероятность осадков: ${hourlyWeather?.precipitation_probability?.[0] ?? '-'} %`;
 
-    if (!isPrivateChat) {
-        messageText += '\n\n<blockquote>Прогноз публикуется автоматически в 08:00, 14:00 и 20:00 ежедневно</blockquote>';
+    if (!isPrivateChat && isCronAction) {
+        messageText += '\n\n<blockquote>Информация публикуется автоматически в 08:00 и 16:00 ежедневно</blockquote>';
     }
 
     await sendMessage(ctx, {
-        accountId: isPrivateChat ? undefined : homeChatId,
         text: messageText,
-        buttons: isPrivateChat ? homeOption : needButtons ? closeOption : {},
+        accountId: isPrivateChat ? undefined : homeChatId,
+        buttons: {
+            ...(isPrivateChat ? homeOption : {}),
+            ...(!isPrivateChat && !isCronAction ? closeOption : {}),
+        },
     });
 
-    if (needRemove) {
+    if (!isCronAction) {
         await removeMessage(ctx);
     }
     await commandAnswer(ctx);
+};
+
+const cronAction = (bot) => {
+    cron.schedule(
+        `0 ${moduleParam.sendTime} * * *`,
+        async () => getWeatherMessage(bot, { isCronAction: true }),
+        { timezone: homeTimeZone },
+    );
 };
 
 const hearsHandler = async (ctx) => {
@@ -66,20 +77,12 @@ const hearsHandler = async (ctx) => {
         return;
     }
 
-    await getWeatherMessage(ctx, { needRemove: true, needButtons: true, });
-}
-
-const cronAction = (bot) => {
-    cron.schedule(
-        `0 ${moduleParam.sendTime} * * *`,
-        async () => getWeatherMessage(bot, { isCronAction: true }),
-        { timezone: homeTimeZone },
-    );
-}
+    await getWeatherMessage(ctx);
+};
 
 module.exports = (bot) => {
     cronAction(bot);
-    bot.command(moduleParam.name, (ctx) => getWeatherMessage(ctx, { needRemove: true, needButtons: true }));
-    bot.action(moduleParam.name, (ctx) => getWeatherMessage(ctx, { needRemove: true, needButtons: true }));
     bot.hears(moduleParam.keywords, (ctx) => hearsHandler(ctx));
+    bot.command(moduleParam.name, (ctx) => getWeatherMessage(ctx));
+    bot.action(moduleParam.name, (ctx) => getWeatherMessage(ctx));
 };

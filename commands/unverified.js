@@ -40,7 +40,7 @@ const messageHandler = async (ctx, next) => {
     return next();
 };
 
-const sendNotifications = async (ctx, { accountId, isCronAction = false }) => {
+const sendNotifications = async (ctx, { accountId, isCronAction } = {}) => {
     const text =
         '🔒 Напоминание о верификации' +
         '\n\nПожалуйста, пройдите верификацию, чтобы получить доступ к передаче показний счетчиков и другим возможностям бота.';

@@ -1,3 +1,5 @@
+const cron = require('node-cron');
+
 const { startStepper } = require('../helpers/stepper');
 const { initStore, getSession } = require('../helpers/sessions');
 const { sendMessage, removeMessage, commandAnswer, getFile } = require('../helpers/telegraf');
@@ -7,11 +9,15 @@ const { handleXlsxFile } = require('../helpers/debtors');
 const { guard } = require('../helpers/guard');
 
 const { stepList } = require('../const/debtors');
-const { moduleNames, homeOption} = require('../const/dictionary');
+const { moduleNames, homeOption, closeOption} = require('../const/dictionary');
 const { userStatusList} = require('../const/db');
+const {homeTimeZone, homeChatId} = require("../const/env");
 
 const moduleParam = {
     name: moduleNames.debtors,
+    keywords: [/долг/i, /долги/i, /должники/i],
+    sendTime: [18],
+    sendDay: [1],
     init: 'init',
     submit: 'submit',
 }
@@ -28,8 +34,8 @@ const initStepper = async () => {
     });
 };
 
-const startAction = async (ctx) => {
-    const isGuardPassed = await guard(ctx, { privateChat: true, verify: true });
+const startAction = async (ctx, { isCronAction } = {}) => {
+    const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true });
 
     if (!isGuardPassed) {
         await removeMessage(ctx);
@@ -39,6 +45,7 @@ const startAction = async (ctx) => {
 
     const debtorsData = await getDebtorsData();
     const userData = await getUserData({ from: ctx.from });
+    const isPrivateChat = ctx.chat?.type === 'private';
     const isAdmin = [userStatusList.admin, userStatusList.accountant, userStatusList.chairman].includes(userData?.userStatus);
 
     let messageText =
@@ -52,14 +59,23 @@ const startAction = async (ctx) => {
 
     messageText += '\n\n<blockquote>Указание номера квартиры без ФИО не позволяет определить конкретное физическое лицо ФЗ № 152.</blockquote>';
 
+    if (!isPrivateChat && isCronAction) {
+        messageText += '\n\n<blockquote>Информация публикуется автоматически ежемесячно, первого числа, в 18:00.</blockquote>';
+    }
+
     await sendMessage(ctx, {
         text: messageText,
+        accountId: isPrivateChat ? undefined : homeChatId,
         buttons: {
-            ...(isAdmin ? { [`${moduleParam.name}:${moduleParam.init}`]: '📥 Загрузить новые данные' } : {}),
-            ...homeOption,
+            ...(isPrivateChat && isAdmin ? { [`${moduleParam.name}:${moduleParam.init}`]: '📥 Загрузить новые данные' } : {}),
+            ...(isPrivateChat ? homeOption : {}),
+            ...(!isPrivateChat && !isCronAction ? closeOption : {}),
         },
     });
-    await removeMessage(ctx);
+
+    if (!isCronAction) {
+        await removeMessage(ctx);
+    }
     await commandAnswer(ctx);
 };
 
@@ -93,7 +109,29 @@ const submitAction = async (ctx) => {
     await commandAnswer(ctx, 'Данные успешно загружены');
 };
 
+const cronAction = (bot) => {
+    cron.schedule(
+        `0 ${moduleParam.sendTime} ${moduleParam.sendDay} * *`,
+        async () => startAction(bot, { isCronAction: true }),
+        { timezone: homeTimeZone },
+    );
+};
+
+const hearsHandler = async (ctx) => {
+    const isGuardPassed = await guard(ctx, { publicChat: true });
+
+    if (!isGuardPassed) {
+        await removeMessage(ctx);
+        await commandAnswer(ctx);
+        return;
+    }
+
+    await startAction(ctx);
+};
+
 module.exports = (bot) => {
+    cronAction(bot);
+    bot.hears(moduleParam.keywords, (ctx) => hearsHandler(ctx));
     bot.command(moduleParam.name, (ctx) => startAction(ctx));
     bot.action(moduleParam.name, (ctx) => startAction(ctx));
     bot.action(`${moduleParam.name}:${moduleParam.init}`, (ctx) => initAction(ctx));

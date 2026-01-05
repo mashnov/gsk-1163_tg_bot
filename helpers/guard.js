@@ -6,7 +6,7 @@ const { closeOption } = require('../const/dictionary');
 const { userStatusList } = require('../const/db');
 
 const guard = async (ctx, { privateChat, publicChat, verify, admin, blocked, unBlocked, superUser }) => {
-    if (ctx.from.id !== superUserId && superUser) {
+    if (ctx?.from?.id !== superUserId && superUser) {
         const text = '🔒 Это действие доступно только root пользователю';
         await sendMessage(ctx, { text, silent: true, buttons: closeOption });
         return;

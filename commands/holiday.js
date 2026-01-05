@@ -10,10 +10,11 @@ const { homeChatId, homeTimeZone } = require('../const/env');
 
 const moduleParam = {
     name: moduleNames.holiday,
+    keywords: [/праздник/i, /праздники/i],
+    sendTime: [10],
     today: 'today',
     month: 'month',
     year: 'year',
-    sendTime: [20],
 }
 
 const initAction = async (ctx) => {
@@ -57,8 +58,8 @@ const callbackHandler = async (ctx, next) => {
     return next();
 };
 
-const getHolidayMessage = async (ctx, { actionType, isCronAction }) => {
-    const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true, privateChat: true  });
+const getHolidayMessage = async (ctx, { actionType, isCronAction } = {}) => {
+    const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true });
 
     if (!isGuardPassed) {
         await removeMessage(ctx);
@@ -95,6 +96,10 @@ const getHolidayMessage = async (ctx, { actionType, isCronAction }) => {
         messageText += `\n${holiday.name}`;
     }
 
+    if (!isPrivateChat && isCronAction) {
+        messageText += '\n\n<blockquote>Информация публикуется автоматически в 10:00 в праздничные дни</blockquote>';
+    }
+
     await sendMessage(ctx, {
         text: holidayList.length ? messageText : emptyMessage[actionType],
         accountId: isPrivateChat ? undefined : homeChatId,
@@ -113,14 +118,27 @@ const getHolidayMessage = async (ctx, { actionType, isCronAction }) => {
 
 const cronAction = (bot) => {
     cron.schedule(
-        `20 ${moduleParam.sendTime} * * *`,
+        `0 ${moduleParam.sendTime} * * *`,
         async () => getHolidayMessage(bot, { actionType: moduleParam.today, isCronAction: true }),
         { timezone: homeTimeZone },
     );
 };
 
+const hearsHandler = async (ctx) => {
+    const isGuardPassed = await guard(ctx, { publicChat: true });
+
+    if (!isGuardPassed) {
+        await removeMessage(ctx);
+        await commandAnswer(ctx);
+        return;
+    }
+
+    await getHolidayMessage(ctx, { actionType: moduleParam.month });
+};
+
 module.exports = (bot) => {
     cronAction(bot);
+    bot.hears(moduleParam.keywords, (ctx) => hearsHandler(ctx));
     bot.command(moduleParam.name, (ctx) => initAction(ctx));
     bot.action(moduleParam.name, (ctx) => initAction(ctx));
     bot.on('callback_query', (ctx, next) => callbackHandler(ctx, next));
