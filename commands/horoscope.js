@@ -21,7 +21,7 @@ const initAction = async (ctx) => {
 
     const messageText =
         '💫 Гороскоп' +
-        '\n\nВыберите интересующий вас знак';
+        '\n\nВыберите интересующий Вас пункт меню';
 
     const buttons = {
         [`${moduleParam.name}:${moduleParam.item}:aries`]: horoscopeTitleMapper['aries'],

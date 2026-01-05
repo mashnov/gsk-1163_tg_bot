@@ -7,6 +7,7 @@ const contactsCommand = require('./commands/contacts');
 const debtorsCommand = require('./commands/debtors');
 const messagesCommand = require('./commands/messages');
 const weatherCommand = require('./commands/weather');
+const holidayCommand = require('./commands/holiday');
 const horoscopeCommand = require('./commands/horoscope');
 const meterCommand = require('./commands/meter');
 const anonymousCommand = require('./commands/anonymous');
@@ -30,6 +31,7 @@ const createBot = () => {
     debtorsCommand(bot);
     messagesCommand(bot);
     weatherCommand(bot);
+    holidayCommand(bot);
     horoscopeCommand(bot);
     meterCommand(bot);
     anonymousCommand(bot);

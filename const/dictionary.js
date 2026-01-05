@@ -19,6 +19,7 @@ const moduleNames = {
     unverified: 'unverified',
     weather: 'weather',
     horoscope: 'horoscope',
+    holiday: 'holiday',
 };
 
 const backOption = { start: '⬅️ Назад' };
