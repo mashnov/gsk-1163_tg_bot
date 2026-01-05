@@ -90,6 +90,7 @@ const submitAction = async (ctx, listType) => {
             text: recipientMessage,
             buttons: closeOption,
             attachment: session.attachment,
+            logger: true,
         });
     }
     await removeMessage(ctx);

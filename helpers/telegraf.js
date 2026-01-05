@@ -2,6 +2,7 @@ const { Input } = require('telegraf');
 
 const { getButtons, getFormattedDate } = require('../helpers/getters');
 const { sleep } = require('../helpers/sleep');
+const { messageLogger } = require('../helpers/logger');
 
 const { homeOption, messageParams } = require('../const/dictionary');
 
@@ -25,7 +26,7 @@ const preventBotBlock = async () => {
     await sleep(250);
 };
 
-const sendMessage = async (ctx, { accountId = ctx.chat.id, text = '', buttons = homeOption, attachment, silent }) => {
+const sendMessage = async (ctx, { accountId = ctx.chat.id, text = '', buttons = homeOption, attachment, silent, logger }) => {
     await preventBotBlock();
     const messageButtons = getButtons(buttons);
     const params = {
@@ -41,6 +42,10 @@ const sendMessage = async (ctx, { accountId = ctx.chat.id, text = '', buttons = 
         document: 'sendDocument',
         undefined: 'sendMessage',
     };
+
+    if (logger) {
+        messageLogger({ from: ctx.from.id, to: accountId, text });
+    }
 
     try {
         const message = await ctx.telegram[methods[attachment?.type]](accountId, attachment?.fileId || text, params);

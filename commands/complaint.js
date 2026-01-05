@@ -79,6 +79,7 @@ const submitAction = async (ctx) => {
                 [`${moduleParam.verification}:${userStatusList.blocked}:${authorAccount.id}`]: '🔴 Заблокировать',
                 ...closeOption,
             },
+            logger: true,
         });
         messageList.push({ chatId: adminAccountId, messageId });
     }

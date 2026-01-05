@@ -66,6 +66,7 @@ const submitAction = async (ctx) => {
             accountId: recipientAccountId,
             text: recipientMessage,
             buttons: closeOption,
+            logger: true,
         });
     }
 

@@ -68,7 +68,8 @@ const submitAction = async (ctx) => {
         await sendMessage(ctx, {
             accountId: recipientAccountId,
             text: recipientMessage,
-            buttons: closeOption
+            buttons: closeOption,
+            logger: true,
         });
     }
     await removeMessage(ctx);
