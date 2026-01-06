@@ -1,18 +1,22 @@
 const cron = require('node-cron');
 
-const { sendLocalFileMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
+const { sendLocalFileMessage, removeMessage, commandAnswer, sendMessage} = require('../helpers/telegraf');
+const { getCsvFromBd } = require('../helpers/backup');
 const { guard } = require('../helpers/guard');
 
-const { moduleNames, homeOption, closeOption } = require('../const/dictionary');
-const { homeTimeZone, superUserId } = require('../const/env');
+const { moduleNames, homeOption, closeOption} = require('../const/dictionary');
+const { homeTimeZone } = require('../const/env');
 
 const moduleParam = {
     name: moduleNames.backup,
+    csv: 'csv',
+    txt: 'txt',
+    json: 'json',
     sendTime: [23],
 };
 
-const startAction = async (ctx, { isCronAction } = {}) => {
-    const isGuardPassed = isCronAction || await guard(ctx, { privateChat: true, superUser: true });
+const startAction = async (ctx) => {
+    const isGuardPassed = await guard(ctx, { privateChat: true, admin: true });
 
     if (!isGuardPassed) {
         await removeMessage(ctx);
@@ -20,10 +24,45 @@ const startAction = async (ctx, { isCronAction } = {}) => {
         return;
     }
 
+    const messageText = '📤 Резервное копирование'
+
+    await sendMessage(ctx, {
+        text: messageText,
+        buttons: {
+            [`${moduleParam.name}:${moduleParam.txt}`]: 'Скачать логи',
+            [`${moduleParam.name}:${moduleParam.csv}`]: 'Скачать CSV',
+            [`${moduleParam.name}:${moduleParam.json}`]: 'Скачать БД',
+            ...homeOption,
+        },
+    });
+    await removeMessage(ctx);
+    await commandAnswer(ctx);
+};
+
+const downloadAction = async (ctx, { isCronAction, actionType } = {}) => {
+    const isGuardPassed = isCronAction || await guard(ctx, { privateChat: true, admin: true });
+
+    if (!isGuardPassed) {
+        await removeMessage(ctx);
+        await commandAnswer(ctx);
+        return;
+    }
+
+    const fileParams = {};
+
+    if (actionType === moduleParam.json) {
+        fileParams.filePath = './state/db.json';
+    }
+    if (actionType === moduleParam.csv) {
+        fileParams.fileContent = await getCsvFromBd();
+    }
+    if (actionType === moduleParam.txt) {
+        fileParams.filePath = './state/messages.txt';
+    }
+
     await sendLocalFileMessage(ctx, {
-        accountId: superUserId,
         buttons: isCronAction ? closeOption : homeOption,
-        filePath: './state/db.json',
+        ...fileParams,
     });
 
     if (!isCronAction) {
@@ -35,13 +74,25 @@ const startAction = async (ctx, { isCronAction } = {}) => {
 const cronAction = (bot) => {
     cron.schedule(
         `0 ${moduleParam.sendTime} * * *`,
-        async () => startAction(bot, { isCronAction: true }),
+        async () => downloadAction(bot, { isCronAction: true, actionType: moduleParam.json }),
         { timezone: homeTimeZone },
     );
+};
+
+const callbackHandler = async (ctx, next) => {
+    const data = ctx.callbackQuery.data;
+    const [action, actionType] = data.split(':');
+
+    if (action === moduleParam.name) {
+        await downloadAction(ctx, { actionType });
+    }
+
+    return next();
 };
 
 module.exports = (bot) => {
     cronAction(bot);
     bot.command(moduleParam.name, (ctx) => startAction(ctx, { isCronAction: false }));
     bot.action(moduleParam.name, (ctx) => startAction(ctx, { isCronAction: false }));
+    bot.on('callback_query', (ctx, next) => callbackHandler(ctx, next));
 };

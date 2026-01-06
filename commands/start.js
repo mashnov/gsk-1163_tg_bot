@@ -3,7 +3,7 @@ const { getUserName } = require('../helpers/getters');
 const { getUserData } = require('../helpers/db');
 const { guard } = require('../helpers/guard');
 
-const { botUsername, superUserId } = require('../const/env');
+const { botUsername } = require('../const/env');
 const { moduleNames } = require('../const/dictionary');
 const { userStatusList } = require('../const/db');
 
@@ -17,7 +17,6 @@ const initAction = async (ctx) => {
     }
 
     const userData = await getUserData({ from: ctx.from });
-    const isSuperAdmin = ctx.from.id === superUserId;
     const isUnverified = userData?.userStatus === userStatusList.unverified || !userData?.userStatus;
     const isPending = userData?.userStatus === userStatusList.pending;
     const isBlocked = [userStatusList.blocked, userStatusList.restricted].includes(userData?.userStatus);
@@ -51,11 +50,7 @@ const initAction = async (ctx) => {
 
     if (isPrivateChat && isAdmin) {
         buttons[moduleNames.profiles] = '🪪 Управление пользователями';
-        buttons[moduleNames.export] = '📤 Экспорт пользователей';
-    }
-
-    if (isPrivateChat && isSuperAdmin) {
-        buttons[moduleNames.backup] = '💾 Резервное копирование';
+        buttons[moduleNames.backup] = '📤 Резервное копирование';
     }
 
     let messageText =
