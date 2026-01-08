@@ -9,13 +9,13 @@ const { handleXlsxFile } = require('../helpers/debtors');
 const { guard } = require('../helpers/guard');
 
 const { stepList } = require('../const/debtors');
+const { cronIsEnabled, hearsIsEnabled, homeTimeZone, homeChatId } = require('../const/env');
 const { moduleNames, homeOption, closeOption} = require('../const/dictionary');
 const { userStatusList} = require('../const/db');
-const {homeTimeZone, homeChatId} = require("../const/env");
 
 const moduleParam = {
     name: moduleNames.debtors,
-    keywords: [/долг/i, /долги/i, /должники/i],
+    keywords: [/долг/i, /долж/i],
     sendTime: [18],
     sendDay: [1],
     init: 'init',
@@ -34,11 +34,13 @@ const initStepper = async () => {
     });
 };
 
-const startAction = async (ctx, { isCronAction } = {}) => {
+const startAction = async (ctx, { isCronAction, noRemove } = {}) => {
     const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true });
 
     if (!isGuardPassed) {
-        await removeMessage(ctx);
+        if (!noRemove) {
+            await removeMessage(ctx);
+        }
         await commandAnswer(ctx);
         return;
     }
@@ -73,7 +75,7 @@ const startAction = async (ctx, { isCronAction } = {}) => {
         },
     });
 
-    if (!isCronAction) {
+    if (!isCronAction && !noRemove) {
         await removeMessage(ctx);
     }
     await commandAnswer(ctx);
@@ -110,23 +112,26 @@ const submitAction = async (ctx) => {
 };
 
 const cronAction = (bot) => {
-    cron.schedule(
-        `0 ${moduleParam.sendTime} ${moduleParam.sendDay} * *`,
-        async () => startAction(bot, { isCronAction: true }),
-        { timezone: homeTimeZone },
-    );
+    if (cronIsEnabled.debtors) {
+        cron.schedule(
+            `0 ${moduleParam.sendTime} ${moduleParam.sendDay} * *`,
+            async () => startAction(bot, { isCronAction: true }),
+            { timezone: homeTimeZone },
+        );
+    }
 };
 
 const hearsHandler = async (ctx) => {
     const isGuardPassed = await guard(ctx, { publicChat: true });
 
     if (!isGuardPassed) {
-        await removeMessage(ctx);
         await commandAnswer(ctx);
         return;
     }
 
-    await startAction(ctx);
+    if (hearsIsEnabled.debtors) {
+        await startAction(ctx, { noRemove: true });
+    }
 };
 
 module.exports = (bot) => {

@@ -5,7 +5,7 @@ const { getCsvFromBd } = require('../helpers/backup');
 const { guard } = require('../helpers/guard');
 
 const { moduleNames, homeOption, closeOption} = require('../const/dictionary');
-const { homeTimeZone } = require('../const/env');
+const { homeTimeZone, superUserId} = require('../const/env');
 
 const moduleParam = {
     name: moduleNames.backup,
@@ -61,8 +61,12 @@ const downloadAction = async (ctx, { isCronAction, actionType } = {}) => {
     }
 
     await sendLocalFileMessage(ctx, {
-        buttons: isCronAction ? closeOption : homeOption,
         ...fileParams,
+        accountId: isCronAction ? superUserId : undefined,
+        buttons: {
+            ...(actionType ? { [moduleParam.name]: '⬅️ Назад' } : {} ),
+            ...(isCronAction ? closeOption : {}),
+        }
     });
 
     if (!isCronAction) {

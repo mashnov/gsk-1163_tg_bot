@@ -6,7 +6,7 @@ const { guard } = require('../helpers/guard');
 
 const { weatherCodeMap } = require('../const/weather');
 const { homeOption, closeOption, moduleNames} = require('../const/dictionary');
-const { homeChatId, homeTimeZone } = require('../const/env');
+const { cronIsEnabled, hearsIsEnabled, homeChatId, homeTimeZone } = require('../const/env');
 
 const moduleParam = {
     name: moduleNames.weather,
@@ -14,11 +14,13 @@ const moduleParam = {
     sendTime: [8, 16],
 }
 
-const getWeatherMessage = async (ctx, { isCronAction } = {}) => {
+const getWeatherMessage = async (ctx, { isCronAction, noRemove } = {}) => {
     const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true });
 
     if (!isGuardPassed) {
-        await removeMessage(ctx);
+        if (!noRemove) {
+            await removeMessage(ctx);
+        }
         await commandAnswer(ctx);
         return;
     }
@@ -54,30 +56,33 @@ const getWeatherMessage = async (ctx, { isCronAction } = {}) => {
         },
     });
 
-    if (!isCronAction) {
+    if (!isCronAction && !noRemove) {
         await removeMessage(ctx);
     }
     await commandAnswer(ctx);
 };
 
 const cronAction = (bot) => {
-    cron.schedule(
-        `0 ${moduleParam.sendTime} * * *`,
-        async () => getWeatherMessage(bot, { isCronAction: true }),
-        { timezone: homeTimeZone },
-    );
+    if (cronIsEnabled.weather) {
+        cron.schedule(
+            `0 ${moduleParam.sendTime} * * *`,
+            async () => getWeatherMessage(bot, { isCronAction: true }),
+            { timezone: homeTimeZone },
+        );
+    }
 };
 
 const hearsHandler = async (ctx) => {
     const isGuardPassed = await guard(ctx, { publicChat: true });
 
     if (!isGuardPassed) {
-        await removeMessage(ctx);
         await commandAnswer(ctx);
         return;
     }
 
-    await getWeatherMessage(ctx);
+    if (hearsIsEnabled.weather) {
+        await getWeatherMessage(ctx, { noRemove: true });
+    }
 };
 
 module.exports = (bot) => {

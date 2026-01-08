@@ -5,7 +5,7 @@ const { fetchHoroscopeData } = require('../helpers/horoscope');
 const { guard } = require('../helpers/guard');
 
 const { homeOption, moduleNames, closeOption} = require('../const/dictionary');
-const { homeChatId, homeTimeZone } = require('../const/env');
+const { cronIsEnabled, hearsIsEnabled, homeChatId, homeTimeZone } = require('../const/env');
 const { horoscopeTitleMapper } = require('../const/horoscope');
 
 const moduleParam = {
@@ -54,11 +54,13 @@ const initAction = async (ctx) => {
     await commandAnswer(ctx);
 };
 
-const getHoroscopeMessage = async (ctx, { isCronAction, horoName } = {}) => {
+const getHoroscopeMessage = async (ctx, { isCronAction, horoName, noRemove } = {}) => {
     const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true });
 
     if (!isGuardPassed) {
-        await removeMessage(ctx);
+        if (!noRemove) {
+            await removeMessage(ctx);
+        }
         await commandAnswer(ctx);
         return;
     }
@@ -92,7 +94,7 @@ const getHoroscopeMessage = async (ctx, { isCronAction, horoName } = {}) => {
         },
     });
 
-    if (!isCronAction) {
+    if (!isCronAction && !noRemove) {
         await removeMessage(ctx);
     }
     await commandAnswer(ctx);
@@ -110,23 +112,26 @@ const callbackHandler = async (ctx, next) => {
 };
 
 const cronAction = (bot) => {
-    cron.schedule(
-        `0 ${moduleParam.sendTime} * * *`,
-        async () => getHoroscopeMessage(bot, { isCronAction: true }),
-        { timezone: homeTimeZone },
-    );
+    if (cronIsEnabled.horoscope) {
+        cron.schedule(
+            `0 ${moduleParam.sendTime} * * *`,
+            async () => getHoroscopeMessage(bot, { isCronAction: true }),
+            { timezone: homeTimeZone },
+        );
+    }
 };
 
 const hearsHandler = async (ctx) => {
     const isGuardPassed = await guard(ctx, { publicChat: true });
 
     if (!isGuardPassed) {
-        await removeMessage(ctx);
         await commandAnswer(ctx);
         return;
     }
 
-    await getHoroscopeMessage(ctx);
+    if (hearsIsEnabled.horoscope) {
+        await getHoroscopeMessage(ctx, { noRemove: true });
+    }
 };
 
 module.exports = (bot) => {

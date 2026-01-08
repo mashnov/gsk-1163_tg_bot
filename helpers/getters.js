@@ -1,5 +1,5 @@
 const { Markup } = require('telegraf');
-const residents = require('../const/residents.json');
+const residents = require('../state/residents.json');
 
 const getKeyboard = (options) => {
     return Markup.keyboard(options).resize().persistent()

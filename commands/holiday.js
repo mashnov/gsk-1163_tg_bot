@@ -6,11 +6,11 @@ const { getFormattedDate } = require('../helpers/getters');
 const { guard } = require('../helpers/guard');
 
 const { moduleNames, homeOption, closeOption} = require('../const/dictionary');
-const { homeChatId, homeTimeZone } = require('../const/env');
+const { cronIsEnabled, hearsIsEnabled, homeChatId, homeTimeZone } = require('../const/env');
 
 const moduleParam = {
     name: moduleNames.holiday,
-    keywords: [/праздник/i, /праздники/i],
+    keywords: [/праздник/i,],
     sendTime: [10],
     today: 'today',
     month: 'month',
@@ -58,11 +58,13 @@ const callbackHandler = async (ctx, next) => {
     return next();
 };
 
-const getHolidayMessage = async (ctx, { actionType, isCronAction } = {}) => {
+const getHolidayMessage = async (ctx, { actionType, isCronAction, noRemove } = {}) => {
     const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true });
 
     if (!isGuardPassed) {
-        await removeMessage(ctx);
+        if (!noRemove) {
+            await removeMessage(ctx);
+        }
         await commandAnswer(ctx);
         return;
     }
@@ -70,7 +72,9 @@ const getHolidayMessage = async (ctx, { actionType, isCronAction } = {}) => {
     const holidayList = getHolidays(actionType);
 
     if (!holidayList.length && isCronAction) {
-        await removeMessage(ctx);
+        if (!noRemove) {
+            await removeMessage(ctx);
+        }
         await commandAnswer(ctx);
         return;
     }
@@ -110,30 +114,33 @@ const getHolidayMessage = async (ctx, { actionType, isCronAction } = {}) => {
         }
     });
 
-    if (!isCronAction) {
+    if (!isCronAction && !noRemove) {
         await removeMessage(ctx);
     }
     await commandAnswer(ctx);
 };
 
 const cronAction = (bot) => {
-    cron.schedule(
-        `0 ${moduleParam.sendTime} * * *`,
-        async () => getHolidayMessage(bot, { actionType: moduleParam.today, isCronAction: true }),
-        { timezone: homeTimeZone },
-    );
+    if (cronIsEnabled.holiday) {
+        cron.schedule(
+            `0 ${moduleParam.sendTime} * * *`,
+            async () => getHolidayMessage(bot, { actionType: moduleParam.today, isCronAction: true }),
+            { timezone: homeTimeZone },
+        );
+    }
 };
 
 const hearsHandler = async (ctx) => {
     const isGuardPassed = await guard(ctx, { publicChat: true });
 
     if (!isGuardPassed) {
-        await removeMessage(ctx);
         await commandAnswer(ctx);
         return;
     }
 
-    await getHolidayMessage(ctx, { actionType: moduleParam.month });
+    if (hearsIsEnabled.holiday) {
+        await getHolidayMessage(ctx, { actionType: moduleParam.month, noRemove: true });
+    }
 };
 
 module.exports = (bot) => {
