@@ -4,6 +4,7 @@ const { getUserNameLink, getSummaryMessage } = require('../helpers/getters');
 const { getUserIndex, getUserData, setVerificationIndexItem } = require('../helpers/db');
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { getArrayFallback } = require('../helpers/array');
+const { setStatistics } = require('../helpers/statistics');
 const { guard } = require('../helpers/guard');
 
 const { stepList } = require('../const/unblock');
@@ -30,6 +31,8 @@ const initStepper = async () => {
 };
 
 const initAction = async (ctx) => {
+    setStatistics('unblock-start');
+
     const isGuardPassed = await guard(ctx, { blocked: true });
 
     if (!isGuardPassed) {
@@ -48,6 +51,8 @@ const initAction = async (ctx) => {
 };
 
 const submitAction = async (ctx) => {
+    setStatistics('unblock-submit');
+
     const senderText = '🫥 Ваш запрос отправлен.';
     await sendMessage(ctx, { text: senderText });
 

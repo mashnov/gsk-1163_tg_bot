@@ -4,6 +4,7 @@ const { getUserNameLink, getUserName, getFormattedDate, getSummaryMessage, getRo
 const { getUserIndex, getUserData, setUserData, getVerificationIndexItem, setVerificationIndexItem } = require('../helpers/db');
 const { sendMessage, removeMessage, commandAnswer, banUserById, unBanUserById, makeAdmin, demoteUser, restrictUser, unRestrictUser } = require('../helpers/telegraf');
 const { getArrayFallback } = require('../helpers/array');
+const { setStatistics } = require('../helpers/statistics');
 const { guard } = require('../helpers/guard');
 
 const { superUserId, homeChatId, botUsername } = require('../const/env');
@@ -30,6 +31,8 @@ const initStepper = async () => {
 };
 
 const startAction = async (ctx) => {
+    setStatistics('verification-start');
+
     const isGuardPassed = await guard(ctx, { privateChat: true, unBlocked: true });
 
     if (!isGuardPassed) {
@@ -139,6 +142,8 @@ const setResidentVerificationRequest = async (ctx, session) => {
 }
 
 const submitAction = async (ctx) => {
+    setStatistics('verification-submit');
+
     const session = getSession(ctx.from.id);
 
     await sendResidentVerificationRequest(ctx);

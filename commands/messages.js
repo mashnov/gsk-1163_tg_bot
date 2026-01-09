@@ -4,6 +4,7 @@ const { initStore, getSession } = require('../helpers/sessions');
 const { getUserNameLink, getSummaryMessage } = require('../helpers/getters');
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { getArrayFallback } = require('../helpers/array');
+const { setStatistics } = require('../helpers/statistics');
 const { guard } = require('../helpers/guard');
 
 const { stepList } = require('../const/messages');
@@ -50,6 +51,8 @@ const initStepper = async () => {
 };
 
 const initAction = async (ctx) => {
+    setStatistics('message-start');
+
     const isGuardPassed = await guard(ctx, { privateChat: true, verify: true });
 
     if (!isGuardPassed) {
@@ -68,6 +71,8 @@ const initAction = async (ctx) => {
 };
 
 const submitAction = async (ctx, listType) => {
+    setStatistics(`message-submit:${listType}`);
+
     const senderText = '💬 Ваше сообщение отправлено.';
     await sendMessage(ctx, { text: senderText });
 

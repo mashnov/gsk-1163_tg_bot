@@ -2,6 +2,7 @@ const cron = require('node-cron');
 
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { fetchHoroscopeData } = require('../helpers/horoscope');
+const { setStatistics } = require('../helpers/statistics');
 const { guard } = require('../helpers/guard');
 
 const { homeOption, moduleNames, closeOption} = require('../const/dictionary');
@@ -16,6 +17,8 @@ const moduleParam = {
 }
 
 const initAction = async (ctx) => {
+    setStatistics('horoscope-start');
+
     const isGuardPassed = await guard(ctx, { privateChat: true });
 
     if (!isGuardPassed) {
@@ -54,7 +57,11 @@ const initAction = async (ctx) => {
     await commandAnswer(ctx);
 };
 
-const getHoroscopeMessage = async (ctx, { isCronAction, horoName, noRemove } = {}) => {
+const getHoroscopeMessage = async (ctx, { isCronAction, horoscopeType, noRemove, isHearsAction } = {}) => {
+    if (!isCronAction) {
+        setStatistics(isHearsAction ? 'horoscope-hears' : `horoscope-get:${horoscopeType}`);
+    }
+
     const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true });
 
     if (!isGuardPassed) {
@@ -69,7 +76,7 @@ const getHoroscopeMessage = async (ctx, { isCronAction, horoName, noRemove } = {
     const isPrivateChat = ctx.chat?.type === 'private';
 
     const horoList = Object.keys(horoscopeTitleMapper);
-    const horoFilteredList = horoList.filter(horoItem => horoItem === horoName || !horoName);
+    const horoFilteredList = horoList.filter(horoItem => horoItem === horoscopeType || !horoscopeType);
 
     let messageText = '';
 
@@ -102,10 +109,10 @@ const getHoroscopeMessage = async (ctx, { isCronAction, horoName, noRemove } = {
 
 const callbackHandler = async (ctx, next) => {
     const data = ctx.callbackQuery.data;
-    const [action, actionName, horoName] = data.split(':');
+    const [action, actionName, horoscopeType] = data.split(':');
 
     if (action === moduleParam.name && actionName === moduleParam.item) {
-        await getHoroscopeMessage(ctx, { horoName });
+        await getHoroscopeMessage(ctx, { horoscopeType });
     }
 
     return next();
@@ -130,7 +137,7 @@ const hearsHandler = async (ctx) => {
     }
 
     if (hearsIsEnabled.horoscope) {
-        await getHoroscopeMessage(ctx, { noRemove: true });
+        await getHoroscopeMessage(ctx, { noRemove: true, isHearsAction: true });
     }
 };
 

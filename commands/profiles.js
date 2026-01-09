@@ -2,6 +2,7 @@ const { getUserName, getUserNameLink, getFormattedDate } = require('../helpers/g
 const { getUserData, getUserIndex, getUserListByIndex } = require('../helpers/db');
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { getPaginatedItems } = require('../helpers/array');
+const { setStatistics } = require('../helpers/statistics');
 const { guard } = require('../helpers/guard');
 
 const { profilesPageCount } = require('../const/env');
@@ -17,6 +18,8 @@ const moduleParam = {
 };
 
 const startAction = async (ctx) => {
+    setStatistics('profile-start');
+
     const isGuardPassed = await guard(ctx, { privateChat: true, admin: true });
 
     if (!isGuardPassed) {
@@ -57,6 +60,10 @@ const startAction = async (ctx) => {
 };
 
 const profileListHandler = async (ctx, listType, listIndex = '0') => {
+    if (listIndex === '0') {
+        setStatistics(`profile-list-get:${listType}`);
+    }
+
     const profileList = await getUserIndex(listType);
     const filteredProfileList = profileList.filter(userId => userId !== String(ctx.from.id));
     const mappedProfileList = await getUserListByIndex(filteredProfileList);
@@ -101,6 +108,8 @@ const profileListHandler = async (ctx, listType, listIndex = '0') => {
 };
 
 const profileReviewHandler = async (ctx, accountId, backParams) => {
+    setStatistics(`profile-details:${accountId}`);
+
     const userData = await getUserData({ id: accountId });
     const userLinkData = { id: accountId, first_name: userData.userName };
     const userLink = getUserNameLink(userLinkData);

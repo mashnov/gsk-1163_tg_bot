@@ -6,6 +6,7 @@ const { sendMessage, removeMessage, commandAnswer, getFile } = require('../helpe
 const { getFormattedAmount, getFormattedDate } = require('../helpers/getters');
 const { getUserData, getDebtorsData, setDebtorsData } = require('../helpers/db');
 const { handleXlsxFile } = require('../helpers/debtors');
+const { setStatistics } = require('../helpers/statistics');
 const { guard } = require('../helpers/guard');
 
 const { stepList } = require('../const/debtors');
@@ -34,7 +35,11 @@ const initStepper = async () => {
     });
 };
 
-const startAction = async (ctx, { isCronAction, noRemove } = {}) => {
+const startAction = async (ctx, { isCronAction, noRemove, isUploadAction, isHearsAction } = {}) => {
+    if (!isCronAction && !isUploadAction) {
+        setStatistics(isHearsAction ? 'debtors-hears' : 'debtors-start');
+    }
+
     const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true });
 
     if (!isGuardPassed) {
@@ -82,6 +87,8 @@ const startAction = async (ctx, { isCronAction, noRemove } = {}) => {
 };
 
 const initAction = async (ctx) => {
+    setStatistics('debtors-upload-start');
+
     const isGuardPassed = await guard(ctx, { privateChat: true, admin: true });
 
     if (!isGuardPassed) {
@@ -100,13 +107,15 @@ const initAction = async (ctx) => {
 };
 
 const submitAction = async (ctx) => {
+    setStatistics('debtors-upload-submit');
+
     const session = getSession(ctx.from.id);
     const fileData = await getFile(ctx, session?.document?.file_id);
     const { residents, total } = await handleXlsxFile(fileData);
 
     await setDebtorsData({ total, residents });
 
-    await startAction(ctx);
+    await startAction(ctx, { isUploadAction: true });
     await removeMessage(ctx);
     await commandAnswer(ctx, 'Данные успешно загружены');
 };
@@ -130,7 +139,7 @@ const hearsHandler = async (ctx) => {
     }
 
     if (hearsIsEnabled.debtors) {
-        await startAction(ctx, { noRemove: true });
+        await startAction(ctx, { noRemove: true, isHearsAction: true });
     }
 };
 

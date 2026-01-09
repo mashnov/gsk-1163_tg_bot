@@ -4,6 +4,7 @@ const { getUserNameLink, getSummaryMessage } = require('../helpers/getters');
 const { getUserIndex, getUserData } = require('../helpers/db');
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { getArrayFallback } = require('../helpers/array');
+const { setStatistics } = require('../helpers/statistics');
 const { guard } = require('../helpers/guard');
 
 const { stepList } = require('../const/meter');
@@ -29,6 +30,8 @@ const initStepper = async () => {
 };
 
 const initAction = async (ctx) => {
+    setStatistics('meter-start');
+
     const isGuardPassed = await guard(ctx, { privateChat: true, verify: true });
 
     if (!isGuardPassed) {
@@ -47,6 +50,8 @@ const initAction = async (ctx) => {
 };
 
 const submitAction = async (ctx) => {
+    setStatistics('meter-submit');
+
     const senderText = '〽️ Показания счетчиков успешно отправлены';
     await sendMessage(ctx, { text: senderText });
 

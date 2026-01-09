@@ -2,6 +2,7 @@ const cron = require('node-cron');
 
 const { sendLocalFileMessage, removeMessage, commandAnswer, sendMessage} = require('../helpers/telegraf');
 const { getCsvFromBd } = require('../helpers/backup');
+const { setStatistics } = require('../helpers/statistics');
 const { guard } = require('../helpers/guard');
 
 const { moduleNames, homeOption, closeOption} = require('../const/dictionary');
@@ -16,6 +17,8 @@ const moduleParam = {
 };
 
 const startAction = async (ctx) => {
+    setStatistics('backup-start');
+
     const isGuardPassed = await guard(ctx, { privateChat: true, admin: true });
 
     if (!isGuardPassed) {
@@ -40,6 +43,10 @@ const startAction = async (ctx) => {
 };
 
 const downloadAction = async (ctx, { isCronAction, actionType } = {}) => {
+    if (!isCronAction && actionType) {
+        setStatistics(`backup-get:${actionType}`);
+    }
+
     const isGuardPassed = isCronAction || await guard(ctx, { privateChat: true, admin: true });
 
     if (!isGuardPassed) {

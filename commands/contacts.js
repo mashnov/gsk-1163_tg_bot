@@ -1,5 +1,6 @@
 const { getUserData } = require('../helpers/db');
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
+const { setStatistics } = require('../helpers/statistics');
 
 const { userStatusList } = require('../const/db');
 const { closeOption, moduleNames, homeOption} = require('../const/dictionary');
@@ -9,7 +10,9 @@ const moduleParam = {
     keywords: ['контакты'],
 }
 
-const initAction = async (ctx) => {
+const initAction = async (ctx, { isHearsAction }) => {
+    setStatistics(isHearsAction ? 'contacts-hears' : 'contacts-get');
+
     const userData = await getUserData({ from: ctx.from });
     const isResident = userData?.userStatus === userStatusList.resident;
     const isAdmin = [userStatusList.admin, userStatusList.accountant, userStatusList.chairman].includes(userData?.userStatus);
@@ -51,7 +54,7 @@ const initAction = async (ctx) => {
 };
 
 module.exports = (bot) => {
-    bot.hears(moduleParam.keywords, (ctx) => initAction(ctx));
+    bot.hears(moduleParam.keywords, (ctx) => initAction(ctx, { isHearsAction: true }));
     bot.command(moduleParam.name, (ctx) => initAction(ctx));
     bot.action(moduleParam.name, (ctx) => initAction(ctx));
 };

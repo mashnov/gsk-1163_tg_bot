@@ -3,6 +3,7 @@ const cron = require('node-cron');
 const { sendMessage, removeMessage, commandAnswer} = require('../helpers/telegraf');
 const { getHolidays } = require('../helpers/holidays');
 const { getFormattedDate } = require('../helpers/getters');
+const { setStatistics } = require('../helpers/statistics');
 const { guard } = require('../helpers/guard');
 
 const { moduleNames, homeOption, closeOption} = require('../const/dictionary');
@@ -18,6 +19,8 @@ const moduleParam = {
 }
 
 const initAction = async (ctx) => {
+    setStatistics('holiday-start');
+
     const isGuardPassed = await guard(ctx, { privateChat: true });
 
     if (!isGuardPassed) {
@@ -58,7 +61,11 @@ const callbackHandler = async (ctx, next) => {
     return next();
 };
 
-const getHolidayMessage = async (ctx, { actionType, isCronAction, noRemove } = {}) => {
+const getHolidayMessage = async (ctx, { actionType, isCronAction, noRemove, isHearsAction } = {}) => {
+    if (!isCronAction && actionType) {
+        setStatistics(isHearsAction ? 'holiday-hears' : `holiday-get:${actionType}`);
+    }
+
     const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true });
 
     if (!isGuardPassed) {
@@ -139,7 +146,7 @@ const hearsHandler = async (ctx) => {
     }
 
     if (hearsIsEnabled.holiday) {
-        await getHolidayMessage(ctx, { actionType: moduleParam.month, noRemove: true });
+        await getHolidayMessage(ctx, { actionType: moduleParam.month, noRemove: true, isHearsAction: true });
     }
 };
 

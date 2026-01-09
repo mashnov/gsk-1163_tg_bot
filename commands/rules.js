@@ -1,4 +1,6 @@
 const { sendMessage, sendLocalFileMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
+const { setStatistics } = require('../helpers/statistics');
+
 const { homeOption, closeOption, moduleNames } = require('../const/dictionary');
 
 const moduleParam = {
@@ -9,7 +11,9 @@ const moduleParam = {
     dog: 'dog',
 };
 
-const initAction = async (ctx) => {
+const initAction = async (ctx, { isHearsAction } = {}) => {
+    setStatistics(isHearsAction ? 'rules-hears' : 'rules-start');
+
     const messageText =
         '📚 Правила\n\n' +
         'В этом разделе собраны основные правила.\n' +
@@ -38,6 +42,8 @@ const initAction = async (ctx) => {
 
 
 const ruleSelectHandler = async (ctx, sectionName) => {
+    setStatistics(`rules-get:${sectionName}`);
+
     let text = '';
 
     const isPrivateChat = ctx.chat?.type === 'private';
@@ -132,7 +138,7 @@ const callbackHandler = async (ctx, next) => {
 };
 
 module.exports = (bot) => {
-    bot.hears(moduleParam.keywords, (ctx) => initAction(ctx));
+    bot.hears(moduleParam.keywords, (ctx) => initAction(ctx, { isHearsAction: true }));
     bot.command(moduleParam.name, (ctx) => initAction(ctx));
     bot.action(moduleParam.name, (ctx) => initAction(ctx));
     bot.on('callback_query', (ctx, next) => callbackHandler(ctx, next));
