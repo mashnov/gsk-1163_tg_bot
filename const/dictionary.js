@@ -20,6 +20,7 @@ const moduleNames = {
     weather: 'weather',
     horoscope: 'horoscope',
     holiday: 'holiday',
+    milkman: 'milkman',
 };
 
 const backOption = { start: '⬅️ Назад' };

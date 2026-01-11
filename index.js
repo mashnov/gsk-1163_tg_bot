@@ -17,6 +17,7 @@ const adminCommand = require('./commands/admin');
 const verificationCommand = require('./commands/verification');
 const unblockCommand = require('./commands/unblock');
 const unverifiedCommand = require('./commands/unverified');
+const milkmanCommand = require('./commands/milkman.js');
 
 const { botToken } = require('./const/env');
 
@@ -40,6 +41,7 @@ const createBot = () => {
     verificationCommand(bot);
     unblockCommand(bot);
     unverifiedCommand(bot);
+    milkmanCommand(bot);
 
     return bot;
 }
