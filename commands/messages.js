@@ -9,7 +9,7 @@ const { guard } = require('../helpers/guard');
 const { closeOption, moduleNames } = require('../const/dictionary');
 const { stepList } = require('../const/messages');
 const { superUserId } = require('../const/env');
-const { userStatusList } = require('../const/db');
+const { userStatusList, userStatusText } = require('../const/db');
 
 const moduleParam = {
     name: moduleNames.messages,
@@ -80,11 +80,12 @@ const submitAction = async (ctx, listType) => {
 
     const recipientHeader = '💬 Новое сообщение\n\n';
     const recipientSender = `Отправитель: ${getUserNameLink(ctx.from)}\n\n`;
+    const recipientProfileStatus = `Статус: ${ userStatusText[userData?.userStatus] }\n\n`;
     const recipientProfileName = `Имя отправителя: ${userData?.residentName}\n`;
     const recipientPhoneNumber = `Номер телефона: ${userData?.phoneNumber}\n`;
     const recipientRoomNumber = `Номер квартиры: ${userData?.roomNumber}\n\n`;
     const recipientText = getSummaryMessage(stepList[session.stepIndex]?.summary, session);
-    const recipientMessage = `${recipientHeader}${recipientSender}${recipientProfileName}${recipientPhoneNumber}${recipientRoomNumber}${recipientText}`;
+    const recipientMessage = recipientHeader + recipientSender + recipientProfileStatus + recipientProfileName + recipientPhoneNumber + recipientRoomNumber + recipientText;
 
     const userIdList = await getUserIndex(listType);
 
