@@ -1,5 +1,5 @@
 const { sendMessage, removeMessage, commandAnswer} = require('../helpers/telegraf');
-const { setStatistics } = require('../helpers/statistics');
+const { setStatistics } = require('../helpers/db');
 const { guard } = require('../helpers/guard');
 
 const { hearsIsEnabled, botUsername } = require('../const/env');

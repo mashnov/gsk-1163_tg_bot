@@ -1,13 +1,13 @@
 const cron = require('node-cron');
 
 const { sendMessage, removeMessage, commandAnswer} = require('../helpers/telegraf');
-const { getHolidays } = require('../helpers/holidays');
 const { getFormattedDate } = require('../helpers/getters');
-const { setStatistics } = require('../helpers/statistics');
+const { getHolidays } = require('../helpers/holidays');
+const { setStatistics } = require('../helpers/db');
 const { guard } = require('../helpers/guard');
 
-const { moduleNames, homeOption, closeOption} = require('../const/dictionary');
 const { cronIsEnabled, hearsIsEnabled, homeChatId, homeTimeZone } = require('../const/env');
+const { moduleNames, homeOption, closeOption} = require('../const/dictionary');
 
 const moduleParam = {
     name: moduleNames.holiday,

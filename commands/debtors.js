@@ -1,17 +1,16 @@
 const cron = require('node-cron');
 
-const { startStepper } = require('../helpers/stepper');
 const { initStore, getSession } = require('../helpers/sessions');
+const { getUserData, getDebtorsData, setDebtorsData, setStatistics } = require('../helpers/db');
 const { sendMessage, removeMessage, commandAnswer, getFile } = require('../helpers/telegraf');
 const { getFormattedAmount, getFormattedDate } = require('../helpers/getters');
-const { getUserData, getDebtorsData, setDebtorsData } = require('../helpers/db');
 const { handleXlsxFile } = require('../helpers/debtors');
-const { setStatistics } = require('../helpers/statistics');
+const { startStepper } = require('../helpers/stepper');
 const { guard } = require('../helpers/guard');
 
-const { stepList } = require('../const/debtors');
 const { cronIsEnabled, hearsIsEnabled, homeTimeZone, homeChatId } = require('../const/env');
 const { moduleNames, homeOption, closeOption} = require('../const/dictionary');
+const { stepList } = require('../const/debtors');
 const { userStatusList} = require('../const/db');
 
 const moduleParam = {

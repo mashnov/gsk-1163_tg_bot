@@ -2,12 +2,12 @@ const cron = require('node-cron');
 
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { fetchWeatherData, windUnitTransformer } = require('../helpers/weather');
-const { setStatistics } = require('../helpers/statistics');
+const { setStatistics } = require('../helpers/db');
 const { guard } = require('../helpers/guard');
 
-const { weatherCodeMap } = require('../const/weather');
-const { homeOption, closeOption, moduleNames} = require('../const/dictionary');
 const { cronIsEnabled, hearsIsEnabled, homeChatId, homeTimeZone } = require('../const/env');
+const { homeOption, closeOption, moduleNames} = require('../const/dictionary');
+const { weatherCodeMap } = require('../const/weather');
 
 const moduleParam = {
     name: moduleNames.weather,

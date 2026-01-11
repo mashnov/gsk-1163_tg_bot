@@ -1,9 +1,8 @@
-const { getUserData } = require('../helpers/db');
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
-const { setStatistics } = require('../helpers/statistics');
+const { getUserData, setStatistics } = require('../helpers/db');
 
-const { userStatusList } = require('../const/db');
 const { closeOption, moduleNames, homeOption} = require('../const/dictionary');
+const { userStatusList } = require('../const/db');
 
 const moduleParam = {
     name: moduleNames.contact,

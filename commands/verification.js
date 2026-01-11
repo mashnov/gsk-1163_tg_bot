@@ -1,15 +1,14 @@
-const { startStepper } = require('../helpers/stepper');
-const { initStore, getSession } = require('../helpers/sessions');
-const { getUserNameLink, getUserName, getFormattedDate, getSummaryMessage, getRoomOwner } = require('../helpers/getters');
-const { getUserIndex, getUserData, setUserData, getVerificationIndexItem, setVerificationIndexItem } = require('../helpers/db');
 const { sendMessage, removeMessage, commandAnswer, banUserById, unBanUserById, makeAdmin, demoteUser, restrictUser, unRestrictUser } = require('../helpers/telegraf');
+const { getUserIndex, getUserData, setUserData, getVerificationIndexItem, setVerificationIndexItem, setStatistics } = require('../helpers/db');
+const { getUserNameLink, getUserName, getFormattedDate, getSummaryMessage, getRoomOwner } = require('../helpers/getters');
+const { initStore, getSession } = require('../helpers/sessions');
 const { getArrayFallback } = require('../helpers/array');
-const { setStatistics } = require('../helpers/statistics');
+const { startStepper } = require('../helpers/stepper');
 const { guard } = require('../helpers/guard');
 
+const { backOption, closeOption, moduleNames} = require('../const/dictionary');
 const { superUserId, homeChatId, botUsername } = require('../const/env');
 const { userStatusText, userStatusList } = require('../const/db');
-const { backOption, closeOption, moduleNames} = require('../const/dictionary');
 const { stepList } = require('../const/verification');
 
 const moduleParam = {

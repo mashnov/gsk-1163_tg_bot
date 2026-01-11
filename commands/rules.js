@@ -1,5 +1,5 @@
 const { sendMessage, sendLocalFileMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
-const { setStatistics } = require('../helpers/statistics');
+const { setStatistics } = require('../helpers/db');
 
 const { homeOption, closeOption, moduleNames } = require('../const/dictionary');
 

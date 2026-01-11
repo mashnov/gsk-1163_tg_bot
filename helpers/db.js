@@ -187,6 +187,36 @@ const setDebtorsData = async ({ total, residents }) => {
     return setDbData('debtors', debtorsData);
 };
 
+// STATISTICS
+const createStatisticsData = async () => {
+    const statisticsData = await getDbData('statistics');
+
+    if (statisticsData) {
+        return statisticsData;
+    }
+
+    await setDbData('statistics', {});
+    return await getStatisticsData();
+};
+
+
+const getStatisticsData = async () => {
+    return await createStatisticsData();
+};
+
+const setStatistics = async (name = '') => {
+    const [statisticsKey] = new Date().toISOString().split('T');
+    const statisticsList = await getStatisticsData();
+
+    if (!statisticsList[statisticsKey]) {
+        statisticsList[statisticsKey] = {};
+    }
+
+    statisticsList[statisticsKey][name] = Number(statisticsList[statisticsKey][name] || '0') + 1;
+
+    return setDbData('statistics', statisticsList);
+};
+
 module.exports = {
     getUserData,
     setUserData,
@@ -196,4 +226,5 @@ module.exports = {
     setVerificationIndexItem,
     getDebtorsData,
     setDebtorsData,
+    setStatistics,
 };

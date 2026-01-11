@@ -1,13 +1,12 @@
+const { getUserData, getUserIndex, getUserListByIndex, setStatistics } = require('../helpers/db');
 const { getUserName, getUserNameLink, getFormattedDate } = require('../helpers/getters');
-const { getUserData, getUserIndex, getUserListByIndex } = require('../helpers/db');
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { getPaginatedItems } = require('../helpers/array');
-const { setStatistics } = require('../helpers/statistics');
 const { guard } = require('../helpers/guard');
 
-const { profilesPageCount } = require('../const/env');
-const { userStatusList, userStatusText } = require('../const/db');
 const { homeOption, moduleNames } = require('../const/dictionary');
+const { userStatusList, userStatusText } = require('../const/db');
+const { profilesPageCount } = require('../const/env');
 
 const moduleParam = {
     name: moduleNames.profiles,

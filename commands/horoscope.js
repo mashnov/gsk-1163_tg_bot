@@ -2,11 +2,11 @@ const cron = require('node-cron');
 
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { fetchHoroscopeData } = require('../helpers/horoscope');
-const { setStatistics } = require('../helpers/statistics');
+const { setStatistics } = require('../helpers/db');
 const { guard } = require('../helpers/guard');
 
-const { homeOption, moduleNames, closeOption} = require('../const/dictionary');
 const { cronIsEnabled, hearsIsEnabled, homeChatId, homeTimeZone } = require('../const/env');
+const { homeOption, moduleNames, closeOption} = require('../const/dictionary');
 const { horoscopeTitleMapper } = require('../const/horoscope');
 
 const moduleParam = {

@@ -1,8 +1,8 @@
 const cron = require('node-cron');
 
 const { sendLocalFileMessage, removeMessage, commandAnswer, sendMessage} = require('../helpers/telegraf');
+const { setStatistics } = require('../helpers/db');
 const { getCsvFromBd } = require('../helpers/backup');
-const { setStatistics } = require('../helpers/statistics');
 const { guard } = require('../helpers/guard');
 
 const { moduleNames, homeOption, closeOption} = require('../const/dictionary');

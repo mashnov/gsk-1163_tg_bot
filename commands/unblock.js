@@ -1,15 +1,14 @@
-const { startStepper } = require('../helpers/stepper');
+const { getUserIndex, getUserData, setVerificationIndexItem, setStatistics } = require('../helpers/db');
 const { initStore, getSession } = require('../helpers/sessions');
-const { getUserNameLink, getSummaryMessage } = require('../helpers/getters');
-const { getUserIndex, getUserData, setVerificationIndexItem } = require('../helpers/db');
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
+const { getUserNameLink, getSummaryMessage } = require('../helpers/getters');
 const { getArrayFallback } = require('../helpers/array');
-const { setStatistics } = require('../helpers/statistics');
+const { startStepper } = require('../helpers/stepper');
 const { guard } = require('../helpers/guard');
 
-const { stepList } = require('../const/unblock');
-const { userStatusText, userStatusList } = require('../const/db');
 const { closeOption, moduleNames} = require('../const/dictionary');
+const { userStatusText, userStatusList } = require('../const/db');
+const { stepList } = require('../const/unblock');
 const { superUserId } = require('../const/env');
 
 const moduleParam = {
