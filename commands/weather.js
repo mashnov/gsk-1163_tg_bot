@@ -2,7 +2,7 @@ const cron = require('node-cron');
 
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { fetchWeatherData, windUnitTransformer } = require('../helpers/weather');
-const { setStatistics } = require('../helpers/db');
+const { setStatisticsData } = require('../helpers/db');
 const { guard } = require('../helpers/guard');
 
 const { cronIsEnabled, hearsIsEnabled, homeChatId, homeTimeZone } = require('../const/env');
@@ -17,7 +17,7 @@ const moduleParam = {
 
 const getWeatherMessage = async (ctx, { isCronAction, noRemove, isHearsAction } = {}) => {
     if (!isCronAction) {
-        setStatistics(isHearsAction ? 'weather-hears' : 'weather-start');
+        await setStatisticsData(isHearsAction ? 'weather-hears' : 'weather-start');
     }
 
     const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true });

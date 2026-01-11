@@ -13,7 +13,7 @@ const moduleNames = {
     verification: 'verification',
     complaint: 'complaint',
     anonymous: 'anonymous',
-    backup: 'backup',
+    admin: 'admin',
     export: 'export',
     unblock: 'unblock',
     unverified: 'unverified',

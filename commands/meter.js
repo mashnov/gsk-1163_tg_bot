@@ -1,6 +1,6 @@
 const { initStore, getSession } = require('../helpers/sessions');
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
-const { getUserIndex, getUserData, setStatistics } = require('../helpers/db');
+const { getUserIndex, getUserData, setStatisticsData } = require('../helpers/db');
 const { getUserNameLink, getSummaryMessage } = require('../helpers/getters');
 const { getArrayFallback } = require('../helpers/array');
 const { startStepper } = require('../helpers/stepper');
@@ -29,7 +29,7 @@ const initStepper = async () => {
 };
 
 const initAction = async (ctx) => {
-    setStatistics('meter-start');
+    await setStatisticsData('meter-start');
 
     const isGuardPassed = await guard(ctx, { privateChat: true, verify: true });
 
@@ -49,7 +49,7 @@ const initAction = async (ctx) => {
 };
 
 const submitAction = async (ctx) => {
-    setStatistics('meter-submit');
+    await setStatisticsData('meter-submit');
 
     const senderText = '〽️ Показания счетчиков успешно отправлены';
     await sendMessage(ctx, { text: senderText });

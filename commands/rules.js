@@ -1,5 +1,5 @@
 const { sendMessage, sendLocalFileMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
-const { setStatistics } = require('../helpers/db');
+const { setStatisticsData } = require('../helpers/db');
 
 const { homeOption, closeOption, moduleNames } = require('../const/dictionary');
 
@@ -12,7 +12,7 @@ const moduleParam = {
 };
 
 const initAction = async (ctx, { isHearsAction } = {}) => {
-    setStatistics(isHearsAction ? 'rules-hears' : 'rules-start');
+    await setStatisticsData(isHearsAction ? 'rules-hears' : 'rules-start');
 
     const messageText =
         '📚 Правила\n\n' +
@@ -42,7 +42,7 @@ const initAction = async (ctx, { isHearsAction } = {}) => {
 
 
 const ruleSelectHandler = async (ctx, sectionName) => {
-    setStatistics(`rules-get:${sectionName}`);
+    await setStatisticsData(`rules-get:${sectionName}`);
 
     let text = '';
 
@@ -50,7 +50,6 @@ const ruleSelectHandler = async (ctx, sectionName) => {
 
     const buttons = {
         [moduleParam.name]: '⬅️ Назад',
-        ...(isPrivateChat ? homeOption : {}),
         ...(!isPrivateChat ? closeOption : {}),
     };
 

@@ -200,11 +200,15 @@ const createStatisticsData = async () => {
 };
 
 
-const getStatisticsData = async () => {
-    return await createStatisticsData();
+const getStatisticsData = async (isToday) => {
+    const statisticsData = await createStatisticsData();
+    const [statisticsKey] = new Date().toISOString().split('T');
+    const todayDate = statisticsData[statisticsKey] || {};
+
+    return isToday ? todayDate : statisticsData;
 };
 
-const setStatistics = async (name = '') => {
+const setStatisticsData = async (name = '') => {
     const [statisticsKey] = new Date().toISOString().split('T');
     const statisticsList = await getStatisticsData();
 
@@ -226,5 +230,6 @@ module.exports = {
     setVerificationIndexItem,
     getDebtorsData,
     setDebtorsData,
-    setStatistics,
+    setStatisticsData,
+    getStatisticsData,
 };

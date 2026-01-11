@@ -13,7 +13,7 @@ const meterCommand = require('./commands/meter');
 const anonymousCommand = require('./commands/anonymous');
 const complaintCommand = require('./commands/complaint');
 const profilesCommand = require('./commands/profiles');
-const backupCommand = require('./commands/backup');
+const adminCommand = require('./commands/admin');
 const verificationCommand = require('./commands/verification');
 const unblockCommand = require('./commands/unblock');
 const unverifiedCommand = require('./commands/unverified');
@@ -36,7 +36,7 @@ const createBot = () => {
     anonymousCommand(bot);
     complaintCommand(bot);
     profilesCommand(bot);
-    backupCommand(bot);
+    adminCommand(bot);
     verificationCommand(bot);
     unblockCommand(bot);
     unverifiedCommand(bot);

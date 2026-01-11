@@ -49,8 +49,7 @@ const initAction = async (ctx) => {
     }
 
     if (isPrivateChat && isAdmin) {
-        buttons[moduleNames.profiles] = '🪪 Управление пользователями';
-        buttons[moduleNames.backup] = '📤 Резервное копирование';
+        buttons[moduleNames.admin] = '🪪 Администрирование';
     }
 
     let messageText =

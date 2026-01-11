@@ -1,5 +1,5 @@
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
-const { getUserData, setStatistics } = require('../helpers/db');
+const { getUserData, setStatisticsData } = require('../helpers/db');
 
 const { closeOption, moduleNames, homeOption} = require('../const/dictionary');
 const { userStatusList } = require('../const/db');
@@ -9,8 +9,8 @@ const moduleParam = {
     keywords: ['контакты'],
 }
 
-const initAction = async (ctx, { isHearsAction }) => {
-    setStatistics(isHearsAction ? 'contacts-hears' : 'contacts-get');
+const initAction = async (ctx, { isHearsAction } = {}) => {
+    await setStatisticsData(isHearsAction ? 'contacts-hears' : 'contacts-get');
 
     const userData = await getUserData({ from: ctx.from });
     const isResident = userData?.userStatus === userStatusList.resident;
@@ -27,6 +27,7 @@ const initAction = async (ctx, { isHearsAction }) => {
         'Водопроводчик: <a href="tel:+78129111515">911-15-15</a>\n\n' +
         'Лифт <a href="tel:+78124907781">490-77-81</a>\n' +
         'Домофон: <a href="tel:+78126120033">612-00-33</a>\n\n' +
+        'Участковый: <a href="tel:+79052274820">+7 (905) 227-48-20</a>\n\n' +
         '<a href="https://max.ru/join/WXnefLdd0qI3xONMvNrNGB3Yg_0BSJcrCz3qmyufAWU?clckid=ce28f0e7">Канал в MAX</a>\n' +
         '<a href="https://t.me/news1163">Канал в Телеграм</a>\n' +
         '<a href="https://chat.whatsapp.com/LJoRyuouIflACMnCZjTR5h?clckid=97cd2216">Канал в WhatsApp</a>\n' +

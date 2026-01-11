@@ -1,10 +1,10 @@
-const { getUserData, getUserIndex, getUserListByIndex, setStatistics } = require('../helpers/db');
-const { getUserName, getUserNameLink, getFormattedDate } = require('../helpers/getters');
+const { getUserData, getUserIndex, getUserListByIndex, setStatisticsData } = require('../helpers/db');
+const { getUserNameLink, getFormattedDate } = require('../helpers/getters');
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { getPaginatedItems } = require('../helpers/array');
 const { guard } = require('../helpers/guard');
 
-const { homeOption, moduleNames } = require('../const/dictionary');
+const { moduleNames } = require('../const/dictionary');
 const { userStatusList, userStatusText } = require('../const/db');
 const { profilesPageCount } = require('../const/env');
 
@@ -17,7 +17,7 @@ const moduleParam = {
 };
 
 const startAction = async (ctx) => {
-    setStatistics('profile-start');
+    await setStatisticsData('profile-start');
 
     const isGuardPassed = await guard(ctx, { privateChat: true, admin: true });
 
@@ -26,9 +26,6 @@ const startAction = async (ctx) => {
         await commandAnswer(ctx);
         return;
     }
-
-    const userData = await getUserData({ from: ctx.from });
-    const userStatus = userData?.userStatus;
 
     const buttons = {
         [`${moduleParam.name}:${userStatusList.chairman}:${moduleParam.list}`]: `${userStatusText.chairman}`,
@@ -40,19 +37,12 @@ const startAction = async (ctx) => {
         [`${moduleParam.name}:${userStatusList.restricted}:${moduleParam.list}`]: 'Ограниченные',
         [`${moduleParam.name}:${userStatusList.blocked}:${moduleParam.list}`]: 'Заблокированные',
         [`${moduleParam.name}:${userStatusList.unverified}:${moduleParam.list}`]: `${userStatusText.unverified}`,
+        [moduleNames.admin]: '⬅️ Назад',
     };
 
-    const messageText =
-        `🪪 Администрирование \n\n` +
-        `Имя профиля: ${getUserName(ctx.from)}\n` +
-        `Статус: ${userStatusText[userStatus]}`;
-
     await sendMessage(ctx, {
-        text: messageText,
-        buttons: {
-            ...buttons,
-            ...homeOption,
-        },
+        text: '🪪 Управление профилями',
+        buttons,
     });
     await removeMessage(ctx);
     await commandAnswer(ctx);
@@ -60,7 +50,7 @@ const startAction = async (ctx) => {
 
 const profileListHandler = async (ctx, listType, listIndex = '0') => {
     if (listIndex === '0') {
-        setStatistics(`profile-list-get:${listType}`);
+        await setStatisticsData(`profile-list-get:${listType}`);
     }
 
     const profileList = await getUserIndex(listType);
@@ -97,17 +87,14 @@ const profileListHandler = async (ctx, listType, listIndex = '0') => {
 
     await sendMessage(ctx, {
         text: messageText,
-        buttons: {
-            ...buttons,
-            ...homeOption,
-        },
+        buttons,
     });
     await removeMessage(ctx);
     await commandAnswer(ctx);
 };
 
 const profileReviewHandler = async (ctx, accountId, backParams) => {
-    setStatistics(`profile-details:${accountId}`);
+    await setStatisticsData(`profile-details:${accountId}`);
 
     const userData = await getUserData({ id: accountId });
     const userLinkData = { id: accountId, first_name: userData.userName };

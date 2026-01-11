@@ -3,7 +3,7 @@ const cron = require('node-cron');
 const { sendMessage, removeMessage, commandAnswer} = require('../helpers/telegraf');
 const { getFormattedDate } = require('../helpers/getters');
 const { getHolidays } = require('../helpers/holidays');
-const { setStatistics } = require('../helpers/db');
+const { setStatisticsData } = require('../helpers/db');
 const { guard } = require('../helpers/guard');
 
 const { cronIsEnabled, hearsIsEnabled, homeChatId, homeTimeZone } = require('../const/env');
@@ -19,7 +19,7 @@ const moduleParam = {
 }
 
 const initAction = async (ctx) => {
-    setStatistics('holiday-start');
+    await setStatisticsData('holiday-start');
 
     const isGuardPassed = await guard(ctx, { privateChat: true });
 
@@ -29,10 +29,6 @@ const initAction = async (ctx) => {
         return;
     }
 
-    const messageText =
-        '🎉 Праздники' +
-        '\n\nВыберите интересующий Вас пункт меню';
-
     const buttons = {
         [`${moduleParam.name}:${moduleParam.today}`]: 'Сегодня',
         [`${moduleParam.name}:${moduleParam.month}`]: 'В этом месяце',
@@ -40,7 +36,7 @@ const initAction = async (ctx) => {
     };
 
     await sendMessage(ctx, {
-        text: messageText,
+        text: '🎉 Праздники',
         buttons: {
             ...buttons,
             ...homeOption,
@@ -63,7 +59,7 @@ const callbackHandler = async (ctx, next) => {
 
 const getHolidayMessage = async (ctx, { actionType, isCronAction, noRemove, isHearsAction } = {}) => {
     if (!isCronAction && actionType) {
-        setStatistics(isHearsAction ? 'holiday-hears' : `holiday-get:${actionType}`);
+        await setStatisticsData(isHearsAction ? 'holiday-hears' : `holiday-get:${actionType}`);
     }
 
     const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true });
@@ -116,7 +112,6 @@ const getHolidayMessage = async (ctx, { actionType, isCronAction, noRemove, isHe
         accountId: isPrivateChat ? undefined : homeChatId,
         buttons: {
             ...(isPrivateChat ? { [moduleParam.name]: '⬅️ Назад' } : {}),
-            ...(isPrivateChat ? homeOption : {}),
             ...(!isPrivateChat && !isCronAction ? closeOption : {}),
         }
     });

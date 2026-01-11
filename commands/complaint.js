@@ -1,5 +1,5 @@
 const { initStore, getSession } = require('../helpers/sessions');
-const { getUserIndex, setVerificationIndexItem, setStatistics } = require('../helpers/db');
+const { getUserIndex, setVerificationIndexItem, setStatisticsData } = require('../helpers/db');
 const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { getUserNameLink } = require('../helpers/getters');
 const { getArrayFallback } = require('../helpers/array');
@@ -30,7 +30,7 @@ const initStepper = async () => {
 };
 
 const initAction = async (ctx) => {
-    setStatistics('complain-start');
+    await setStatisticsData('complain-start');
 
     const isGuardPassed = await guard(ctx, { privateChat: true, verify: true });
 
@@ -50,7 +50,7 @@ const initAction = async (ctx) => {
 };
 
 const submitAction = async (ctx) => {
-    setStatistics('complain-submit');
+    await setStatisticsData('complain-submit');
 
     const senderText = '‼️ Ваша жалоба отправлена.';
     await sendMessage(ctx, { text: senderText });

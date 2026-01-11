@@ -1,23 +1,23 @@
 const cron = require('node-cron');
 
 const { sendLocalFileMessage, removeMessage, commandAnswer, sendMessage} = require('../helpers/telegraf');
-const { setStatistics } = require('../helpers/db');
-const { getCsvFromBd } = require('../helpers/backup');
+const { setStatisticsData, getStatisticsData } = require('../helpers/db');
+const { getCsvFromBd } = require('../helpers/admin');
 const { guard } = require('../helpers/guard');
 
 const { moduleNames, homeOption, closeOption} = require('../const/dictionary');
 const { homeTimeZone, superUserId} = require('../const/env');
 
 const moduleParam = {
-    name: moduleNames.backup,
+    name: moduleNames.admin,
     csv: 'csv',
-    txt: 'txt',
-    json: 'json',
+    logs: 'logs',
+    database: 'database',
     sendTime: [23],
 };
 
 const startAction = async (ctx) => {
-    setStatistics('backup-start');
+    await setStatisticsData('admin-start');
 
     const isGuardPassed = await guard(ctx, { privateChat: true, admin: true });
 
@@ -27,14 +27,21 @@ const startAction = async (ctx) => {
         return;
     }
 
-    const messageText = '📤 Резервное копирование'
+    const statisticsData = await getStatisticsData(true);
+    const statisticsLines = Object.entries(statisticsData).map(([key, value]) => `• ${key} - ${value}`).join('\n');
+
+    const messageText =
+        '🪪 Управление' +
+        '\n\nСтатистика использования за сегодня:' +
+        `\n\n${statisticsLines}`
 
     await sendMessage(ctx, {
         text: messageText,
         buttons: {
-            [`${moduleParam.name}:${moduleParam.txt}`]: 'Скачать логи',
+            [moduleNames.profiles]: 'Профили',
+            [`${moduleParam.name}:${moduleParam.logs}`]: 'Скачать логи',
             [`${moduleParam.name}:${moduleParam.csv}`]: 'Скачать CSV',
-            [`${moduleParam.name}:${moduleParam.json}`]: 'Скачать БД',
+            [`${moduleParam.name}:${moduleParam.database}`]: 'Скачать БД',
             ...homeOption,
         },
     });
@@ -44,7 +51,7 @@ const startAction = async (ctx) => {
 
 const downloadAction = async (ctx, { isCronAction, actionType } = {}) => {
     if (!isCronAction && actionType) {
-        setStatistics(`backup-get:${actionType}`);
+        await setStatisticsData(`admin-get:${actionType}`);
     }
 
     const isGuardPassed = isCronAction || await guard(ctx, { privateChat: true, admin: true });
@@ -57,13 +64,13 @@ const downloadAction = async (ctx, { isCronAction, actionType } = {}) => {
 
     const fileParams = {};
 
-    if (actionType === moduleParam.json) {
+    if (actionType === moduleParam.database) {
         fileParams.filePath = './state/db.json';
     }
     if (actionType === moduleParam.csv) {
         fileParams.fileContent = await getCsvFromBd();
     }
-    if (actionType === moduleParam.txt) {
+    if (actionType === moduleParam.logs) {
         fileParams.filePath = './state/messages.txt';
     }
 

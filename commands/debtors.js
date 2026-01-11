@@ -1,7 +1,7 @@
 const cron = require('node-cron');
 
 const { initStore, getSession } = require('../helpers/sessions');
-const { getUserData, getDebtorsData, setDebtorsData, setStatistics } = require('../helpers/db');
+const { getUserData, getDebtorsData, setDebtorsData, setStatisticsData } = require('../helpers/db');
 const { sendMessage, removeMessage, commandAnswer, getFile } = require('../helpers/telegraf');
 const { getFormattedAmount, getFormattedDate } = require('../helpers/getters');
 const { handleXlsxFile } = require('../helpers/debtors');
@@ -36,7 +36,7 @@ const initStepper = async () => {
 
 const startAction = async (ctx, { isCronAction, noRemove, isUploadAction, isHearsAction } = {}) => {
     if (!isCronAction && !isUploadAction) {
-        setStatistics(isHearsAction ? 'debtors-hears' : 'debtors-start');
+        await setStatisticsData(isHearsAction ? 'debtors-hears' : 'debtors-start');
     }
 
     const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true });
@@ -86,7 +86,7 @@ const startAction = async (ctx, { isCronAction, noRemove, isUploadAction, isHear
 };
 
 const initAction = async (ctx) => {
-    setStatistics('debtors-upload-start');
+    await setStatisticsData('debtors-upload-start');
 
     const isGuardPassed = await guard(ctx, { privateChat: true, admin: true });
 
@@ -106,7 +106,7 @@ const initAction = async (ctx) => {
 };
 
 const submitAction = async (ctx) => {
-    setStatistics('debtors-upload-submit');
+    await setStatisticsData('debtors-upload-submit');
 
     const session = getSession(ctx.from.id);
     const fileData = await getFile(ctx, session?.document?.file_id);

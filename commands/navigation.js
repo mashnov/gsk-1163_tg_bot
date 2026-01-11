@@ -1,5 +1,5 @@
 const { sendMessage, removeMessage, commandAnswer} = require('../helpers/telegraf');
-const { setStatistics } = require('../helpers/db');
+const { setStatisticsData } = require('../helpers/db');
 const { guard } = require('../helpers/guard');
 
 const { hearsIsEnabled, botUsername } = require('../const/env');
@@ -9,7 +9,7 @@ const moduleParam = {
 };
 
 const createNavigation = async (ctx, { noRemove, next, isHearsAction } = {}) => {
-    setStatistics(isHearsAction ? 'navigation-hears' : 'navigation-start');
+    await setStatisticsData(isHearsAction ? 'navigation-hears' : 'navigation-start');
 
     const isPrivateChat = ctx.chat?.type === 'private';
 
