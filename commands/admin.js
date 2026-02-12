@@ -21,7 +21,8 @@ const moduleParam = {
     database: 'database',
     download: 'download',
     upload: 'upload',
-    sendTime: [23],
+    sendTimeMinutes: 30,
+    sendTimeHours: 23,
 };
 
 let stepper = undefined;
@@ -126,8 +127,8 @@ const downloadAction = async (ctx, { isCronAction, fileType } = {}) => {
         ...fileParams,
         accountId: isCronAction ? superUserId : undefined,
         buttons: {
-            ...(fileType ? { [moduleParam.name]: '⬅️ Назад' } : {} ),
-            ...(fileType ? homeOption : {} ),
+            ...(fileType && !isCronAction ? { [moduleParam.name]: '⬅️ Назад' } : {} ),
+            ...(fileType && !isCronAction ? homeOption : {} ),
             ...(isCronAction ? closeOption : {}),
         }
     });
@@ -140,8 +141,8 @@ const downloadAction = async (ctx, { isCronAction, fileType } = {}) => {
 
 const cronAction = (bot) => {
     cron.schedule(
-        `0 ${moduleParam.sendTime} * * *`,
-        async () => downloadAction(bot, { isCronAction: true, fileType: moduleParam.json }),
+        `${moduleParam.sendTimeMinutes} ${moduleParam.sendTimeHours} * * *`,
+        async () => downloadAction(bot, { isCronAction: true, fileType: moduleParam.database }),
         { timezone: homeTimeZone },
     );
 };
