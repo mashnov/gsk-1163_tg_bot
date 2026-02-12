@@ -11,15 +11,12 @@ const moduleNames = {
     profiles: 'profiles',
     rules: 'rules',
     verification: 'verification',
-    complaint: 'complaint',
-    anonymous: 'anonymous',
     admin: 'admin',
     export: 'export',
     unblock: 'unblock',
     unverified: 'unverified',
     weather: 'weather',
     horoscope: 'horoscope',
-    holiday: 'holiday',
     milkman: 'milkman',
 };
 

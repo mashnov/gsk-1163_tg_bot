@@ -5,7 +5,7 @@ const { guard } = require('../helpers/guard');
 const { hearsIsEnabled, botUsername } = require('../const/env');
 
 const moduleParam = {
-    keywords: [/домовенок/i, /бот/i],
+    keywords: [/домовенок/i],
 };
 
 const createNavigation = async (ctx, { noRemove, next, isHearsAction } = {}) => {

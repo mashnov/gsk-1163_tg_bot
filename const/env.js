@@ -18,7 +18,6 @@ const debtorsRoomNumberCell = Number(process.env.DEBTORS_ROOM_NUMBER_CELL);
 const debtorsAmountCell = Number(process.env.DEBTORS_AMOUNT_CELL);
 const debtorsAmountMin = Number(process.env.DEBTORS_AMOUNT_MIN);
 const hearsIsEnabled = {
-    holiday: process.env.HEARS_HOLIDAY_IS_ENABLED === 'true',
     horoscope: process.env.HEARS_HOROSCOPE_IS_ENABLED === 'true',
     debtors: process.env.HEARS_DEBTORS_IS_ENABLED === 'true',
     weather: process.env.HEARS_WEATHER_IS_ENABLED === 'true',
@@ -26,7 +25,6 @@ const hearsIsEnabled = {
 };
 
 const cronIsEnabled = {
-    holiday: process.env.CRON_HOLIDAY_IS_ENABLED === 'true',
     horoscope: process.env.CRON_HOROSCOPE_IS_ENABLED === 'true',
     debtors: process.env.CRON_DEBTORS_IS_ENABLED === 'true',
     weather: process.env.CRON_WEATHER_IS_ENABLED === 'true',

@@ -38,14 +38,11 @@ const initAction = async (ctx) => {
 
     if (isPrivateChat && (isResident || isAdmin)) {
         buttons[moduleNames.contact] = '📖 Контакты';
-        buttons[moduleNames.holiday] = '🎉 Праздники';
         buttons[moduleNames.weather] = '🌤️ Прогноз погоды';
         buttons[moduleNames.horoscope] = '💫 Личный Гороскоп';
         buttons[moduleNames.debtors] = '🏦 Список должников';
         buttons[moduleNames.meter] = '〽️ Показания счетчиков';
         buttons[moduleNames.messages] = '💬 Написать сообщение';
-        buttons[moduleNames.anonymous] = '🎭 Анонимное сообщение';
-        buttons[moduleNames.complaint] = '‼️ Пожаловаться на сообщение';
     }
 
     if (isPrivateChat && isAdmin) {
