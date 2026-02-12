@@ -26,6 +26,7 @@ const initAction = async (ctx) => {
 
     const buttons = {
         [moduleNames.rules]: '📚 Правила',
+        [moduleNames.contact]: '📖 Контакты',
     };
 
     if (isPrivateChat && (isUnverified || isPending)) {
@@ -37,7 +38,6 @@ const initAction = async (ctx) => {
     }
 
     if (isPrivateChat && (isResident || isAdmin)) {
-        buttons[moduleNames.contact] = '📖 Контакты';
         buttons[moduleNames.weather] = '🌤️ Прогноз погоды';
         buttons[moduleNames.horoscope] = '💫 Личный Гороскоп';
         buttons[moduleNames.debtors] = '🏦 Список должников';
