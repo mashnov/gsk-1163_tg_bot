@@ -1,24 +1,42 @@
 const cron = require('node-cron');
 
-const { sendLocalFileMessage, removeMessage, commandAnswer, sendMessage} = require('../helpers/telegraf');
-const { setStatisticsData, getStatisticsData } = require('../helpers/db');
+const { initStore, getSession } = require('../helpers/sessions');
+const { sendLocalFileMessage, removeMessage, commandAnswer, sendMessage, getFile} = require('../helpers/telegraf');
+const { getStatisticsData } = require('../helpers/db');
+const { updateDbFile } = require('../helpers/database');
 const { getCsvFromBd } = require('../helpers/admin');
+const { startStepper } = require('../helpers/stepper');
 const { guard } = require('../helpers/guard');
 
 const { moduleNames, homeOption, closeOption} = require('../const/dictionary');
 const { homeTimeZone, superUserId} = require('../const/env');
+const { stepList } = require('../const/database');
 
 const moduleParam = {
     name: moduleNames.admin,
+    init: 'init',
+    submit: 'submit',
     csv: 'csv',
     logs: 'logs',
     database: 'database',
+    download: 'download',
+    upload: 'upload',
     sendTime: [23],
 };
 
-const startAction = async (ctx) => {
-    await setStatisticsData('admin-start');
+let stepper = undefined;
 
+const initStepper = async () => {
+    stepper = startStepper({
+        stepList,
+        actionName: moduleParam.name,
+        submitActions: {
+            [`${moduleParam.name}:${moduleParam.submit}`]: 'Обработать файл'
+        },
+    });
+};
+
+const startAction = async (ctx) => {
     const isGuardPassed = await guard(ctx, { privateChat: true, admin: true });
 
     if (!isGuardPassed) {
@@ -39,9 +57,10 @@ const startAction = async (ctx) => {
         text: messageText,
         buttons: {
             [moduleNames.profiles]: 'Профили',
-            [`${moduleParam.name}:${moduleParam.logs}`]: 'Скачать логи',
-            [`${moduleParam.name}:${moduleParam.csv}`]: 'Скачать CSV',
-            [`${moduleParam.name}:${moduleParam.database}`]: 'Скачать БД',
+            [`${moduleParam.name}:${moduleParam.download}:${moduleParam.csv}`]: 'Скачать CSV',
+            [`${moduleParam.name}:${moduleParam.download}:${moduleParam.logs}`]: 'Скачать логи',
+            [`${moduleParam.name}:${moduleParam.download}:${moduleParam.database}`]: 'Скачать БД',
+            [`${moduleParam.name}:${moduleParam.upload}:${moduleParam.database}`]: 'Востановить БД',
             ...homeOption,
         },
     });
@@ -49,11 +68,40 @@ const startAction = async (ctx) => {
     await commandAnswer(ctx);
 };
 
-const downloadAction = async (ctx, { isCronAction, actionType } = {}) => {
-    if (!isCronAction && actionType) {
-        await setStatisticsData(`admin-get:${actionType}`);
+const initAction = async (ctx) => {
+    const isGuardPassed = await guard(ctx, { privateChat: true, admin: true });
+
+    if (!isGuardPassed) {
+        await removeMessage(ctx);
+        await commandAnswer(ctx);
+        return;
     }
 
+    initStore({ accountId: ctx.from.id, chatId: ctx.chat.id, moduleName: moduleParam.name });
+
+    await initStepper();
+    await stepper?.startHandler(ctx);
+
+    await removeMessage(ctx);
+    await commandAnswer(ctx);
+};
+
+const submitAction = async (ctx) => {
+    const session = getSession(ctx.from.id);
+    const fileData = await getFile(ctx, session?.document?.file_id);
+
+    await updateDbFile(fileData);
+
+    await sendMessage(ctx, {
+        text: '🪪 Пожалуйста, перезапустите бота!',
+        buttons: homeOption,
+    });
+
+    await removeMessage(ctx);
+    await commandAnswer(ctx, 'Данные успешно загружены');
+};
+
+const downloadAction = async (ctx, { isCronAction, fileType } = {}) => {
     const isGuardPassed = isCronAction || await guard(ctx, { privateChat: true, admin: true });
 
     if (!isGuardPassed) {
@@ -64,13 +112,13 @@ const downloadAction = async (ctx, { isCronAction, actionType } = {}) => {
 
     const fileParams = {};
 
-    if (actionType === moduleParam.database) {
+    if (fileType === moduleParam.database) {
         fileParams.filePath = './state/db.json';
     }
-    if (actionType === moduleParam.csv) {
+    if (fileType === moduleParam.csv) {
         fileParams.fileContent = await getCsvFromBd();
     }
-    if (actionType === moduleParam.logs) {
+    if (fileType === moduleParam.logs) {
         fileParams.filePath = './state/messages.txt';
     }
 
@@ -78,7 +126,8 @@ const downloadAction = async (ctx, { isCronAction, actionType } = {}) => {
         ...fileParams,
         accountId: isCronAction ? superUserId : undefined,
         buttons: {
-            ...(actionType ? { [moduleParam.name]: '⬅️ Назад' } : {} ),
+            ...(fileType ? { [moduleParam.name]: '⬅️ Назад' } : {} ),
+            ...(fileType ? homeOption : {} ),
             ...(isCronAction ? closeOption : {}),
         }
     });
@@ -92,17 +141,23 @@ const downloadAction = async (ctx, { isCronAction, actionType } = {}) => {
 const cronAction = (bot) => {
     cron.schedule(
         `0 ${moduleParam.sendTime} * * *`,
-        async () => downloadAction(bot, { isCronAction: true, actionType: moduleParam.json }),
+        async () => downloadAction(bot, { isCronAction: true, fileType: moduleParam.json }),
         { timezone: homeTimeZone },
     );
 };
 
 const callbackHandler = async (ctx, next) => {
     const data = ctx.callbackQuery.data;
-    const [action, actionType] = data.split(':');
+    const [action, actionName, fileType] = data.split(':');
 
-    if (action === moduleParam.name) {
-        await downloadAction(ctx, { actionType });
+    if (actionName === moduleParam.download && action === moduleParam.name) {
+        await downloadAction(ctx, { fileType });
+    }
+    if (actionName === moduleParam.upload && action === moduleParam.name) {
+        await initAction(ctx);
+    }
+    if (actionName === moduleParam.submit && action === moduleParam.name) {
+        await submitAction(ctx);
     }
 
     return next();
@@ -112,5 +167,6 @@ module.exports = (bot) => {
     cronAction(bot);
     bot.command(moduleParam.name, (ctx) => startAction(ctx, { isCronAction: false }));
     bot.action(moduleParam.name, (ctx) => startAction(ctx, { isCronAction: false }));
+    bot.on('document', (ctx, next) => stepper ? stepper.inputHandler(ctx, next) : next());
     bot.on('callback_query', (ctx, next) => callbackHandler(ctx, next));
 };

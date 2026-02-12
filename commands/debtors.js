@@ -29,7 +29,7 @@ const initStepper = async () => {
         stepList,
         actionName: moduleParam.name,
         submitActions: {
-            [`${moduleParam.name}:${moduleParam.submit}`]: 'Обработать файл ✅'
+            [`${moduleParam.name}:${moduleParam.submit}`]: 'Обработать файл'
         },
     });
 };
@@ -86,8 +86,6 @@ const startAction = async (ctx, { isCronAction, noRemove, isUploadAction, isHear
 };
 
 const initAction = async (ctx) => {
-    await setStatisticsData('debtors-upload-start');
-
     const isGuardPassed = await guard(ctx, { privateChat: true, admin: true });
 
     if (!isGuardPassed) {
@@ -106,8 +104,6 @@ const initAction = async (ctx) => {
 };
 
 const submitAction = async (ctx) => {
-    await setStatisticsData('debtors-upload-submit');
-
     const session = getSession(ctx.from.id);
     const fileData = await getFile(ctx, session?.document?.file_id);
     const { residents, total } = await handleXlsxFile(fileData);
