@@ -28,7 +28,6 @@ const startAction = async (ctx) => {
     const buttons = {
         [`${moduleParam.name}:${userStatusList.chairman}:${moduleParam.list}`]: `${userStatusText.chairman}`,
         [`${moduleParam.name}:${userStatusList.accountant}:${moduleParam.list}`]: `${userStatusText.accountant}`,
-        [`${moduleParam.name}:${userStatusList.janitor}:${moduleParam.list}`]: `${userStatusText.janitor}`,
         [`${moduleParam.name}:${userStatusList.admin}:${moduleParam.list}`]: `${userStatusText.admin}`,
         [`${moduleParam.name}:${userStatusList.resident}:${moduleParam.list}`]: `${userStatusText.resident}`,
         [`${moduleParam.name}:${userStatusList.pending}:${moduleParam.list}`]: 'Ожидают проверки',
@@ -115,7 +114,6 @@ const profileReviewHandler = async (ctx, accountId, backParams) => {
     const verifiedOptions = {
         [`${moduleParam.verification}:${userStatusList.chairman}:${accountId}`]: `🟡 ${userStatusText.chairman}`,
         [`${moduleParam.verification}:${userStatusList.accountant}:${accountId}`]: `🟡 ${userStatusText.accountant}`,
-        [`${moduleParam.verification}:${userStatusList.janitor}:${accountId}`]: `🟡 ${userStatusText.janitor}`,
         [`${moduleParam.verification}:${userStatusList.admin}:${accountId}`]: `🟡 ${userStatusText.admin}`,
         [`${moduleParam.verification}:${userStatusList.resident}:${accountId}`]: `🟢 ${userStatusText.resident}`,
         [`${moduleParam.verification}:${userStatusList.restricted}:${accountId}`]: '🟠 Ограничить',

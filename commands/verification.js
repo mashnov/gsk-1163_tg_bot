@@ -117,7 +117,6 @@ const sendAdminVerificationRequest = async (ctx, session) => {
             buttons: {
                 [`${moduleParam.name}:${userStatusList.chairman}:${accountId}`]: `🟡 ${userStatusText.chairman}`,
                 [`${moduleParam.name}:${userStatusList.accountant}:${accountId}`]: `🟡 ${userStatusText.accountant}`,
-                [`${moduleParam.name}:${userStatusList.janitor}:${accountId}`]: `🟢 ${userStatusText.janitor}`,
                 [`${moduleParam.name}:${userStatusList.admin}:${accountId}`]: `🟡 ${userStatusText.admin}`,
                 [`${moduleParam.name}:${userStatusList.resident}:${accountId}`]: `🟢 ${userStatusText.resident}`,
                 [`${moduleParam.name}:${userStatusList.restricted}:${accountId}`]: '🟠 Ограничить',
@@ -219,7 +218,6 @@ const sendAdminVerificationNotification = async (ctx, userStatus, accountId, res
         const messageText = {
             [userStatusList.chairman]: `${adminUserLink} выдал права председателя ${residentDetailsText}`,
             [userStatusList.accountant]: `${adminUserLink} выдал права бухгалтера ${residentDetailsText}`,
-            [userStatusList.janitor]: `${adminUserLink} выдал права дворника ${residentDetailsText}`,
             [userStatusList.admin]: `${adminUserLink} выдал права администратора ${residentDetailsText}`,
             [userStatusList.resident]: `${adminUserLink} одобрил запрос верификации ${residentDetailsText}`,
             [userStatusList.restricted]: `${adminUserLink} ограничил ${residentDetailsText}`,
@@ -263,7 +261,6 @@ const sendResidentVerificationNotification = async (ctx, userStatus, accountId) 
     const validationText = {
         [userStatusList.chairman]: '🟢 Вам выданы права председателя!',
         [userStatusList.accountant]: '🟢 Вам выданы права бухгалтера!',
-        [userStatusList.janitor]: '🟢 Вам выданы права дворника!',
         [userStatusList.admin]: '🟢 Вам выданы права администратора!',
         [userStatusList.resident]: '🟢 Вам выданы права жителя!',
         [userStatusList.restricted]: '🟠 Вы были ограничены. Для снятия ограничений, пожалуйста, воспользуйтесь ботом.',

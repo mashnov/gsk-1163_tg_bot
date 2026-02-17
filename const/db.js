@@ -12,7 +12,6 @@ const emptyUser = {
 const userStatusList = {
     chairman: 'chairman',
     accountant: 'accountant',
-    janitor: 'janitor',
     admin: 'admin',
     resident: 'resident',
     pending: 'pending',
@@ -24,7 +23,6 @@ const userStatusList = {
 const userStatusText = {
     chairman: 'Председатель',
     accountant: 'Бухгалтер',
-    janitor: 'Дворник',
     admin: 'Администратор',
     resident: 'Житель',
     pending: 'Ожидает проверки',
