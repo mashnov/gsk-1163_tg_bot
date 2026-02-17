@@ -7,7 +7,7 @@ const { userStatusList } = require('../const/db');
 const moduleParam = {
     name: moduleNames.contact,
     verification: moduleNames.verification,
-    keywords: ['контакты'],
+    keywords: [/контакты/i],
 }
 
 const initAction = async (ctx, { isHearsAction } = {}) => {

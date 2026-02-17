@@ -5,7 +5,7 @@ const { homeOption, closeOption, moduleNames } = require('../const/dictionary');
 
 const moduleParam = {
     name: moduleNames.rules,
-    keywords: ['правила'],
+    keywords: [/правила/i],
     chat: 'chat',
     silent: 'silent',
     dog: 'dog',
