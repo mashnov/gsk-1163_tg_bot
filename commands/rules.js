@@ -36,7 +36,9 @@ const initAction = async (ctx, { isHearsAction } = {}) => {
         },
     });
 
-    await removeMessage(ctx);
+    if (isPrivateChat) {
+        await removeMessage(ctx);
+    }
     await commandAnswer(ctx);
 };
 

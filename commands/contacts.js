@@ -39,13 +39,15 @@ const initAction = async (ctx, { isHearsAction } = {}) => {
         '<a href="https://t.me/+85EWUusNepc2MjUy">Телеграм Новости</a>\n' +
         '<a href="https://vk.com/gsk1163">Вконтакте Новости</a>';
 
-    const unVerifiedMessageText =
+    const unVerifiedMessageLastText =
         '\n\n<b>🪪 Пожалуйста, пройдите верификацию, чтобы получить доступ ко всем возможностям бота, а так же для получения ссылок на домовые чаты в телеграмм или макс.</b>';
 
-    const verifiedMessageText =
+    const verifiedMessageLastText =
         '\n\nДля связи с Председателем, Бухгалтером, Дворником или администраторами воспользуйтесь кнопкой "написать сообщение" ниже.';
 
-    const messageText = baseMessageText + (isVerified ? verifiedLinks + verifiedMessageText : unverifiedLinks + unVerifiedMessageText);
+    const hearsMessageText = baseMessageText + unverifiedLinks;
+    const personalMessageText = baseMessageText + (isVerified ? verifiedLinks + verifiedMessageLastText : unverifiedLinks + unVerifiedMessageLastText);
+    const messageText = isHearsAction ? hearsMessageText : personalMessageText;
 
     const buttons = {};
 
@@ -63,7 +65,10 @@ const initAction = async (ctx, { isHearsAction } = {}) => {
             ...(!isPrivateChat ? closeOption : {}),
         },
     });
-    await removeMessage(ctx);
+
+    if (isPrivateChat) {
+        await removeMessage(ctx);
+    }
     await commandAnswer(ctx);
 };
 
