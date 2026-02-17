@@ -5,13 +5,7 @@ const { superUserId } = require('../const/env');
 const { closeOption } = require('../const/dictionary');
 const { userStatusList } = require('../const/db');
 
-const guard = async (ctx, { privateChat, publicChat, verify, admin, blocked, unBlocked, superUser }) => {
-    if (ctx?.from?.id !== superUserId && superUser) {
-        const text = '🔒 Это действие доступно только root пользователю';
-        await sendMessage(ctx, { text, silent: true, buttons: closeOption });
-        return;
-    }
-
+const guard = async (ctx, { privateChat, publicChat, verify, admin, blocked, unBlocked }) => {
     const isPrivateChat = ctx.chat?.type === 'private';
 
     if (!isPrivateChat && privateChat) {
@@ -24,6 +18,7 @@ const guard = async (ctx, { privateChat, publicChat, verify, admin, blocked, unB
     const isUnverified = userData?.userStatus === userStatusList.unverified || !userData?.userStatus;
     const isBlocked = [userStatusList.blocked, userStatusList.restricted].includes(userData?.userStatus);
     const isAdmin = [userStatusList.admin, userStatusList.accountant, userStatusList.chairman].includes(userData?.userStatus);
+    const isSuperUser = superUserId === ctx?.from?.id;
 
     if (isPrivateChat && publicChat) {
         const text = '🔒 Это действие доступно только в чате';
@@ -49,7 +44,7 @@ const guard = async (ctx, { privateChat, publicChat, verify, admin, blocked, unB
         return;
     }
 
-    if (!isAdmin && admin) {
+    if (!(isAdmin || isSuperUser) && (admin)) {
         const text = '🔒 Это действие доступно только пользователям с правами администратора';
         await sendMessage(ctx, { text, silent: true, buttons: closeOption });
         return;

@@ -3,7 +3,7 @@ const { getUserName } = require('../helpers/getters');
 const { getUserData } = require('../helpers/db');
 const { guard } = require('../helpers/guard');
 
-const { botUsername } = require('../const/env');
+const { botUsername, superUserId } = require('../const/env');
 const { moduleNames } = require('../const/dictionary');
 const { userStatusList } = require('../const/db');
 
@@ -22,6 +22,7 @@ const initAction = async (ctx) => {
     const isBlocked = [userStatusList.blocked, userStatusList.restricted].includes(userData?.userStatus);
     const isResident = userData?.userStatus === userStatusList.resident;
     const isAdmin = [userStatusList.admin, userStatusList.accountant, userStatusList.chairman].includes(userData?.userStatus);
+    const isSuperUser = superUserId === ctx?.from?.id;
     const isPrivateChat = ctx.chat?.type === 'private';
 
     const buttons = {
@@ -45,7 +46,7 @@ const initAction = async (ctx) => {
         buttons[moduleNames.messages] = '💬 Написать сообщение';
     }
 
-    if (isPrivateChat && isAdmin) {
+    if (isPrivateChat && (isAdmin || isSuperUser)) {
         buttons[moduleNames.admin] = '🪪 Администрирование';
     }
 
