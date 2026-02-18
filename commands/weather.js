@@ -1,13 +1,13 @@
 const cron = require('node-cron');
 
-const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
-const { fetchWeatherData, windUnitTransformer } = require('../helpers/weather');
+const { sendLocalFileMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
+const { fetchWeatherData, windUnitTransformer, getWeatherImage } = require('../helpers/weather');
 const { setStatisticsData } = require('../helpers/db');
 const { guard } = require('../helpers/guard');
 
 const { cronIsEnabled, hearsIsEnabled, homeChatId, homeTimeZone } = require('../const/env');
 const { homeOption, closeOption, moduleNames} = require('../const/dictionary');
-const { weatherCodeMap } = require('../const/weather');
+const { weatherCodeDetails } = require('../const/weather');
 
 const moduleParam = {
     name: moduleNames.weather,
@@ -36,12 +36,15 @@ const getWeatherMessage = async (ctx, { isCronAction, noRemove, isHearsAction } 
     const currentWeather = serviceData?.current ?? {}
     const hourlyWeather = serviceData?.hourly ?? {}
 
-    const currentWeatherCode = weatherCodeMap[currentWeather?.weather_code];
+    const currentWeatherCode = currentWeather?.weather_code;
+    const currentTemperature = currentWeather?.temperature_2m;
+
+    const weatherDetails = weatherCodeDetails[currentWeatherCode];
     const windSpeed = windUnitTransformer(currentWeather?.wind_speed_10m);
 
     let messageText =
-        `\n${currentWeatherCode.icon} ${currentWeatherCode.text}` +
-        `\n🌡 Температура воздуха: ${currentWeather?.temperature_2m ?? '-'} °С` +
+        `\n${weatherDetails.icon} ${weatherDetails.text}` +
+        `\n\n🌡 Температура воздуха: ${currentTemperature ?? '-'} °С` +
         `\n💧 Влажность воздуха: ${currentWeather?.relative_humidity_2m ?? '-'} %` +
         `\n☁️ Облачность: ${currentWeather?.cloud_cover ?? '-'} %` +
         `\n💨 Скорость ветра: ${windSpeed ?? '-'} м/с` +
@@ -52,9 +55,11 @@ const getWeatherMessage = async (ctx, { isCronAction, noRemove, isHearsAction } 
         messageText += '\n\n<blockquote>Информация публикуется автоматически в 08:00 и 16:00 ежедневно</blockquote>';
     }
 
-    await sendMessage(ctx, {
+    await sendLocalFileMessage(ctx, {
         text: messageText,
         accountId: isPrivateChat ? undefined : homeChatId,
+        fileType: 'photo',
+        filePath: getWeatherImage(currentWeatherCode, currentTemperature),
         buttons: {
             ...(isPrivateChat ? homeOption : {}),
             ...(!isPrivateChat && !isCronAction ? closeOption : {}),

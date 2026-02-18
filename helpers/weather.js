@@ -1,4 +1,5 @@
 const { weatherApi, homeLongitude, homeLatitude, homeTimeZone } = require('../const/env');
+const { weatherCodeDetails } = require('../const/weather');
 
 const weatherParam = {
     current: ['temperature_2m', 'relative_humidity_2m', 'weather_code', 'cloud_cover', 'wind_speed_10m',].join(','),
@@ -19,7 +20,14 @@ const windUnitTransformer = (value) => {
     return value ? (value / 3.6).toFixed(1) : '-';
 };
 
+const getWeatherImage = (code, temperature) => {
+    const season = Number(temperature) < 8 ? 'winter' : 'summer';
+    const weather = weatherCodeDetails[code]?.image;
+    return `./assets/weather/${season}/${weather}.png`;
+};
+
 module.exports = {
     windUnitTransformer,
     fetchWeatherData,
+    getWeatherImage,
 };

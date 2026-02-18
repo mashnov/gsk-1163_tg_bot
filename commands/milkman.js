@@ -22,8 +22,8 @@ const sendMilkMessage = async (ctx) => {
         text: messageText,
         accountId: homeChatId,
         fileType: 'photo',
-        buttons: {},
-        filePath: './assets/milkman.jpg'
+        filePath: './assets/milkman.jpg',
+        buttons: {}
     });
 };
 
