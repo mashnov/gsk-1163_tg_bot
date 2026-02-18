@@ -4,7 +4,6 @@ const navigationService = require('./commands/navigation');
 const startCommand = require('./commands/start');
 const rulesCommand = require('./commands/rules');
 const contactsCommand = require('./commands/contacts');
-const debtorsCommand = require('./commands/debtors');
 const messagesCommand = require('./commands/messages');
 const weatherCommand = require('./commands/weather');
 const horoscopeCommand = require('./commands/horoscope');
@@ -25,7 +24,6 @@ const createBot = () => {
     startCommand(bot);
     rulesCommand(bot);
     contactsCommand(bot);
-    debtorsCommand(bot);
     messagesCommand(bot);
     weatherCommand(bot);
     horoscopeCommand(bot);

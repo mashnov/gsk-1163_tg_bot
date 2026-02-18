@@ -5,7 +5,6 @@ const messageParams = {
 
 const moduleNames = {
     contact: 'contact',
-    debtors: 'debtors',
     messages: 'messages',
     meter: 'meter',
     profiles: 'profiles',

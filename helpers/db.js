@@ -154,39 +154,6 @@ const setVerificationIndexItem = async (accountId, messageList = []) => {
     return setDbData('verificationIndex', verificationIndex);
 };
 
-// DEBTORS
-const createDebtorsData = async () => {
-    const debtorsData = await getDbData('debtors');
-
-    if (debtorsData) {
-        return debtorsData;
-    }
-
-    await setDbData('debtors', {
-        total: 0,
-        residents: [],
-        updatedAt: new Date().toISOString(),
-    });
-    return await getDebtorsData();
-};
-
-const getDebtorsData = async () => {
-    return await createDebtorsData();
-};
-
-const setDebtorsData = async ({ total, residents }) => {
-    const originalData = { ...await getDebtorsData() };
-
-    const debtorsData = {
-        ...originalData,
-        residents,
-        total,
-        updatedAt: new Date().toISOString(),
-    };
-
-    return setDbData('debtors', debtorsData);
-};
-
 // STATISTICS
 const createStatisticsData = async () => {
     const statisticsData = await getDbData('statistics');
@@ -228,8 +195,6 @@ module.exports = {
     getUserListByIndex,
     getVerificationIndexItem,
     setVerificationIndexItem,
-    getDebtorsData,
-    setDebtorsData,
     setStatisticsData,
     getStatisticsData,
 };
