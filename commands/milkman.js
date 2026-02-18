@@ -19,8 +19,6 @@ const sendMilkMessage = async (ctx) => {
         '\n\nЧтобы всем всего хватило, пожалуйста, сообщите молочнику Ваш список заранее' +
         '\n\nКирилл: @KKL1994Z'
 
-
-
     await sendLocalFileMessage(ctx, {
         text: messageText,
         accountId: homeChatId,
