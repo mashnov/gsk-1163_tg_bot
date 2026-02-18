@@ -57,8 +57,8 @@ const ruleSelectHandler = async (ctx, sectionName) => {
 
 
     const filePaths = {
-        [moduleParam.silent]: './assets/273_70.pdf',
-        [moduleParam.dog]: './assets/588_110.pdf',
+        [moduleParam.silent]: './assets/documents/273_70.pdf',
+        [moduleParam.dog]: './assets/documents/588_110.pdf',
     };
 
     if (sectionName === moduleParam.chat) {

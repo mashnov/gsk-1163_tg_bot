@@ -26,8 +26,14 @@ const getWeatherImage = (code, temperature) => {
     return `./assets/weather/${season}/${weather}.png`;
 };
 
+const isWinter = () => {
+    const month = new Date().getMonth();
+    return [0, 1, 2, 10, 11].includes(month);
+};
+
 module.exports = {
     windUnitTransformer,
     fetchWeatherData,
     getWeatherImage,
+    isWinter,
 };
