@@ -25,7 +25,7 @@ const sendMilkMessage = async (ctx) => {
         text: messageText,
         accountId: homeChatId,
         fileType: 'photo',
-        filePath: `./assets/milkman/${isWinter() ? 'winter' : 'summer'}.jpg`,
+        filePath: `./assets/milkman/${isWinter() ? 'winter' : 'summer'}.png`,
         buttons: {}
     });
 };
