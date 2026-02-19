@@ -30,12 +30,14 @@ const initAction = async (ctx, { isHearsAction } = {}) => {
         'Домофон: <a href="tel:+78126120033">612-00-33</a>\n\n';
 
     const verifiedLinks =
-        '<a href="https://t.me/+9qDJVP9IOZ1jNTdi">Телеграм Чат</a>\n' +
-        '<a href="https://t.me/+85EWUusNepc2MjUy">Телеграм Новости</a>\n\n' +
-        '<a href="https://max.ru/join/WXnefLdd0qI3xONMvNrNGB3Yg_0BSJcrCz3qmyufAWU">MAX Чат</a>\n\n' +
+        '<a href="https://max.ru/join/WXnefLdd0qI3xONMvNrNGB3Yg_0BSJcrCz3qmyufAWU">MAX Чат</a>\n' +
+        '<a href="https://t.me/+9qDJVP9IOZ1jNTdi">Телеграм Чат</a>\n\n' +
+        '<a href="https://max.ru/join/HwL3iKNVLwypWsiAmI1i9DSXtZQH3dG1Isj-JLQRSOM">MAX Новости</a>\n' +
+        '<a href="https://t.me/+85EWUusNepc2MjUy">Телеграм Новости</a>\n' +
         '<a href="https://vk.com/gsk1163">Вконтакте Новости</a>';
 
     const unverifiedLinks =
+        '<a href="https://max.ru/join/HwL3iKNVLwypWsiAmI1i9DSXtZQH3dG1Isj-JLQRSOM">MAX Новости</a>\n' +
         '<a href="https://t.me/+85EWUusNepc2MjUy">Телеграм Новости</a>\n' +
         '<a href="https://vk.com/gsk1163">Вконтакте Новости</a>';
 
