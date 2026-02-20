@@ -27,29 +27,21 @@ const initAction = async (ctx, { isHearsAction } = {}) => {
         'Дворник: <a href="tel:+79013130083">+7 (901) 313-00-83</a>\n\n' +
         'Водопроводчик: <a href="tel:+78129111515">911-15-15</a>\n\n' +
         'Лифт <a href="tel:+78124907781">490-77-81</a>\n' +
-        'Домофон: <a href="tel:+78126120033">612-00-33</a>\n\n';
-
-    const verifiedLinks =
+        'Домофон: <a href="tel:+78126120033">612-00-33</a>\n\n' +
         '<a href="https://max.ru/join/WXnefLdd0qI3xONMvNrNGB3Yg_0BSJcrCz3qmyufAWU">MAX Чат</a>\n' +
         '<a href="https://t.me/+9qDJVP9IOZ1jNTdi">Телеграм Чат</a>\n\n' +
         '<a href="https://max.ru/join/HwL3iKNVLwypWsiAmI1i9DSXtZQH3dG1Isj-JLQRSOM">MAX Новости</a>\n' +
         '<a href="https://t.me/+85EWUusNepc2MjUy">Телеграм Новости</a>\n' +
         '<a href="https://vk.com/gsk1163">Вконтакте Новости</a>';
 
-    const unverifiedLinks =
-        '<a href="https://max.ru/join/HwL3iKNVLwypWsiAmI1i9DSXtZQH3dG1Isj-JLQRSOM">MAX Новости</a>\n' +
-        '<a href="https://t.me/+85EWUusNepc2MjUy">Телеграм Новости</a>\n' +
-        '<a href="https://vk.com/gsk1163">Вконтакте Новости</a>';
-
-    const unVerifiedMessageLastText =
-        '\n\n<b>🪪 Пожалуйста, пройдите верификацию, чтобы получить доступ ко всем возможностям бота, а так же для получения ссылок на домовые чаты в телеграмм или макс.</b>';
-
-    const verifiedMessageLastText =
+    const verifiedMessageText =
         '\n\nДля связи с Председателем, Бухгалтером или администраторами воспользуйтесь кнопкой "написать сообщение" ниже.';
 
-    const hearsMessageText = baseMessageText + unverifiedLinks;
-    const personalMessageText = baseMessageText + (isVerified ? verifiedLinks + verifiedMessageLastText : unverifiedLinks + unVerifiedMessageLastText);
-    const messageText = isHearsAction ? hearsMessageText : personalMessageText;
+    const unVerifiedMessageText =
+        '\n\n<b>🪪 Пожалуйста, пройдите верификацию, чтобы получить доступ ко всем возможностям бота.</b>';
+
+    const personalMessageText = baseMessageText + (isVerified ? verifiedMessageText : unVerifiedMessageText);
+    const messageText = isHearsAction ? baseMessageText : personalMessageText;
 
     const buttons = {};
 
