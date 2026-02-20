@@ -9,15 +9,15 @@ const { moduleNames } = require('../const/dictionary');
 const moduleParam = {
     name: moduleNames.milkman,
     notification: 'notification',
+    keywords: [/молочник/i],
     sendTime: [15],
 };
 
 const sendMilkMessage = async (ctx) => {
     const messageText =
-        'Свежие молочные продукты уже в пути!' +
-        '\n\nЗавтра <b>в 14:40</b> к нам снова заглянет молочник!' +
-        '\n\nЧтобы всем всего хватило, пожалуйста, сообщите молочнику Ваш список заранее' +
-        '\n\nКирилл: @KKL1994Z'
+        '<b>Уважаемые жители!</b>' +
+        '\n\n<b>В пятницу <u>в 14:40</u></b> к нам снова приедет молочник!' +
+        '\n\nДля того чтобы продукции хватило всем желающим и заказ был сформирован корректно, просьба заранее направить <a href="https://t.me/KKL1994Z">молочнику Кириллу</a> список необходимых позиций и объёмов.';
 
     await sendLocalFileMessage(ctx, {
         text: messageText,
@@ -38,4 +38,5 @@ const cronAction = (bot) => {
 
 module.exports = (bot) => {
     cronAction(bot);
+    bot.hears(moduleParam.keywords, (ctx) => sendMilkMessage(ctx));
 };
