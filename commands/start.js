@@ -1,4 +1,4 @@
-const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
+const { sendLocalFileMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { getUserName } = require('../helpers/getters');
 const { getUserData } = require('../helpers/db');
 const { guard } = require('../helpers/guard');
@@ -85,9 +85,11 @@ const initAction = async (ctx) => {
             '\n\n🔒 Доступ к чату временно ограничен. Чтобы продолжить работу с ботом, запустите процедуру снятия блокировки.';
     }
 
-    await sendMessage(ctx, {
-        text: messageText,
+    await sendLocalFileMessage(ctx, {
         buttons,
+        text: messageText,
+        fileType: 'photo',
+        filePath: `./assets/start/preview.jpg`,
     });
 
     await removeMessage(ctx);

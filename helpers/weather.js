@@ -23,7 +23,7 @@ const windUnitTransformer = (value) => {
 const getWeatherImage = (code, temperature) => {
     const season = Number(temperature) < 8 ? 'winter' : 'summer';
     const weather = weatherCodeDetails[code]?.image;
-    return `./assets/weather/${season}/${weather}.png`;
+    return `./assets/weather/${season}/${weather}.jpeg`;
 };
 
 const isWinter = () => {

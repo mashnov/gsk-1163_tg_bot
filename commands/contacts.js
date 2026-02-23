@@ -22,15 +22,15 @@ const initAction = async (ctx, { isHearsAction } = {}) => {
 
     const baseMessageText =
         '📖 Контакты\n\n' +
-        'ЖСК email: <a href="mailto:gsk1163@mail.ru">gsk1163@mail.ru</a>\n' +
-        'ЖСК телефон: <a href="tel:+79312107066">+7 (931) 210-70-66</a>\n' +
+        'ЖСК Еmail: <a href="mailto:gsk1163@mail.ru">gsk1163@mail.ru</a>\n' +
+        'ЖСК Диспетчер: <a href="tel:+79312107066">+7 (931) 210-70-66</a>\n' +
         'Дворник: <a href="tel:+79013130083">+7 (901) 313-00-83</a>\n\n' +
-        'Водопроводчик: <a href="tel:+78129111515">911-15-15</a>\n\n' +
         'Лифт <a href="tel:+78124907781">490-77-81</a>\n' +
-        'Домофон: <a href="tel:+78126120033">612-00-33</a>\n\n' +
+        'Домофон: <a href="tel:+78126120033">612-00-33</a>\n' +
+        'Водопроводчик: <a href="tel:+78129111515">911-15-15</a>\n\n' +
         '<a href="https://max.ru/join/WXnefLdd0qI3xONMvNrNGB3Yg_0BSJcrCz3qmyufAWU">MAX Чат</a>\n' +
-        '<a href="https://t.me/+9qDJVP9IOZ1jNTdi">Телеграм Чат</a>\n\n' +
         '<a href="https://max.ru/join/HwL3iKNVLwypWsiAmI1i9DSXtZQH3dG1Isj-JLQRSOM">MAX Новости</a>\n' +
+        '<a href="https://t.me/+9qDJVP9IOZ1jNTdi">Телеграм Чат</a>\n' +
         '<a href="https://t.me/+85EWUusNepc2MjUy">Телеграм Новости</a>\n' +
         '<a href="https://vk.com/gsk1163">Вконтакте Новости</a>';
 

@@ -1,7 +1,7 @@
 const weatherCodeDetails = {
     0: { image: 'sunny', icon: '☀️', text: 'Ясно' },
     1: { image: 'sunny', icon: '🌤', text: 'Преимущественно ясно' },
-    2: { image: 'sunny', icon: '⛅', text: 'Переменная облачность' },
+    2: { image: 'cloud', icon: '⛅', text: 'Переменная облачность' },
     3: { image: 'cloud', icon: '☁️', text: 'Пасмурно' },
 
     45: { image: 'fog', icon: '💨', text: 'Туман' },
