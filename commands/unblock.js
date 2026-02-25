@@ -30,13 +30,13 @@ const initStepper = async () => {
 };
 
 const initAction = async (ctx) => {
+    await commandAnswer(ctx);
     await setStatisticsData('unblock-start');
 
     const isGuardPassed = await guard(ctx, { blocked: true });
 
     if (!isGuardPassed) {
         await removeMessage(ctx);
-        await commandAnswer(ctx);
         return;
     }
 
@@ -46,7 +46,6 @@ const initAction = async (ctx) => {
     await stepper?.startHandler(ctx);
 
     await removeMessage(ctx);
-    await commandAnswer(ctx);
 };
 
 const submitAction = async (ctx) => {
@@ -72,11 +71,7 @@ const submitAction = async (ctx) => {
     const adminIdList = getArrayFallback(await getUserIndex(userStatusList.admin), accountantIdList);
 
     const messageButtons = {
-        [`${moduleParam.verification}:${userStatusList.chairman}:${accountId}`]: `🟡 ${userStatusText.chairman}`,
-        [`${moduleParam.verification}:${userStatusList.accountant}:${accountId}`]: `🟡 ${userStatusText.accountant}`,
-        [`${moduleParam.verification}:${userStatusList.admin}:${accountId}`]: `🟡 ${userStatusText.admin}`,
         [`${moduleParam.verification}:${userStatusList.resident}:${accountId}`]: `🟢 ${userStatusText.resident}`,
-        [`${moduleParam.verification}:${userStatusList.restricted}:${accountId}`]: '🟠 Ограничить',
         [`${moduleParam.verification}:${userStatusList.blocked}:${accountId}`]: '⛔ Заблокировать',
         ...closeOption,
     };

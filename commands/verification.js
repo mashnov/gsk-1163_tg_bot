@@ -30,13 +30,12 @@ const initStepper = async () => {
 };
 
 const startAction = async (ctx) => {
+    await commandAnswer(ctx);
     await setStatisticsData('verification-start');
 
     const isGuardPassed = await guard(ctx, { privateChat: true, unBlocked: true });
-
     if (!isGuardPassed) {
         await removeMessage(ctx);
-        await commandAnswer(ctx);
         return;
     }
 
@@ -49,7 +48,6 @@ const startAction = async (ctx) => {
         `Ваш статус: ${userStatusText[userData?.userStatus]}`;
 
     const userCreatedText = `\n\nДата регистрации профиля: ${getFormattedDate(userData?.createdAt)}`;
-    const userUpdateText = `\nПоследнее обновление профиля: ${getFormattedDate(userData?.updatedAt)}`;
 
     const buttons = {};
 
@@ -62,22 +60,21 @@ const startAction = async (ctx) => {
     }
 
     await sendMessage(ctx, {
-        text: messageText + userCreatedText + userUpdateText,
+        text: messageText + userCreatedText,
         buttons: {
             ...buttons,
             ...backOption,
         },
     });
     await removeMessage(ctx);
-    await commandAnswer(ctx);
 };
 
 const initAction = async (ctx) => {
+    await commandAnswer(ctx);
     const isGuardPassed = await guard(ctx, { privateChat: true, unBlocked: true });
 
     if (!isGuardPassed) {
         await removeMessage(ctx);
-        await commandAnswer(ctx);
         return;
     }
 
@@ -87,7 +84,6 @@ const initAction = async (ctx) => {
     await stepper?.startHandler(ctx);
 
     await removeMessage(ctx);
-    await commandAnswer(ctx);
 };
 
 const sendResidentVerificationRequest = async (ctx) => {

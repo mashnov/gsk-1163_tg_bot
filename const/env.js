@@ -11,14 +11,8 @@ const homeLongitude = process.env.HOME_LON;
 const weatherApi = process.env.WEATHER_API;
 const horoscopeApi = process.env.HOROSCOPE_API;
 const profilesPageCount = Number(process.env.PROFILES_PAGE_COUNT);
-const hearsIsEnabled = {
-    horoscope: process.env.HEARS_HOROSCOPE_IS_ENABLED === 'true',
-    weather: process.env.HEARS_WEATHER_IS_ENABLED === 'true',
-    navigation: process.env.HEARS_NAVIGATION_IS_ENABLED === 'true',
-};
 
 const cronIsEnabled = {
-    horoscope: process.env.CRON_HOROSCOPE_IS_ENABLED === 'true',
     weather: process.env.CRON_WEATHER_IS_ENABLED === 'true',
 };
 
@@ -34,6 +28,5 @@ module.exports = {
     profilesPageCount,
     weatherApi,
     horoscopeApi,
-    hearsIsEnabled,
     cronIsEnabled,
 };

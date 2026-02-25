@@ -37,7 +37,6 @@ const createUserData = async (accountId, userName) => {
         userStatus: userStatusList.unverified,
         accountId: accountId,
         createdAt: createdAt,
-        updatedAt: createdAt,
         userName,
     };
 
@@ -62,7 +61,6 @@ const setUserData = async (accountId, patchData) => {
     const userData = {
         ...originalData,
         ...patchData,
-        updatedAt: new Date().toISOString(),
     };
 
     if (patchData.userStatus) {

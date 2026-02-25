@@ -1,7 +1,7 @@
 const cron = require('node-cron');
 
 const { initStore, getSession } = require('../helpers/sessions');
-const { sendLocalFileMessage, removeMessage, commandAnswer, sendMessage, getFile} = require('../helpers/telegraf');
+const { sendLocalFileMessage, removeMessage, commandAnswer, getFile} = require('../helpers/telegraf');
 const { getStatisticsData } = require('../helpers/db');
 const { updateDbFile } = require('../helpers/database');
 const { getCsvFromBd } = require('../helpers/admin');
@@ -38,11 +38,11 @@ const initStepper = async () => {
 };
 
 const startAction = async (ctx) => {
+    await commandAnswer(ctx);
     const isGuardPassed = await guard(ctx, { privateChat: true, admin: true });
 
     if (!isGuardPassed) {
         await removeMessage(ctx);
-        await commandAnswer(ctx);
         return;
     }
 
@@ -54,8 +54,10 @@ const startAction = async (ctx) => {
         '\n\nСтатистика использования за сегодня:' +
         `\n\n${statisticsLines}`
 
-    await sendMessage(ctx, {
+    await sendLocalFileMessage(ctx, {
         text: messageText,
+        fileType: 'photo',
+        filePath: `./assets/admin/preview.jpg`,
         buttons: {
             [moduleNames.profiles]: 'Профили',
             [`${moduleParam.name}:${moduleParam.download}:${moduleParam.csv}`]: 'Скачать CSV',
@@ -66,15 +68,14 @@ const startAction = async (ctx) => {
         },
     });
     await removeMessage(ctx);
-    await commandAnswer(ctx);
 };
 
 const initAction = async (ctx) => {
+    await commandAnswer(ctx);
     const isGuardPassed = await guard(ctx, { privateChat: true, admin: true });
 
     if (!isGuardPassed) {
         await removeMessage(ctx);
-        await commandAnswer(ctx);
         return;
     }
 
@@ -84,7 +85,6 @@ const initAction = async (ctx) => {
     await stepper?.startHandler(ctx);
 
     await removeMessage(ctx);
-    await commandAnswer(ctx);
 };
 
 const submitAction = async (ctx) => {
@@ -93,8 +93,10 @@ const submitAction = async (ctx) => {
 
     await updateDbFile(fileData);
 
-    await sendMessage(ctx, {
+    await sendLocalFileMessage(ctx, {
         text: '🪪 Пожалуйста, перезапустите бота!',
+        fileType: 'photo',
+        filePath: `./assets/admin/success.jpg`,
         buttons: homeOption,
     });
 

@@ -5,28 +5,25 @@ const { fetchWeatherData, windUnitTransformer, getWeatherImage } = require('../h
 const { setStatisticsData } = require('../helpers/db');
 const { guard } = require('../helpers/guard');
 
-const { cronIsEnabled, hearsIsEnabled, homeChatId, homeTimeZone } = require('../const/env');
+const { cronIsEnabled, homeChatId, homeTimeZone } = require('../const/env');
 const { homeOption, closeOption, moduleNames} = require('../const/dictionary');
 const { weatherCodeDetails } = require('../const/weather');
 
 const moduleParam = {
     name: moduleNames.weather,
-    keywords: [/погода/i],
+    keywords: [/погода/i, /gjujlf/i, /weather/i, /цуферук/i],
     sendTime: [8, 16],
 }
 
-const getWeatherMessage = async (ctx, { isCronAction, noRemove, isHearsAction } = {}) => {
+const initAction = async (ctx, { isCronAction, isHearsAction } = {}) => {
+    await commandAnswer(ctx);
+    const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true, publicChat: isHearsAction });
+
     if (!isCronAction) {
         await setStatisticsData(isHearsAction ? 'weather-hears' : 'weather-start');
     }
 
-    const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true });
-
     if (!isGuardPassed) {
-        if (!noRemove) {
-            await removeMessage(ctx);
-        }
-        await commandAnswer(ctx);
         return;
     }
 
@@ -66,38 +63,24 @@ const getWeatherMessage = async (ctx, { isCronAction, noRemove, isHearsAction } 
         },
     });
 
-    if (!isCronAction && !noRemove) {
+    if (isPrivateChat) {
         await removeMessage(ctx);
     }
-    await commandAnswer(ctx);
 };
 
 const cronAction = (bot) => {
     if (cronIsEnabled.weather) {
         cron.schedule(
             `0 ${moduleParam.sendTime} * * *`,
-            async () => getWeatherMessage(bot, { isCronAction: true }),
+            async () => initAction(bot, { isCronAction: true }),
             { timezone: homeTimeZone },
         );
     }
 };
 
-const hearsHandler = async (ctx) => {
-    const isGuardPassed = await guard(ctx, { publicChat: true });
-
-    if (!isGuardPassed) {
-        await commandAnswer(ctx);
-        return;
-    }
-
-    if (hearsIsEnabled.weather) {
-        await getWeatherMessage(ctx, { noRemove: true, isHearsAction: false });
-    }
-};
-
 module.exports = (bot) => {
     cronAction(bot);
-    bot.hears(moduleParam.keywords, (ctx) => hearsHandler(ctx));
-    bot.command(moduleParam.name, (ctx) => getWeatherMessage(ctx));
-    bot.action(moduleParam.name, (ctx) => getWeatherMessage(ctx));
+    bot.hears(moduleParam.keywords, (ctx) => initAction(ctx, { isHearsAction: true }));
+    bot.command(moduleParam.name, (ctx) => initAction(ctx));
+    bot.action(moduleParam.name, (ctx) => initAction(ctx));
 };

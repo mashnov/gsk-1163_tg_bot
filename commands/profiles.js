@@ -1,6 +1,6 @@
 const { getUserData, getUserIndex, getUserListByIndex } = require('../helpers/db');
 const { getUserNameLink, getFormattedDate } = require('../helpers/getters');
-const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
+const { sendLocalFileMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { getPaginatedItems } = require('../helpers/array');
 const { guard } = require('../helpers/guard');
 
@@ -17,11 +17,11 @@ const moduleParam = {
 };
 
 const startAction = async (ctx) => {
+    await commandAnswer(ctx);
     const isGuardPassed = await guard(ctx, { privateChat: true, admin: true });
 
     if (!isGuardPassed) {
         await removeMessage(ctx);
-        await commandAnswer(ctx);
         return;
     }
 
@@ -37,15 +37,17 @@ const startAction = async (ctx) => {
         [moduleNames.admin]: '⬅️ Назад',
     };
 
-    await sendMessage(ctx, {
+    await sendLocalFileMessage(ctx, {
         text: '🪪 Управление профилями',
+        fileType: 'photo',
+        filePath: `./assets/admin/profile-list.jpg`,
         buttons,
     });
     await removeMessage(ctx);
-    await commandAnswer(ctx);
 };
 
 const profileListHandler = async (ctx, listType, listIndex = '0') => {
+    await commandAnswer(ctx);
     const profileList = await getUserIndex(listType);
     const filteredProfileList = profileList.filter(userId => userId !== String(ctx.from.id));
     const mappedProfileList = await getUserListByIndex(filteredProfileList);
@@ -78,15 +80,17 @@ const profileListHandler = async (ctx, listType, listIndex = '0') => {
 
     buttons[moduleParam.name] = '⬅️ Назад';
 
-    await sendMessage(ctx, {
+    await sendLocalFileMessage(ctx, {
         text: messageText,
+        fileType: 'photo',
+        filePath: `./assets/admin/${listType}.jpg`,
         buttons,
     });
     await removeMessage(ctx);
-    await commandAnswer(ctx);
 };
 
 const profileReviewHandler = async (ctx, accountId, backParams) => {
+    await commandAnswer(ctx);
     const userData = await getUserData({ id: accountId });
     const userLinkData = { id: accountId, first_name: userData.userName };
     const userLink = getUserNameLink(userLinkData);
@@ -96,8 +100,7 @@ const profileReviewHandler = async (ctx, accountId, backParams) => {
         `Телеграмм: ${userLink}\n` +
         `Номер телефона: ${userData.phoneNumber ?? '-'}\n` +
         `Номер квартиры: ${userData.roomNumber ?? '-'}\n\n` +
-        `Профиль зарегистрирован: ${getFormattedDate(userData.createdAt)} \n` +
-        `Профиль обновлен: ${getFormattedDate(userData.updatedAt)}`;
+        `Профиль зарегистрирован: ${getFormattedDate(userData.createdAt)} \n`;
 
     const isUnverified = userData?.userStatus === userStatusList.unverified;
 
@@ -121,12 +124,13 @@ const profileReviewHandler = async (ctx, accountId, backParams) => {
         ...backButtonOption,
     };
 
-    await sendMessage(ctx, {
+    await sendLocalFileMessage(ctx, {
         text: messageText,
+        fileType: 'photo',
+        filePath: `./assets/admin/profile-details.jpg`,
         buttons: isUnverified ? unverifiedOptions : verifiedOptions,
     });
     await removeMessage(ctx);
-    await commandAnswer(ctx);
 };
 
 const callbackHandler = async (ctx, next) => {

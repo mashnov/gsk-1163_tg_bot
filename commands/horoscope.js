@@ -1,12 +1,9 @@
-const cron = require('node-cron');
-
-const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
+const { sendLocalFileMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { fetchHoroscopeData } = require('../helpers/horoscope');
 const { setStatisticsData } = require('../helpers/db');
 const { guard } = require('../helpers/guard');
 
-const { cronIsEnabled, hearsIsEnabled, homeChatId, homeTimeZone } = require('../const/env');
-const { homeOption, moduleNames, closeOption} = require('../const/dictionary');
+const { homeOption, moduleNames} = require('../const/dictionary');
 const { horoscopeTitleMapper } = require('../const/horoscope');
 
 const moduleParam = {
@@ -17,13 +14,13 @@ const moduleParam = {
 }
 
 const initAction = async (ctx) => {
+    await commandAnswer(ctx);
     await setStatisticsData('horoscope-start');
 
     const isGuardPassed = await guard(ctx, { privateChat: true });
 
     if (!isGuardPassed) {
         await removeMessage(ctx);
-        await commandAnswer(ctx);
         return;
     }
 
@@ -42,35 +39,29 @@ const initAction = async (ctx) => {
         [`${moduleParam.name}:${moduleParam.item}:pisces`]: horoscopeTitleMapper['pisces'],
     };
 
-    await sendMessage(ctx, {
+    await sendLocalFileMessage(ctx, {
         text: '💫 Гороскоп',
+        fileType: 'photo',
+        filePath: `./assets/horoscope/preview.jpg`,
         buttons: {
             ...buttons,
             ...homeOption,
         },
     });
     await removeMessage(ctx);
-    await commandAnswer(ctx);
 };
 
-const getHoroscopeMessage = async (ctx, { isCronAction, horoscopeType, noRemove, isHearsAction } = {}) => {
-    if (!isCronAction) {
-        await setStatisticsData(isHearsAction ? 'horoscope-hears' : `horoscope-get:${horoscopeType}`);
-    }
-
-    const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true });
+const getHoroscopeMessage = async (ctx, { horoscopeType } = {}) => {
+    await commandAnswer(ctx);
+    await setStatisticsData(`horoscope-get:${horoscopeType}`);
+    const isGuardPassed = await guard(ctx, { unBlocked: true, privateChat: true });
 
     if (!isGuardPassed) {
-        if (!noRemove) {
-            await removeMessage(ctx);
-        }
-        await commandAnswer(ctx);
+        await removeMessage(ctx);
         return;
     }
 
     const response = await fetchHoroscopeData();
-    const isPrivateChat = ctx.chat?.type === 'private';
-
     const horoList = Object.keys(horoscopeTitleMapper);
     const horoFilteredList = horoList.filter(horoItem => horoItem === horoscopeType || !horoscopeType);
 
@@ -79,27 +70,22 @@ const getHoroscopeMessage = async (ctx, { isCronAction, horoscopeType, noRemove,
     for (const horoItem of horoFilteredList) {
         const horoTitle = horoscopeTitleMapper[horoItem];
         const horoText = response?.horo?.[horoItem]?.today;
-        messageText += `\n\n${horoTitle}`;
-        messageText += `\n\n${horoText}`;
+        messageText += `\n\n<b>${horoTitle}</b>`;
+        messageText += `\n<blockquote>${horoText}</blockquote>`;
     }
 
-    if (!isPrivateChat && isCronAction) {
-        messageText += '\n\n<blockquote>Информация публикуется автоматически в 06:00 ежедневно</blockquote>';
-    }
-
-    await sendMessage(ctx, {
+    await sendLocalFileMessage(ctx, {
         text: messageText,
-        accountId: isPrivateChat ? undefined : homeChatId,
+        fileType: 'photo',
+        filePath: `./assets/horoscope/${horoscopeType}.jpg`,
         buttons: {
-            ...(isPrivateChat ? { [moduleParam.name]: '⬅️ Назад' } : {}),
-            ...(!isPrivateChat && !isCronAction ? closeOption : {}),
+            ...{ [moduleParam.name]: '⬅️ Назад' },
+            ...homeOption,
+
         },
     });
 
-    if (!isCronAction && !noRemove) {
-        await removeMessage(ctx);
-    }
-    await commandAnswer(ctx);
+    await removeMessage(ctx);
 };
 
 const callbackHandler = async (ctx, next) => {
@@ -113,32 +99,7 @@ const callbackHandler = async (ctx, next) => {
     return next();
 };
 
-const cronAction = (bot) => {
-    if (cronIsEnabled.horoscope) {
-        cron.schedule(
-            `0 ${moduleParam.sendTime} * * *`,
-            async () => getHoroscopeMessage(bot, { isCronAction: true }),
-            { timezone: homeTimeZone },
-        );
-    }
-};
-
-const hearsHandler = async (ctx) => {
-    const isGuardPassed = await guard(ctx, { publicChat: true });
-
-    if (!isGuardPassed) {
-        await commandAnswer(ctx);
-        return;
-    }
-
-    if (hearsIsEnabled.horoscope) {
-        await getHoroscopeMessage(ctx, { noRemove: true, isHearsAction: true });
-    }
-};
-
 module.exports = (bot) => {
-    cronAction(bot);
-    bot.hears(moduleParam.keywords, (ctx) => hearsHandler(ctx));
     bot.command(moduleParam.name, (ctx) => initAction(ctx));
     bot.action(moduleParam.name, (ctx) => initAction(ctx));
     bot.on('callback_query', (ctx, next) => callbackHandler(ctx, next));

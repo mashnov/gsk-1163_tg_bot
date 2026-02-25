@@ -6,7 +6,6 @@ const emptyUser = {
     phoneNumber: undefined,
     userStatus: undefined,
     createdAt: undefined,
-    updatedAt: undefined,
 };
 
 const userStatusList = {

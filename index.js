@@ -1,6 +1,5 @@
 const { Telegraf } = require('telegraf');
 
-const navigationService = require('./commands/navigation');
 const startCommand = require('./commands/start');
 const rulesCommand = require('./commands/rules');
 const contactsCommand = require('./commands/contacts');
@@ -20,7 +19,6 @@ const { botToken } = require('./const/env');
 const createBot = () => {
     const bot = new Telegraf(botToken);
 
-    navigationService(bot);
     startCommand(bot);
     rulesCommand(bot);
     contactsCommand(bot);

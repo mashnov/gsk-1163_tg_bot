@@ -1,5 +1,5 @@
 const { initStore, getSession } = require('../helpers/sessions');
-const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
+const { sendLocalFileMessage, sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { getUserIndex, getUserData, setStatisticsData } = require('../helpers/db');
 const { getUserNameLink, getSummaryMessage } = require('../helpers/getters');
 const { getArrayFallback } = require('../helpers/array');
@@ -29,13 +29,13 @@ const initStepper = async () => {
 };
 
 const initAction = async (ctx) => {
+    await commandAnswer(ctx);
     await setStatisticsData('meter-start');
 
     const isGuardPassed = await guard(ctx, { privateChat: true, verify: true });
 
     if (!isGuardPassed) {
         await removeMessage(ctx);
-        await commandAnswer(ctx);
         return;
     }
 
@@ -45,14 +45,17 @@ const initAction = async (ctx) => {
     await stepper?.startHandler(ctx);
 
     await removeMessage(ctx);
-    await commandAnswer(ctx);
 };
 
 const submitAction = async (ctx) => {
     await setStatisticsData('meter-submit');
 
     const senderText = '〽️ Показания счетчиков успешно отправлены';
-    await sendMessage(ctx, { text: senderText });
+    await sendLocalFileMessage(ctx, {
+        text: senderText,
+        fileType: 'photo',
+        filePath: `./assets/meter/preview.jpg`,
+    });
 
     const session = getSession(ctx.from.id);
     const userData = await getUserData({ from: ctx.from });

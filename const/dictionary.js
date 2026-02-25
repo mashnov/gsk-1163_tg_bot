@@ -4,6 +4,7 @@ const messageParams = {
 };
 
 const moduleNames = {
+    start: 'start',
     contact: 'contact',
     messages: 'messages',
     meter: 'meter',

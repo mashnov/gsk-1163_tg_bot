@@ -9,7 +9,7 @@ const { moduleNames } = require('../const/dictionary');
 const moduleParam = {
     name: moduleNames.milkman,
     notification: 'notification',
-    keywords: [/молочник/i],
+    keywords: [/молочник/i, /vjkjxybr/i, /молоко/i, /vjkjrj/i],
     sendTime: [15],
 };
 

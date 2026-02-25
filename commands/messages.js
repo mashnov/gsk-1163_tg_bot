@@ -1,5 +1,5 @@
 const { initStore, getSession } = require('../helpers/sessions');
-const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
+const { sendLocalFileMessage, sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { getUserIndex, getUserData, setStatisticsData } = require('../helpers/db');
 const { getUserNameLink, getSummaryMessage } = require('../helpers/getters');
 const { getArrayFallback } = require('../helpers/array');
@@ -45,13 +45,13 @@ const initStepper = async () => {
 };
 
 const initAction = async (ctx) => {
+    await commandAnswer(ctx);
     await setStatisticsData('message-start');
 
     const isGuardPassed = await guard(ctx, { privateChat: true, verify: true });
 
     if (!isGuardPassed) {
         await removeMessage(ctx);
-        await commandAnswer(ctx);
         return;
     }
 
@@ -61,14 +61,17 @@ const initAction = async (ctx) => {
     await stepper?.startHandler(ctx);
 
     await removeMessage(ctx);
-    await commandAnswer(ctx);
 };
 
 const submitAction = async (ctx, listType) => {
     await setStatisticsData(`message-submit:${listType}`);
 
     const senderText = '💬 Ваше сообщение отправлено.';
-    await sendMessage(ctx, { text: senderText });
+    await sendLocalFileMessage(ctx, {
+        text: senderText,
+        fileType: 'photo',
+        filePath: `./assets/messages/preview.jpg`,
+    });
 
     const session = getSession(ctx.from.id);
     const userData = await getUserData({ from: ctx.from });

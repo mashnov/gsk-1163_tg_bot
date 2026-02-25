@@ -1,5 +1,6 @@
-const { sendMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
+const { sendLocalFileMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { getUserData, setStatisticsData } = require('../helpers/db');
+const { guard } = require('../helpers/guard');
 
 const { closeOption, moduleNames, homeOption} = require('../const/dictionary');
 const { userStatusList } = require('../const/db');
@@ -7,11 +8,17 @@ const { userStatusList } = require('../const/db');
 const moduleParam = {
     name: moduleNames.contact,
     verification: moduleNames.verification,
-    keywords: [/контакты/i],
+    keywords: [/контакт/i, /rjynfrn/i, /contact/i, /сщтефсе/i],
 }
 
 const initAction = async (ctx, { isHearsAction } = {}) => {
+    await commandAnswer(ctx);
     await setStatisticsData(isHearsAction ? 'contacts-hears' : 'contacts-get');
+    const isGuardPassed = await guard(ctx, { publicChat: isHearsAction });
+
+    if (!isGuardPassed) {
+        return;
+    }
 
     const userData = await getUserData({ from: ctx.from });
     const isResident = userData?.userStatus === userStatusList.resident;
@@ -21,7 +28,7 @@ const initAction = async (ctx, { isHearsAction } = {}) => {
     const isVerified = (isResident || isAdmin) && isPrivateChat;
 
     const baseMessageText =
-        '📖 Контакты\n\n' +
+        '📖 <b>Контакты</b>\n\n' +
         'ЖСК Еmail: <a href="mailto:gsk1163@mail.ru">gsk1163@mail.ru</a>\n' +
         'ЖСК Диспетчер: <a href="tel:+79312107066">+7 (931) 210-70-66</a>\n' +
         'Дворник: <a href="tel:+79013130083">+7 (901) 313-00-83</a>\n\n' +
@@ -51,8 +58,10 @@ const initAction = async (ctx, { isHearsAction } = {}) => {
         buttons[moduleNames.verification] = '🪪 Верификация';
     }
 
-    await sendMessage(ctx, {
+    await sendLocalFileMessage(ctx, {
         text: messageText,
+        fileType: 'photo',
+        filePath: `./assets/contacts/preview.jpg`,
         buttons: {
             ...(isPrivateChat ? buttons : {}),
             ...(isPrivateChat ? homeOption : {}),
@@ -63,7 +72,6 @@ const initAction = async (ctx, { isHearsAction } = {}) => {
     if (isPrivateChat) {
         await removeMessage(ctx);
     }
-    await commandAnswer(ctx);
 };
 
 module.exports = (bot) => {

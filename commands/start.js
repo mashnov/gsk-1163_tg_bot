@@ -7,12 +7,17 @@ const { botUsername, superUserId } = require('../const/env');
 const { moduleNames } = require('../const/dictionary');
 const { userStatusList } = require('../const/db');
 
+const moduleParam = {
+    name: moduleNames.start,
+    keywords: [/старт/i, /start/i, /cnfhm/i, /ыефке/i],
+};
+
 const initAction = async (ctx) => {
+    await commandAnswer(ctx);
     const isGuardPassed = await guard(ctx, { privateChat: true });
 
     if (!isGuardPassed) {
         await removeMessage(ctx);
-        await commandAnswer(ctx);
         return;
     }
 
@@ -92,16 +97,18 @@ const initAction = async (ctx) => {
         filePath: `./assets/start/preview.jpg`,
     });
 
-    await removeMessage(ctx);
-    await commandAnswer(ctx);
+    if (isPrivateChat) {
+        await removeMessage(ctx);
+    }
 };
 
 const closeAction = async (ctx) => {
-    await removeMessage(ctx);
     await commandAnswer(ctx);
+    await removeMessage(ctx);
 };
 
 module.exports = (bot) => {
+    bot.hears(moduleParam.keywords, (ctx) => initAction(ctx, { isHearsAction: true }));
     bot.command('start', (ctx) => initAction(ctx));
     bot.action('start', (ctx) => initAction(ctx));
     bot.command('close', (ctx) => closeAction(ctx));
