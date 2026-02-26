@@ -97,7 +97,7 @@ const submitAction = async (ctx) => {
         text: '🪪 Пожалуйста, перезапустите бота!',
         fileType: 'photo',
         filePath: `./assets/admin/success.jpg`,
-        buttons: homeOption,
+        buttons: { [moduleNames.admin]: 'Готово' },
     });
 
     await removeMessage(ctx);

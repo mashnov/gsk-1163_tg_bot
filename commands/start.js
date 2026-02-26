@@ -47,7 +47,6 @@ const initAction = async (ctx) => {
         buttons[moduleNames.weather] = '🌤️ Прогноз погоды';
         buttons[moduleNames.horoscope] = '💫 Личный Гороскоп';
         buttons[moduleNames.meter] = '〽️ Показания счетчиков';
-        buttons[moduleNames.messages] = '💬 Написать сообщение';
     }
 
     if (isPrivateChat && (isAdmin || isSuperUser)) {

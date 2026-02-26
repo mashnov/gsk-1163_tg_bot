@@ -4,7 +4,7 @@ const { sendLocalFileMessage, removeMessage, commandAnswer } = require('../helpe
 const { getPaginatedItems } = require('../helpers/array');
 const { guard } = require('../helpers/guard');
 
-const { moduleNames } = require('../const/dictionary');
+const { moduleNames, homeOption } = require('../const/dictionary');
 const { userStatusList, userStatusText } = require('../const/db');
 const { profilesPageCount } = require('../const/env');
 
@@ -35,6 +35,7 @@ const startAction = async (ctx) => {
         [`${moduleParam.name}:${userStatusList.blocked}:${moduleParam.list}`]: 'Заблокированные',
         [`${moduleParam.name}:${userStatusList.unverified}:${moduleParam.list}`]: `${userStatusText.unverified}`,
         [moduleNames.admin]: '⬅️ Назад',
+        ...homeOption,
     };
 
     await sendLocalFileMessage(ctx, {
@@ -84,7 +85,7 @@ const profileListHandler = async (ctx, listType, listIndex = '0') => {
         text: messageText,
         fileType: 'photo',
         filePath: `./assets/admin/${listType}.jpg`,
-        buttons,
+        buttons: { ...buttons, ...homeOption, },
     });
     await removeMessage(ctx);
 };
@@ -122,6 +123,7 @@ const profileReviewHandler = async (ctx, accountId, backParams) => {
         [`${moduleParam.verification}:${userStatusList.restricted}:${accountId}`]: '🟠 Ограничить',
         [`${moduleParam.verification}:${userStatusList.blocked}:${accountId}`]: '🔴 Заблокировать',
         ...backButtonOption,
+        ...homeOption,
     };
 
     await sendLocalFileMessage(ctx, {
