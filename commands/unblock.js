@@ -7,7 +7,7 @@ const { startStepper } = require('../helpers/stepper');
 const { guard } = require('../helpers/guard');
 
 const { closeOption, moduleNames} = require('../const/dictionary');
-const { userStatusText, userStatusList } = require('../const/db');
+const { userRoleText, userRoleList } = require('../const/db');
 const { stepList } = require('../const/unblock');
 const { superUserId } = require('../const/env');
 
@@ -66,13 +66,13 @@ const submitAction = async (ctx) => {
     const recipientText = getSummaryMessage(stepList[session.stepIndex]?.summary, session);
     const recipientMessage = `${recipientHeader}${recipientSender}${recipientProfileName}${recipientPhoneNumber}${recipientRoomNumber}${recipientText}`;
 
-    const chairmanIdList = getArrayFallback(await getUserIndex(userStatusList.chairman), [superUserId]);
-    const accountantIdList = getArrayFallback(await getUserIndex(userStatusList.accountant), chairmanIdList);
-    const adminIdList = getArrayFallback(await getUserIndex(userStatusList.admin), accountantIdList);
+    const chairmanIdList = getArrayFallback(await getUserIndex(userRoleList.chairman), [superUserId]);
+    const accountantIdList = getArrayFallback(await getUserIndex(userRoleList.accountant), chairmanIdList);
+    const adminIdList = getArrayFallback(await getUserIndex(userRoleList.admin), accountantIdList);
 
     const messageButtons = {
-        [`${moduleParam.verification}:${userStatusList.resident}:${accountId}`]: `🟢 ${userStatusText.resident}`,
-        [`${moduleParam.verification}:${userStatusList.blocked}:${accountId}`]: '⛔ Заблокировать',
+        [`${moduleParam.verification}:${userRoleList.resident}:${accountId}`]: `🟢 ${userRoleText.resident}`,
+        [`${moduleParam.verification}:${userRoleList.blocked}:${accountId}`]: '⛔ Заблокировать',
         ...closeOption,
     };
 

@@ -2,7 +2,7 @@ const { setMessageReaction } = require('../helpers/telegraf');
 const { getUserData} = require('../helpers/db');
 
 const { homeChatId} = require('../const/env');
-const { userStatusList} = require('../const/db');
+const { userRoleList} = require('../const/db');
 
 const messageHandler = async (ctx, next) => {
     if (ctx.from?.is_bot) {
@@ -18,7 +18,7 @@ const messageHandler = async (ctx, next) => {
     }
 
     const userData = await getUserData({ from: ctx.from });
-    const isUnverified = userData?.userStatus === userStatusList.unverified || !userData?.userStatus;
+    const isUnverified = userData?.userStatus === userRoleList.unverified || !userData?.userStatus;
 
     if (isUnverified) {
         await setMessageReaction(ctx, {

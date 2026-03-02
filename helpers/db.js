@@ -1,5 +1,5 @@
 const { db } = require('../state/db');
-const { emptyUser, userStatusList } = require('../const/db.js');
+const { emptyUser, userRoleList } = require('../const/db.js');
 
 const { getUserName } = require('../helpers/getters');
 
@@ -31,17 +31,15 @@ const createUserData = async (accountId, userName) => {
         return originalData;
     }
 
-    const createdAt = new Date().toISOString();
     const userData = {
         ...emptyUser,
-        userStatus: userStatusList.unverified,
-        accountId: accountId,
-        createdAt: createdAt,
+        accountId,
         userName,
+        userStatus: userRoleList.unverified,
     };
 
     await setDbData(accountId, userData);
-    await setUserIndex(accountId, { userStatus: userStatusList.unverified });
+    await setUserIndex(accountId, { userStatus: userRoleList.unverified });
     return await getUserData({ id: accountId });
 };
 

@@ -4,7 +4,7 @@ const { initStore, getSession } = require('../helpers/sessions');
 const { sendLocalFileMessage, removeMessage, commandAnswer, getFile} = require('../helpers/telegraf');
 const { getStatisticsData } = require('../helpers/db');
 const { updateDbFile } = require('../helpers/database');
-const { getCsvFromBd } = require('../helpers/admin');
+const { getCsvFromBd, getVcfFromBd } = require('../helpers/admin');
 const { startStepper } = require('../helpers/stepper');
 const { guard } = require('../helpers/guard');
 
@@ -17,6 +17,7 @@ const moduleParam = {
     init: 'init',
     submit: 'submit',
     csv: 'csv',
+    vcf: 'vcf',
     logs: 'logs',
     database: 'database',
     download: 'download',
@@ -61,6 +62,7 @@ const startAction = async (ctx) => {
         buttons: {
             [moduleNames.profiles]: 'Профили',
             [`${moduleParam.name}:${moduleParam.download}:${moduleParam.csv}`]: 'Скачать CSV',
+            [`${moduleParam.name}:${moduleParam.download}:${moduleParam.vcf}`]: 'Скачать vCard',
             [`${moduleParam.name}:${moduleParam.download}:${moduleParam.logs}`]: 'Скачать логи',
             [`${moduleParam.name}:${moduleParam.download}:${moduleParam.database}`]: 'Скачать БД',
             [`${moduleParam.name}:${moduleParam.upload}:${moduleParam.database}`]: 'Востановить БД',
@@ -120,6 +122,11 @@ const downloadAction = async (ctx, { isCronAction, fileType } = {}) => {
     }
     if (fileType === moduleParam.csv) {
         fileParams.fileContent = await getCsvFromBd();
+        fileParams.fileName = 'export.csv';
+    }
+    if (fileType === moduleParam.vcf) {
+        fileParams.fileContent = await getVcfFromBd();
+        fileParams.fileName = 'contacts.vcf';
     }
     if (fileType === moduleParam.logs) {
         fileParams.filePath = './state/messages.txt';

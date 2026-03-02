@@ -61,11 +61,15 @@ const sendMessage = async (ctx, { accountId = ctx.chat.id, text = '', buttons = 
     }
 };
 
-const sendLocalFileMessage = async (ctx, { accountId, text, buttons, filePath, fileContent, fileType = 'document', silent }) => {
-    const attachment = {
-        type: fileType,
-        fileId: fileContent ? Input.fromBuffer(Buffer.from(fileContent, 'utf8'), 'export.csv') : Input.fromLocalFile(filePath),
-    };
+const sendLocalFileMessage = async (ctx, { accountId, text, buttons, filePath, fileContent, fileEncoding = 'utf8', fileName, fileType = 'document', silent }) => {
+    const attachment = { type: fileType };
+
+    if (fileContent) {
+        attachment.fileId = Input.fromBuffer(Buffer.from(fileContent, fileEncoding), fileName);
+    } else {
+        attachment.fileId = Input.fromLocalFile(filePath);
+    }
+
     return await sendMessage(ctx, { accountId, text, buttons, attachment, silent });
 };
 

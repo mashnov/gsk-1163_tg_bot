@@ -3,7 +3,7 @@ const { getUserData, setStatisticsData } = require('../helpers/db');
 const { guard } = require('../helpers/guard');
 
 const { closeOption, moduleNames, homeOption} = require('../const/dictionary');
-const { userStatusList } = require('../const/db');
+const { userRoleList } = require('../const/db');
 
 const moduleParam = {
     name: moduleNames.contact,
@@ -21,8 +21,8 @@ const initAction = async (ctx, { isHearsAction } = {}) => {
     }
 
     const userData = await getUserData({ from: ctx.from });
-    const isResident = userData?.userStatus === userStatusList.resident;
-    const isAdmin = [userStatusList.admin, userStatusList.accountant, userStatusList.chairman].includes(userData?.userStatus);
+    const isResident = userData?.userStatus === userRoleList.resident;
+    const isAdmin = [userRoleList.admin, userRoleList.accountant, userRoleList.chairman].includes(userData?.userStatus);
     const isPrivateChat = ctx.chat?.type === 'private';
 
     const isVerified = (isResident || isAdmin) && isPrivateChat;

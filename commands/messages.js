@@ -9,7 +9,7 @@ const { guard } = require('../helpers/guard');
 const { closeOption, moduleNames } = require('../const/dictionary');
 const { stepList } = require('../const/messages');
 const { superUserId } = require('../const/env');
-const { userStatusList, userStatusText } = require('../const/db');
+const { userRoleList, userRoleText } = require('../const/db');
 
 const moduleParam = {
     name: moduleNames.messages,
@@ -19,22 +19,22 @@ const moduleParam = {
 let stepper = undefined;
 
 const initStepper = async () => {
-    const chairmanIdList = await getUserIndex(userStatusList.chairman);
-    const accountantIdList = await getUserIndex(userStatusList.accountant);
-    const adminIdList = getArrayFallback(await getUserIndex(userStatusList.admin), [superUserId]);
+    const chairmanIdList = await getUserIndex(userRoleList.chairman);
+    const accountantIdList = await getUserIndex(userRoleList.accountant);
+    const adminIdList = getArrayFallback(await getUserIndex(userRoleList.admin), [superUserId]);
 
     const submitActions = {};
 
     if (chairmanIdList.length) {
-        submitActions[`${moduleParam.name}:${moduleParam.submit}:${userStatusList.chairman}`] = 'Отправить председателю';
+        submitActions[`${moduleParam.name}:${moduleParam.submit}:${userRoleList.chairman}`] = 'Отправить председателю';
     }
 
     if (accountantIdList.length) {
-        submitActions[`${moduleParam.name}:${moduleParam.submit}:${userStatusList.accountant}`] = 'Отправить бухгалтеру';
+        submitActions[`${moduleParam.name}:${moduleParam.submit}:${userRoleList.accountant}`] = 'Отправить бухгалтеру';
     }
 
     if (adminIdList.length) {
-        submitActions[`${moduleParam.name}:${moduleParam.submit}:${userStatusList.admin}`] = 'Отправить администратору';
+        submitActions[`${moduleParam.name}:${moduleParam.submit}:${userRoleList.admin}`] = 'Отправить администратору';
     }
 
     stepper = startStepper({
@@ -78,7 +78,7 @@ const submitAction = async (ctx, listType) => {
 
     const recipientHeader = '💬 Новое сообщение\n\n';
     const recipientSender = `Отправитель: ${getUserNameLink(ctx.from)}\n\n`;
-    const recipientProfileStatus = `Статус: ${ userStatusText[userData?.userStatus] }\n\n`;
+    const recipientProfileStatus = `Статус: ${ userRoleText[userData?.userStatus] }\n\n`;
     const recipientProfileName = `Имя отправителя: ${userData?.residentName}\n`;
     const recipientPhoneNumber = `Номер телефона: ${userData?.phoneNumber}\n`;
     const recipientRoomNumber = `Номер квартиры: ${userData?.roomNumber}\n\n`;

@@ -8,7 +8,7 @@ const { guard } = require('../helpers/guard');
 
 const { closeOption, moduleNames } = require('../const/dictionary');
 const { superUserId } = require('../const/env');
-const { userStatusList } = require('../const/db');
+const { userRoleList } = require('../const/db');
 const { stepList } = require('../const/meter');
 
 const moduleParam = {
@@ -67,9 +67,9 @@ const submitAction = async (ctx) => {
     const recipientText = getSummaryMessage(stepList[session.stepIndex]?.summary, session);
     const recipientMessage = `${recipientHeader}${recipientSender}${recipientResidentText}${recipientPhoneText}${recipientText}`;
 
-    const chairmanIdList = getArrayFallback(await getUserIndex(userStatusList.chairman), [superUserId]);
-    const adminIdList = getArrayFallback(await getUserIndex(userStatusList.admin), chairmanIdList);
-    const accountantIdList = getArrayFallback(await getUserIndex(userStatusList.accountant), adminIdList);
+    const chairmanIdList = getArrayFallback(await getUserIndex(userRoleList.chairman), [superUserId]);
+    const adminIdList = getArrayFallback(await getUserIndex(userRoleList.admin), chairmanIdList);
+    const accountantIdList = getArrayFallback(await getUserIndex(userRoleList.accountant), adminIdList);
 
     for (const recipientAccountId of accountantIdList) {
         await sendMessage(ctx, {

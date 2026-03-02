@@ -5,10 +5,9 @@ const emptyUser = {
     roomNumber: undefined,
     phoneNumber: undefined,
     userStatus: undefined,
-    createdAt: undefined,
 };
 
-const userStatusList = {
+const userRoleList = {
     chairman: 'chairman',
     accountant: 'accountant',
     admin: 'admin',
@@ -19,7 +18,7 @@ const userStatusList = {
     unverified: 'unverified',
 };
 
-const userStatusText = {
+const userRoleText = {
     chairman: 'Председатель',
     accountant: 'Бухгалтер',
     admin: 'Администратор',
@@ -32,6 +31,6 @@ const userStatusText = {
 
 module.exports = {
     emptyUser,
-    userStatusList,
-    userStatusText,
+    userRoleList,
+    userRoleText,
 };

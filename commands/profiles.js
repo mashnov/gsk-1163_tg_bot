@@ -1,11 +1,11 @@
 const { getUserData, getUserIndex, getUserListByIndex } = require('../helpers/db');
-const { getUserNameLink, getFormattedDate } = require('../helpers/getters');
+const { getUserNameLink } = require('../helpers/getters');
 const { sendLocalFileMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { getPaginatedItems } = require('../helpers/array');
 const { guard } = require('../helpers/guard');
 
 const { moduleNames, homeOption } = require('../const/dictionary');
-const { userStatusList, userStatusText } = require('../const/db');
+const { userRoleList, userRoleText } = require('../const/db');
 const { profilesPageCount } = require('../const/env');
 
 const moduleParam = {
@@ -26,14 +26,14 @@ const startAction = async (ctx) => {
     }
 
     const buttons = {
-        [`${moduleParam.name}:${userStatusList.chairman}:${moduleParam.list}`]: `${userStatusText.chairman}`,
-        [`${moduleParam.name}:${userStatusList.accountant}:${moduleParam.list}`]: `${userStatusText.accountant}`,
-        [`${moduleParam.name}:${userStatusList.admin}:${moduleParam.list}`]: `${userStatusText.admin}`,
-        [`${moduleParam.name}:${userStatusList.resident}:${moduleParam.list}`]: `${userStatusText.resident}`,
-        [`${moduleParam.name}:${userStatusList.pending}:${moduleParam.list}`]: 'Ожидают проверки',
-        [`${moduleParam.name}:${userStatusList.restricted}:${moduleParam.list}`]: 'Ограниченные',
-        [`${moduleParam.name}:${userStatusList.blocked}:${moduleParam.list}`]: 'Заблокированные',
-        [`${moduleParam.name}:${userStatusList.unverified}:${moduleParam.list}`]: `${userStatusText.unverified}`,
+        [`${moduleParam.name}:${userRoleList.chairman}:${moduleParam.list}`]: `${userRoleText.chairman}`,
+        [`${moduleParam.name}:${userRoleList.accountant}:${moduleParam.list}`]: `${userRoleText.accountant}`,
+        [`${moduleParam.name}:${userRoleList.admin}:${moduleParam.list}`]: `${userRoleText.admin}`,
+        [`${moduleParam.name}:${userRoleList.resident}:${moduleParam.list}`]: `${userRoleText.resident}`,
+        [`${moduleParam.name}:${userRoleList.pending}:${moduleParam.list}`]: 'Ожидают проверки',
+        [`${moduleParam.name}:${userRoleList.restricted}:${moduleParam.list}`]: 'Ограниченные',
+        [`${moduleParam.name}:${userRoleList.blocked}:${moduleParam.list}`]: 'Заблокированные',
+        [`${moduleParam.name}:${userRoleList.unverified}:${moduleParam.list}`]: `${userRoleText.unverified}`,
         [moduleNames.admin]: '⬅️ Назад',
         ...homeOption,
     };
@@ -52,12 +52,12 @@ const profileListHandler = async (ctx, listType, listIndex = '0') => {
     const profileList = await getUserIndex(listType);
     const filteredProfileList = profileList.filter(userId => userId !== String(ctx.from.id));
     const mappedProfileList = await getUserListByIndex(filteredProfileList);
-    const sortedProfileList = mappedProfileList.sort((a, b) => Number(a.roomNumber) - Number(b.roomNumber));
-    const paginatedList = getPaginatedItems(sortedProfileList, Number(listIndex), profilesPageCount);
+    const sortedByRoom = mappedProfileList.sort((a, b) => Number(a.roomNumber) - Number(b.roomNumber));
+    const paginatedList = getPaginatedItems(sortedByRoom, Number(listIndex), profilesPageCount);
 
     const messageText =
         `🪪 Администрирование` +
-        `\n\nСтатус: ${userStatusText[listType]}` +
+        `\n\nСтатус: ${userRoleText[listType]}` +
         `\nКоличество профилей: ${mappedProfileList.length}`;
 
     const buttons = {};
@@ -100,10 +100,9 @@ const profileReviewHandler = async (ctx, accountId, backParams) => {
         `Детали профиля ${userData.residentName ?? '-'}\n\n` +
         `Телеграмм: ${userLink}\n` +
         `Номер телефона: ${userData.phoneNumber ?? '-'}\n` +
-        `Номер квартиры: ${userData.roomNumber ?? '-'}\n\n` +
-        `Профиль зарегистрирован: ${getFormattedDate(userData.createdAt)} \n`;
+        `Номер квартиры: ${userData.roomNumber ?? '-'}\n`;
 
-    const isUnverified = userData?.userStatus === userStatusList.unverified;
+    const isUnverified = userData?.userStatus === userRoleList.unverified;
 
     const backButtonOption = {
         [`${moduleParam.name}:${backParams.split('_')[0]}:${moduleParam.list}:${backParams.split('_')[1]}`]: '⬅️ Назад'
@@ -111,17 +110,17 @@ const profileReviewHandler = async (ctx, accountId, backParams) => {
 
     const unverifiedOptions = {
         [`${moduleParam.unverified}:notification:${accountId}`]: '🪪 Запросить авторизацию',
-        [`${moduleParam.verification}:${userStatusList.blocked}:${accountId}`]: '🔴 Заблокировать',
+        [`${moduleParam.verification}:${userRoleList.blocked}:${accountId}`]: '🔴 Заблокировать',
         ...backButtonOption,
     };
 
     const verifiedOptions = {
-        [`${moduleParam.verification}:${userStatusList.chairman}:${accountId}`]: `🟡 ${userStatusText.chairman}`,
-        [`${moduleParam.verification}:${userStatusList.accountant}:${accountId}`]: `🟡 ${userStatusText.accountant}`,
-        [`${moduleParam.verification}:${userStatusList.admin}:${accountId}`]: `🟡 ${userStatusText.admin}`,
-        [`${moduleParam.verification}:${userStatusList.resident}:${accountId}`]: `🟢 ${userStatusText.resident}`,
-        [`${moduleParam.verification}:${userStatusList.restricted}:${accountId}`]: '🟠 Ограничить',
-        [`${moduleParam.verification}:${userStatusList.blocked}:${accountId}`]: '🔴 Заблокировать',
+        [`${moduleParam.verification}:${userRoleList.chairman}:${accountId}`]: `🟡 ${userRoleText.chairman}`,
+        [`${moduleParam.verification}:${userRoleList.accountant}:${accountId}`]: `🟡 ${userRoleText.accountant}`,
+        [`${moduleParam.verification}:${userRoleList.admin}:${accountId}`]: `🟡 ${userRoleText.admin}`,
+        [`${moduleParam.verification}:${userRoleList.resident}:${accountId}`]: `🟢 ${userRoleText.resident}`,
+        [`${moduleParam.verification}:${userRoleList.restricted}:${accountId}`]: '🟠 Ограничить',
+        [`${moduleParam.verification}:${userRoleList.blocked}:${accountId}`]: '🔴 Заблокировать',
         ...backButtonOption,
         ...homeOption,
     };

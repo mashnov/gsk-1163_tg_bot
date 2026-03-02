@@ -5,7 +5,7 @@ const { guard } = require('../helpers/guard');
 
 const { botUsername, superUserId } = require('../const/env');
 const { moduleNames } = require('../const/dictionary');
-const { userStatusList } = require('../const/db');
+const { userRoleList } = require('../const/db');
 
 const moduleParam = {
     name: moduleNames.start,
@@ -22,11 +22,11 @@ const initAction = async (ctx) => {
     }
 
     const userData = await getUserData({ from: ctx.from });
-    const isUnverified = userData?.userStatus === userStatusList.unverified || !userData?.userStatus;
-    const isPending = userData?.userStatus === userStatusList.pending;
-    const isBlocked = [userStatusList.blocked, userStatusList.restricted].includes(userData?.userStatus);
-    const isResident = userData?.userStatus === userStatusList.resident;
-    const isAdmin = [userStatusList.admin, userStatusList.accountant, userStatusList.chairman].includes(userData?.userStatus);
+    const isUnverified = userData?.userStatus === userRoleList.unverified || !userData?.userStatus;
+    const isPending = userData?.userStatus === userRoleList.pending;
+    const isBlocked = [userRoleList.blocked, userRoleList.restricted].includes(userData?.userStatus);
+    const isResident = userData?.userStatus === userRoleList.resident;
+    const isAdmin = [userRoleList.admin, userRoleList.accountant, userRoleList.chairman].includes(userData?.userStatus);
     const isSuperUser = superUserId === ctx?.from?.id;
     const isPrivateChat = ctx.chat?.type === 'private';
 
