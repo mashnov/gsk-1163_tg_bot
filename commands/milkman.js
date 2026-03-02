@@ -1,7 +1,8 @@
 const cron = require('node-cron');
 
-const { sendLocalFileMessage} = require('../helpers/telegraf');
+const { sendLocalFileMessage, removeMessage, commandAnswer } = require('../helpers/telegraf');
 const { isWinter} = require('../helpers/weather');
+const { guard } = require('../helpers/guard');
 
 const { homeChatId, homeTimeZone} = require('../const/env');
 const { moduleNames } = require('../const/dictionary');
@@ -13,7 +14,16 @@ const moduleParam = {
     sendTime: [15],
 };
 
-const sendMilkMessage = async (ctx) => {
+const initAction = async (ctx, { isCronAction, isHearsAction } = {}) => {
+    await commandAnswer(ctx);
+    const isGuardPassed = isCronAction || await guard(ctx, { unBlocked: true, publicChat: isHearsAction });
+
+    if (!isGuardPassed) {
+        return;
+    }
+
+    const isPrivateChat = ctx.chat?.type === 'private';
+
     const messageText =
         '<b>Уважаемые жители!</b>' +
         '\n\n<b>В пятницу <u>в 14:40</u></b> к нам снова приедет молочник!' +
@@ -21,22 +31,26 @@ const sendMilkMessage = async (ctx) => {
 
     await sendLocalFileMessage(ctx, {
         text: messageText,
-        accountId: homeChatId,
+        accountId: isPrivateChat ? undefined : homeChatId,
         fileType: 'photo',
         filePath: `./assets/milkman/${isWinter() ? 'winter' : 'summer'}.jpeg`,
         buttons: {}
     });
+
+    if (isPrivateChat) {
+        await removeMessage(ctx);
+    }
 };
 
 const cronAction = (bot) => {
     cron.schedule(
         `0 ${moduleParam.sendTime} * * 4`,
-        async () => sendMilkMessage(bot),
+        async () => initAction(bot, { isCronAction: true }),
         { timezone: homeTimeZone },
     );
 };
 
 module.exports = (bot) => {
     cronAction(bot);
-    bot.hears(moduleParam.keywords, (ctx) => sendMilkMessage(ctx));
+    bot.hears(moduleParam.keywords, (ctx) => initAction(ctx, { isHearsAction: true }));
 };
